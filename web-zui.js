@@ -1,5 +1,6 @@
 var BACKSPACE_KEYCODE = 8;
 var RETURN_KEYCODE = 13;
+var SHIFT_KEYCODE = 16;
 
 function WebZui(logfunc) {
   this._size = [80, 255];
@@ -77,13 +78,33 @@ function WebZui(logfunc) {
     },
 
     _windowKeydown: function(event) {
-      return self._isHotKey(event);
+      if (self._isHotKey(event))
+        return true;
+      if (jQuery.browser.safari) {
+        var newEvent = new Object();
+        if (event.keyCode > 20 && event.keyCode < 127) {
+          newEvent.charCode = String.fromCharCode(event.keyCode)
+                                    .toLowerCase()
+                                    .charCodeAt(0);
+        } else {
+          newEvent.charCode = 0;
+          newEvent.keyCode = event.keyCode;
+        }
+        return self._handleKeyEvent(newEvent);
+      } else
+        return false;
     },
 
     _windowKeypress: function(event) {
       if (self._isHotKey(event))
         return true;
+      if (jQuery.browser.mozilla)
+        return self._handleKeyEvent(event);
+      else
+        return false;
+    },
 
+    _handleKeyEvent: function(event) {
       if ($("#current-input").length == 0) {
         // We're not waiting for a line of input, but we may
         // be waiting for a character of input.
