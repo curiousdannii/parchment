@@ -1,0 +1,135 @@
+.fg-default {
+    color: black;
+}
+
+.fg-default-reversed {
+    color: white;
+}
+
+.fg-black {
+    color: black;
+}
+
+.fg-red {
+    color: red;
+}
+
+.fg-green {
+    color: green;
+}
+
+.fg-yellow {
+    color: yellow;
+}
+
+.fg-blue {
+    color: blue;
+}
+
+.fg-magenta {
+    color: magenta;
+}
+
+.fg-cyan {
+    color: cyan;
+}
+
+.fg-white {
+    color: white;
+}
+
+.bg-default {
+    background: white;
+}
+
+.bg-default-reversed {
+    background: black;
+}
+
+.bg-black {
+    background: black;
+}
+
+.bg-red {
+    background: red;
+}
+
+.bg-green {
+    background: green;
+}
+
+.bg-yellow {
+    background: yellow;
+}
+
+.bg-blue {
+    background: blue;
+}
+
+.bg-magenta {
+    background: magenta;
+}
+
+.bg-cyan {
+    background: cyan;
+}
+
+.bg-white {
+    background: white;
+}
+
+body {
+    font-family: palatino, georgia, verdana, arial, sans-serif;
+    text-align: center;
+    overflow: hidden;
+    margin-top: 0px;
+    margin-bottom: 8px;
+}
+
+.buffered-window {
+    text-align: center;
+    margin: 0 auto;
+    font-family: monaco, courier, courier new, monospace;
+    font-size: 10pt;
+    top: 0px;
+    left: 0px;
+    position: fixed;
+    z-index: 0;
+}
+
+#top-window {
+    z-index: 1;
+}
+
+#content {
+    text-align: left;
+    margin: 0 auto;
+}
+
+#cursor {
+    text-decoration: blink;
+}
+
+.finished-input {
+    opacity: 0.5;
+}
+
+.z-roman {
+}
+
+.z-bold {
+    font-variant: small-caps;
+}
+
+.z-italic {
+    font-style: italic;
+}
+
+.z-fixed-pitch {
+    font-family: monaco;
+}
+
+#top-window .z-bold {
+    font-variant: normal;
+    font-weight: bold;
+}

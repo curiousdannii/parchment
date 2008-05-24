@@ -1,0 +1,10 @@
+onLineInput() received
+  responding immediately with: hello
+engine.answer() received: 1, hello
+onPrint() received: Hai2u!
+onSetStyle() received: style:0 fg:0 bg:0
+onLineInput() received
+  queuing delayed response: hello again
+Calling delayed call
+engine.answer() received: 1, hello again
+onQuit() received

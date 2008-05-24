@@ -1,0 +1,49 @@
+[GNUSTO_EFFECT_STYLE 2 0 0]
+
+
+
+
+
+It's not much of a job, but the Dungeon Master was looking for a guard troll, so you volunteered. You were given the standard-issue axe, and told to... well, guard.
+
+
+
+[GNUSTO_EFFECT_STYLE 0 0 0]
+Zork: A Troll's Eye View
+[GNUSTO_EFFECT_STYLE 2 0 0]
+
+An Interactive Tedium
+by Dylan O'Donnell (dylanw@demon.net)
+Type "info" for the story behind it.
+["Zork" is a registered trademark of Activision, Inc., used with permission.]
+Release 3 / Serial number 980518 / Inform v6.15 Library 6/7
+
+
+[GNUSTO_EFFECT_STYLE 0 0 0]
+The Troll Room
+[GNUSTO_EFFECT_SPLITWINDOW 1]
+
+This is a small room with passages to the east and south and a forbidding hole leading west. Bloodstains and deep scratches (perhaps made by an axe) mar the walls.
+
+>
+[GNUSTO_EFFECT_SETWINDOW 1]
+[GNUSTO_EFFECT_SETCURSOR 1 1]
+[GNUSTO_EFFECT_STYLE 1 0 0]
+[GNUSTO_EFFECT_SETCURSOR 1 2]
+[GNUSTO_EFFECT_SETCURSOR 1 1]
+The Troll Room
+[GNUSTO_EFFECT_STYLE 0 0 0]
+[GNUSTO_EFFECT_SETWINDOW 0]
+[GNUSTO_EFFECT_INPUT] (responding with "quit")
+[GNUSTO_EFFECT_SPLITWINDOW 1]
+Are you sure you want to quit? 
+[GNUSTO_EFFECT_SETWINDOW 1]
+[GNUSTO_EFFECT_SETCURSOR 1 1]
+[GNUSTO_EFFECT_STYLE 1 0 0]
+[GNUSTO_EFFECT_SETCURSOR 1 2]
+[GNUSTO_EFFECT_SETCURSOR 1 1]
+The Troll Room
+[GNUSTO_EFFECT_STYLE 0 0 0]
+[GNUSTO_EFFECT_SETWINDOW 0]
+[GNUSTO_EFFECT_INPUT] (responding with "yes")
+[GNUSTO_EFFECT_QUIT]
