@@ -20,7 +20,7 @@ __main__ = __import__("__main__")
 mydir = os.path.dirname(__main__.__file__)
 
 ROOT_DIR = os.path.abspath(os.path.join(mydir, "..", "if-archive"))
-ZCODE_REGEXP = r".*\.z[1-8]$"
+ZCODE_REGEXP = r".*\.z([1-8]|blorb)$"
 
 localpath = os.path.normpath(os.path.join(ROOT_DIR, path))
 

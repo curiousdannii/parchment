@@ -5,7 +5,7 @@ import os
 
 import json
 
-ZCODE_REGEXP = r".*\.z[1-8]$"
+ZCODE_REGEXP = r".*\.z([1-8]|blorb)$"
 EXCLUDED_DIRS = ["if-archive/infocom",
                  "if-archive/solutions",
                  "if-archive/starters"]
