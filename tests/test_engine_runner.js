@@ -1,5 +1,5 @@
 load("remedial.js");
-load("gnusto-engine.min.js");
+load("gnusto-engine.js");
 load("engine-runner.js");
 
 function FakeEngine() {
@@ -8,6 +8,8 @@ function FakeEngine() {
     var self = this;
 
     this.__proto__ = {
+        m_version: 5,
+
         run: function() {
             self._step += 1;
         },
@@ -49,6 +51,10 @@ function TestZui() {
     var self = this;
 
     this.__proto__ = {
+        setVersion: function(version) {
+            print("z-machine version: " + version);
+        },
+
         getSize: function() {
             return [60, 255];
         },
@@ -84,7 +90,9 @@ function TestZui() {
 };
 
 var gZui = new TestZui();
-var gRunner = new EngineRunner(new FakeEngine(), gZui);
+var gRunner = new EngineRunner(new FakeEngine(),
+                               gZui,
+                               function() {});
 var gDelayedCallQueue = [];
 
 gRunner.run();

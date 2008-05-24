@@ -480,11 +480,10 @@ function _zcodeLoaded(status, data) {
 }
 
 function _webZuiStartup() {
-  var logfunc = undefined;
+  var logfunc = function() {};
 
-  if (window.console) {
+  if (window.console)
     logfunc = function(msg) { console.log(msg); };
-  }
 
   var engine = new GnustoEngine();
   var zui = new WebZui(logfunc);

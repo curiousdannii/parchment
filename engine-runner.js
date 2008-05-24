@@ -93,12 +93,7 @@ function EngineRunner(engine, zui, logfunc) {
   this._isRunning = false;
   this._isInLoop = false;
   this._isWaitingForCallback = false;
-
-  if (logfunc) {
-    this._log = logfunc;
-  } else {
-    this._log = function() {};
-  }
+  this._log = logfunc;
 
   var self = this;
 

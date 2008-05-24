@@ -1,3 +1,4 @@
+z-machine version: 5
 onLineInput() received
   responding immediately with: hello
 engine.answer() received: 1, hello
