@@ -2,8 +2,6 @@ import glob
 import os
 import subprocess
 
-JS_CMD = "js"
-
 TESTS = glob.glob(os.path.join("tests", "*.js"))
 
 OUTPUT_FILE = "test_output.txt"
@@ -12,7 +10,7 @@ def run_tests():
     for test in TESTS:
         output = open(OUTPUT_FILE, "w")
         subprocess.call(
-            [JS_CMD, test],
+            ["java", "org.mozilla.javascript.tools.shell.Main", test],
             stdout = output,
             stderr = subprocess.STDOUT
             )

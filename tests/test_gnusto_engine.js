@@ -1,4 +1,4 @@
-load("base64.js", "troll.js", "gnusto-engine.min.js");
+load("gnusto-engine.js");
 
 var gInputTimes = 0;
 
@@ -52,6 +52,14 @@ function step() {
 
 var engine = new GnustoEngine();
 
-engine.loadStory(troll_z5);
+var f = new java.io.File("stories/troll.z5");
+var fis = new java.io.FileInputStream(f);
+var dis = new java.io.DataInputStream(fis);
+
+var bytes = new Array(f.length());
+for (var i = 0; i < bytes.length; i++)
+  bytes[i] = dis.readUnsignedByte();
+
+engine.loadStory(bytes);
 
 while (step() == 0) {}

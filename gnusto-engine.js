@@ -1541,7 +1541,7 @@ GnustoEngine.prototype = {
 					// that that seems inelegant.)
 
 					this.m_pc = pc;
-					eval("var t=new Function('with(this){'+_brancher('1')+'}');t.call(this);", this);
+					eval("var t=new Function('with(this){'+_brancher('1')+'}');t.call(this);");
 
 			} else {
 					// The PC we're given is actually pointing at the varcode
@@ -1628,7 +1628,7 @@ GnustoEngine.prototype = {
       if (this.m_jit[start_pc]) {
 					jscode = this.m_jit[start_pc];
       } else {
-					jscode=eval('dummy='+this._compile(), this);
+					jscode=eval('with (this) {dummy='+this._compile()+'}');
 
 					// Store it away, if it's in static memory (there's
 					// not much point caching JIT from dynamic memory!)
