@@ -12,7 +12,7 @@ EXCLUDED_DIRS = ["if-archive/infocom",
 EXCLUDED_DIRS_REGEXP = "|".join(EXCLUDED_DIRS)
 INDEX_URL = "http://www.ifarchive.org/indexes/Master-Index.xml"
 XML_FILENAME = "Master-Index.xml"
-JSON_FILENAME = "if-archive.json"
+JSON_FILENAME = "if-archive.js"
 
 if __name__ == "__main__":
     if not os.path.exists(XML_FILENAME):
@@ -47,4 +47,9 @@ if __name__ == "__main__":
              "desc" : desc.encode("utf-8")}
             )
 
-    open(JSON_FILENAME, "w").write(json.write(dicts))
+    def getdesc(a):
+        return a["desc"]
+
+    dicts.sort(key = getdesc)
+
+    open(JSON_FILENAME, "w").write("stories = " + json.write(dicts))
