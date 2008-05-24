@@ -94,7 +94,14 @@ Beret.prototype = {
             return true;
         }
 
-        if (magic_number_is_string('FORM')) { // An IFF file.
+        if (content[0]<9) {
+  			    // Infocom file, naked.
+
+				    // FIXME: This check is way too simple. We should look at
+				    // some of the other fields as well for sanity-checking.
+            this.m_filetype = 'ok story naked zcode';
+            this.m_engine.loadStory(content);
+        } else if (magic_number_is_string('FORM')) { // An IFF file.
 
             var iff_details = iff_parse(content);
 
@@ -179,6 +186,49 @@ Beret.prototype = {
                                                 stks.length, stks,
                                                 pc);
                 }
+            } else if (iff_details[0]=='IFRS') {
+								// Blorb resources file, possibly containing
+								// Z-code.
+
+								this.m_filetype = 'invalid story blorb';
+
+								// OK, so go digging for it.	
+								// The full list of executable formats, from
+								// <news:82283c$uab$1@nntp9.atl.mindspring.net>, is:
+
+								const blorb_formats = {
+										'ZCOD': 'zcode',
+										'GLUL': 'glulx',
+										'TADG': 'tads',
+										'ALAN': 'alan',
+										'HUGO': 'hugo',
+										'SAAI': 'scottadams', // Adventure International
+										'SAII': 'scottadams', // Possibly an old error
+										'MSRL': 'magneticscrolls',
+								};
+								
+								// FIXME: It's (obviously) technically invalid if
+								// a file's Blorb type signature doesn't match with its
+								// magic number in the code, but should we give an error?
+								// For example, what if a file marked GLUL turns out
+								// to be z-code?
+
+								for (var j=1; j<iff_details.length; j++) {
+
+										if (iff_details[j][0] in blorb_formats) {
+												var start = iff_details[j][1];
+												var length = iff_details[j][2];
+
+												this.load(content.slice(start,
+																								start+length));
+												this.m_filetype = 'ok story blorb '+
+														blorb_formats[iff_details[j][0]];
+												
+												return;
+										}
+								}
+            } else {
+					      this.m_filetype = 'error unknown iff';
             }
         } else {
           // OK, just give up.

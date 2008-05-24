@@ -489,8 +489,10 @@ function _webZuiStartup() {
   var engine = new GnustoEngine();
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
+  var beret = new Beret(engine);
 
-  engine.loadStory(gZcode.slice());
+  beret.load(gZcode.slice());
+  logfunc("Story type: " + beret.m_filetype);
   runner.run();
 }
 
