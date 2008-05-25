@@ -281,7 +281,7 @@ function WebZui(logfunc) {
         this._currStyles.push("z-fixed-pitch");
         break;
       default:
-        throw new Error("Unknown style: " + textStyle);
+        throw new FatalError("Unknown style: " + textStyle);
       }
 
       var colorTable = {0: null,
@@ -451,6 +451,14 @@ function WebZui(logfunc) {
   self._eraseBottomWindow();
 }
 
+FatalError.prototype.onError = function(e) {
+  var message = e.message;
+  if (typeof e.message == "string")
+    message = message.entityify();
+  $("#content").append('<div class="error">An error occurred:<br/>' +
+                       '<pre>' + message + '</pre></div>');
+}
+
 function downloadViaProxy(relPath, callback) {
   var PROXY_URL = gBaseUrl + "/cgi-bin/xhr_proxy.py";
   var url = PROXY_URL + "?file=" + relPath.slice(IF_ARCHIVE_PREFIX.length);
@@ -497,7 +505,7 @@ function _zcodeLoaded(status, data) {
     }
     _webZuiStartup();
   } else {
-    throw new Error("Error occurred when retrieving z-code: " + data);
+    throw new FatalError("Error occurred when retrieving z-code: " + data);
   }
 }
 

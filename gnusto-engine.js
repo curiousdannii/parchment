@@ -1276,15 +1276,9 @@ function gnusto_error(number) {
 		}
 
 		message += '\n\nJS call stack:' + procstring;
+    message = "Error " + number + ": " + message;
 
-    console.log("Error " + number + ": " + message);
-
-		console.log('-- Temporary burin error: ');
-		console.log(number);
-		console.log(' ');
-		console.log(message);
-		console.log('\n');
-		throw 'Error '+number+': '+message;
+		throw FatalError(message);
 }
 
 ////////////////////////////////////////////////////////////////

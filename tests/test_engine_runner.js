@@ -1,4 +1,5 @@
 load("remedial.js");
+load("error-handling.js");
 load("gnusto-engine.js");
 load("engine-runner.js");
 

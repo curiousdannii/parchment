@@ -51,7 +51,7 @@ function iff_parse(s) {
 
         if (chunk_length<0 || (chunk_length+cursor)>s.length) {
             // fixme: do something sensible here
-            throw new Error('WEEBLE, panic\n');
+            throw new FatalError('WEEBLE, panic\n');
             return [];
         }
 
@@ -156,14 +156,14 @@ Beret.prototype = {
                             content[pc_location+2];
                     } else if (tag=='Stks') {
                         if (stks!=0) {
-                            throw new Error('fixme: error: multiple Stks\n');
+                            throw new FatalError('fixme: error: multiple Stks\n');
                         }
                         stks = content.slice(iff_details[i][1],
                                              iff_details[i][2]+iff_details[i][1]);
                     } else if (tag=='CMem' || tag=='UMem') {
 
                         if (memory!=0) {
-                            throw new Error('fixme: error: multiple memory segments\n');
+                            throw new FatalError('fixme: error: multiple memory segments\n');
                         }
 
                         memory_is_compressed = (tag=='CMem');
@@ -174,11 +174,11 @@ Beret.prototype = {
                 }
 
                 if (memory==0) {
-                    throw new Error('fixme: error: no memory in quetzal\n');
+                    throw new FatalError('fixme: error: no memory in quetzal\n');
                 } else if (stks==0) {
-                    throw new Error('fixme: error: no stacks in quetzal\n');
+                    throw new FatalError('fixme: error: no stacks in quetzal\n');
                 } else if (pc==0) {
-                    throw new Error('fixme: error: no header in quetzal\n');
+                    throw new FatalError('fixme: error: no header in quetzal\n');
                 } else {
                     this.m_filetype = 'ok saved quetzal zcode';
                     this.m_engine.loadSavedGame(memory.length, memory,

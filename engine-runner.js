@@ -149,7 +149,7 @@ function EngineRunner(engine, zui, logfunc) {
 
     _loop: function() {
       if (self._isInLoop)
-        throw new Error("Already in loop!");
+        throw new FatalError("Already in loop!");
 
       self._isInLoop = true;
       var engine = self._engine;
@@ -213,14 +213,14 @@ function EngineRunner(engine, zui, logfunc) {
       case GNUSTO_EFFECT_BREAKPOINT:
       case GNUSTO_EFFECT_FLAGS_CHANGED:
       case GNUSTO_EFFECT_PIRACY:
-        throw new Error("Unimplemented effect: " + effect);
+        throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_STYLE:
         self._zui.onSetStyle(engine.effect(1),
                              engine.effect(2),
                              engine.effect(3));
         break;
       case GNUSTO_EFFECT_SOUND:
-        throw new Error("Unimplemented effect: " + effect);
+        throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_SPLITWINDOW:
         self._zui.onSplitWindow(engine.effect(1));
         break;
@@ -231,7 +231,7 @@ function EngineRunner(engine, zui, logfunc) {
         self._zui.onEraseWindow(engine.effect(1));
         break;
       case GNUSTO_EFFECT_ERASELINE:
-        throw new Error("Unimplemented effect: " + effect);
+        throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_SETCURSOR:
         self._zui.onSetCursor(engine.effect(2),
                               engine.effect(1));
@@ -242,7 +242,7 @@ function EngineRunner(engine, zui, logfunc) {
       case GNUSTO_EFFECT_SETINPUTSTREAM:
       case GNUSTO_EFFECT_GETCURSOR:
       case GNUSTO_EFFECT_PRINTTABLE:
-        throw new Error("Unimplemented effect: " + effect);
+        throw new FatalError("Unimplemented effect: " + effect);
       }
 
       self._isInLoop = false;

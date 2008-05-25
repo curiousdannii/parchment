@@ -133,3 +133,10 @@ body {
     font-variant: normal;
     font-weight: bold;
 }
+
+.error {
+    background: red;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+}
