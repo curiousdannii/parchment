@@ -106,6 +106,7 @@ function WebZui(logfunc) {
 
     _handleKeyEvent: function(event) {
       self._removeBufferedWindows();
+      self._scrollBottomWindow();
 
       if ($("#current-input").length == 0) {
         // We're not waiting for a line of input, but we may
