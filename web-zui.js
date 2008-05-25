@@ -456,7 +456,8 @@ FatalError.prototype.onError = function(e) {
   if (typeof e.message == "string")
     message = message.entityify();
   $("#content").append('<div class="error">An error occurred:<br/>' +
-                       '<pre>' + message + '</pre></div>');
+                       '<pre>' + message + '\n\n' + e.traceback +
+                       '</pre></div>');
 }
 
 function downloadViaProxy(relPath, callback) {

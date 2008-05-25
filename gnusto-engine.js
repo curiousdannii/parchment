@@ -1239,45 +1239,6 @@ function gnusto_error(number) {
 				}
 		}
 
-		var procs = arguments.callee;
-		var procstring = '';
-
-		var loop_count = 0;
-		var loop_max = 100;
-
-		while (procs!=null && loop_count<loop_max) {
-				var name = procs.toString();
-
-				if (!name) {
-						procstring = '\n  (anonymous function)'+procstring;
-				} else {
-						var r = name.match(/function (\w*)/);
-
-						if (!r || !r[1]) {
-								procstring = '\n  (anonymous function)' + procstring;
-						} else {
-              procstring = '\n  ' + r[1] + procstring;
-						}
-				}
-
-        try {
-          procs = procs.caller;
-        } catch (e) {
-          // A permission denied error may have just been raised,
-          // perhaps because the caller is a chrome function that we
-          // can't have access to.
-          procs = null;
-        }
-				loop_count++;
-		}
-
-		if (loop_count==loop_max) {
-				procstring = '...' + procstring;
-		}
-
-		message += '\n\nJS call stack:' + procstring;
-    message = "Error " + number + ": " + message;
-
 		throw new FatalError(message);
 }
 
