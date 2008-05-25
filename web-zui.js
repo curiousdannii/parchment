@@ -105,6 +105,8 @@ function WebZui(logfunc) {
     },
 
     _handleKeyEvent: function(event) {
+      self._removeBufferedWindows();
+
       if ($("#current-input").length == 0) {
         // We're not waiting for a line of input, but we may
         // be waiting for a character of input.
@@ -130,7 +132,6 @@ function WebZui(logfunc) {
             var callback = self._currentCallback;
 
             self._currentCallback = null;
-            self._removeBufferedWindows();
 
             // TODO: This may not be the most accurate calculation.
             self._lastSeenY = document.height;
@@ -168,7 +169,6 @@ function WebZui(logfunc) {
             ('<span class="finished-input">' + finalInputString +
              '</span><br/>')
           );
-          self._removeBufferedWindows();
           callback(finalInputString);
         }
       }
