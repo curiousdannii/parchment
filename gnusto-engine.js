@@ -1248,15 +1248,15 @@ function gnusto_error(number) {
 		while (procs!=null && loop_count<loop_max) {
 				var name = procs.toString();
 
-				if (name==null) {
-						procstring = ' (anon)'+procstring;
+				if (!name) {
+						procstring = '\n  (anonymous function)'+procstring;
 				} else {
 						var r = name.match(/function (\w*)/);
 
-						if (r==null) {
-								procstring = ' (weird)' + procstring;
+						if (!r || !r[1]) {
+								procstring = '\n  (anonymous function)' + procstring;
 						} else {
-								procstring = ' ' + r[1] + procstring;
+              procstring = '\n  ' + r[1] + procstring;
 						}
 				}
 
@@ -1278,7 +1278,7 @@ function gnusto_error(number) {
 		message += '\n\nJS call stack:' + procstring;
     message = "Error " + number + ": " + message;
 
-		throw FatalError(message);
+		throw new FatalError(message);
 }
 
 ////////////////////////////////////////////////////////////////
