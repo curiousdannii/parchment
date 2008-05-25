@@ -3920,15 +3920,16 @@ GnustoEngine.prototype = {
 
 			if (suffix) message = message + suffix;
 
-			message=message.
-			replace('\\','\\\\','g').
-			replace('"','\\"','g').
-			replace('\n','\\n','g'); // not elegant
+      // The quote() method is added to the String prototype by
+      // Douglas Crockford's remedial.js.  It deals with edge cases
+      // not anticipated by the original inline quoting function
+      // that used to be here.
+			message=message.quote();
 
 			this.m_pc=zf[1];
 
 			this.logger('print',message);
-			return this._handler_zOut('"'+message+'"', is_return);
+			return this._handler_zOut(message, is_return);
 	},
 
 	_log_shift: function ge_log_shift(value, shiftbits) {

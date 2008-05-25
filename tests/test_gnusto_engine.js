@@ -1,3 +1,4 @@
+load("remedial.js");
 load("gnusto-engine.js");
 
 var gInputTimes = 0;
