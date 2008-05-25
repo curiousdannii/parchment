@@ -106,6 +106,7 @@ function WebZui(logfunc) {
 
     _handleKeyEvent: function(event) {
       self._removeBufferedWindows();
+      self._lastSeenY = document.height;
       self._scrollBottomWindow();
 
       if ($("#current-input").length == 0) {
