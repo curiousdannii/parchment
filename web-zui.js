@@ -3,7 +3,7 @@ var RETURN_KEYCODE = 13;
 var SHIFT_KEYCODE = 16;
 
 function WebZui(logfunc) {
-  this._size = [80, 255];
+  this._size = [80, 25];
   this._console = null;
   this._activeWindow = 0;
   this._inputString = "";
