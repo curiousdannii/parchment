@@ -1,7 +1,7 @@
 function processData(stories) {
   var parchment = "parchment.html";
 
-  if (window.location.pathname.indexOf(".min") != -1)
+  if ($("script:last").attr("src").indexOf(".min") != -1)
     parchment = "parchment.min.html";
 
   for (var i = 0; i < stories.length; i++) {
