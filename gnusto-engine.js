@@ -253,11 +253,11 @@ function handleZ_jg(engine, a) {
     return engine._brancher(a[0]+'>'+a[1]); }
 
 function handleZ_dec_chk(engine, a) {
-    engine.logger('dec_chk',value + '-1 < ' + a[1]);
+    engine.logger('dec_chk',a[0] + '-1 < ' + a[1]);
     return 't='+a[0]+';t2=_varcode_get(t)-1;_varcode_set(t2,t);'+engine._brancher('t2<'+a[1]);
   }
 function handleZ_inc_chk(engine, a) {
-    engine.logger('inc_chk',value + '+1 > ' + a[1]);
+    engine.logger('inc_chk',a[0] + '+1 > ' + a[1]);
     return 't='+a[0]+';t2=_varcode_get(t)+1;_varcode_set(t2,t);'+engine._brancher('t2>'+a[1]);
   }
 
