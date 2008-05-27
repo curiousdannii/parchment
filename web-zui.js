@@ -399,7 +399,7 @@ function WebZui(logfunc) {
       if (self._activeWindow == 0) {
         // Ensure any text input, cursor, etc. inherits the proper
         // style.
-        $("#content").attr("class", styles);
+        $("#current-input").attr("class", styles);
 
         var lines = output.split("\n");
         for (var i = 0; i < lines.length; i++) {
