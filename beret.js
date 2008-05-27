@@ -196,7 +196,7 @@ Beret.prototype = {
 								// The full list of executable formats, from
 								// <news:82283c$uab$1@nntp9.atl.mindspring.net>, is:
 
-								const blorb_formats = {
+								var blorb_formats = {
 										'ZCOD': 'zcode',
 										'GLUL': 'glulx',
 										'TADG': 'tads',
@@ -204,7 +204,7 @@ Beret.prototype = {
 										'HUGO': 'hugo',
 										'SAAI': 'scottadams', // Adventure International
 										'SAII': 'scottadams', // Possibly an old error
-										'MSRL': 'magneticscrolls',
+										'MSRL': 'magneticscrolls'
 								};
 								
 								// FIXME: It's (obviously) technically invalid if
@@ -236,11 +236,11 @@ Beret.prototype = {
         }
     },
 
-    get filetype() {
+    filetype: function b_filetype() {
         return this.m_filetype;
     },
 
-    get engine() {
+    engine: function b_engine() {
         return this.m_engine;
     },
 

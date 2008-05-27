@@ -18,8 +18,8 @@
 // http://www.gnu.org/copyleft/gpl.html ; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-const CVS_VERSION = '$Date: 2005/04/26 01:50:32 $';
-const ENGINE_DESCRIPTION  = "Gnusto's interactive fiction engine";
+var CVS_VERSION = '$Date: 2005/04/26 01:50:32 $';
+var ENGINE_DESCRIPTION  = "Gnusto's interactive fiction engine";
 
 ////////////////////////////////////////////////////////////////
 //
@@ -101,11 +101,11 @@ var default_unicode_translation_table = {
   223:0xbf, // inverted query
 };
 
-const PARENT_REC = 0;
-const SIBLING_REC = 1;
-const CHILD_REC = 2;
+var PARENT_REC = 0;
+var SIBLING_REC = 1;
+var CHILD_REC = 2;
 
-const CALLED_FROM_INTERRUPT = 0;
+var CALLED_FROM_INTERRUPT = 0;
 
 
 ////////////////////////////////////////////////////////////////
@@ -946,7 +946,7 @@ function handleZ_check_unicode(engine, a) {
 // If a handler wishes to send an effect to the environment, it should
 // set |m_effects| in the engine to a non-empty list and return.
 
-const handlers_v578 = {
+var handlers_v578 = {
     1: handleZ_je,
     2: handleZ_jl,
     3: handleZ_jg,
@@ -1077,7 +1077,7 @@ const handlers_v578 = {
 // it's marked with a zero. If you're working with a version which
 // doesn't support extended opcodes (below v5), don't worry about
 // zeroing out codes above 999-- they can't be accessed anyway.
-const handlers_fixups = {
+var handlers_fixups = {
 		1: {
 				25: 0, // call_2s
 				26: 0, // call_2n
@@ -1514,15 +1514,15 @@ GnustoEngine.prototype = {
 			this._initial_setup();
   },
 	
-  get version() {
+  version: function ge_version() {
 			gnusto_error(101, "'version' not implemented");
   },
 
-  get signature() {
+  signature: function ge_signature() {
 			gnusto_error(101, "'signature' not implemented");
   },
 
-  get cvsVersion() {
+  cvsVersion: function ge_cvsVersion() {
 			return CVS_VERSION.substring(7, 26);
   },
 
@@ -1814,19 +1814,19 @@ GnustoEngine.prototype = {
 			return temp;
 	},
 
-  get architecture() {
+  architecture: function ge_architecture() {
     return 'none';
   },
 
-  get piracy() {
+  piracy: function ge_piracy() {
     return -1;
   },
 
-  get tandy() {
+  tandy: function ge_tandy() {
     return -1;
   },
 
-  get status() {
+  status: function ge_status() {
     return 'this is the status, hurrah!';
   },
 
