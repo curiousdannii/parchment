@@ -4,17 +4,17 @@
 //
 // Copyright (c) 2003 Thomas Thurman
 // thomas@thurman.org.uk
-// 
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of version 2 of the GNU General Public License
 // as published by the Free Software Foundation.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
-// You should have be able to view the GNU General Public License at 
+//
+// You should have be able to view the GNU General Public License at
 // http://www.gnu.org/copyleft/gpl.html ; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
@@ -98,7 +98,7 @@ var default_unicode_translation_table = {
   220:0x153, // oe-ligature
   221:0x152, // OE-ligature
   222:0xa1, // inverted pling
-  223:0xbf, // inverted query
+  223:0xbf // inverted query
 };
 
 var PARENT_REC = 0;
@@ -225,12 +225,12 @@ var GNUSTO_EFFECT_PRINTTABLE     = '"PT"';
 // the function was a method), and 2) the list of actual arguments
 // given in the z-code for that function.
 
-function handleZ_je(engine, a) { 		
+function handleZ_je(engine, a) {
 
-    if (a.length<2) { 
+    if (a.length<2) {
       engine.logger('je','noop');
       return ''; // it's a no-op
-    } else if (a.length==2) { 
+    } else if (a.length==2) {
       engine.logger('je',a[0] + '==' + a[1]);
       return engine._brancher(a[0]+'=='+a[1]);
     } else {
@@ -245,10 +245,10 @@ function handleZ_je(engine, a) {
   }
 
 function handleZ_jl(engine, a) {
-    engine.logger('jl',a[0] + '<' + a[1]); 
+    engine.logger('jl',a[0] + '<' + a[1]);
     return engine._brancher(a[0]+'<'+a[1]); }
 
-function handleZ_jg(engine, a) { 
+function handleZ_jg(engine, a) {
     engine.logger('jg',a[0] + '>'+a[1]);
     return engine._brancher(a[0]+'>'+a[1]); }
 
@@ -316,20 +316,20 @@ function handleZ_get_next_prop(engine, a) {
     engine.logger('get_next_prop',a[0]+','+a[1]);
     return engine._storer("_get_next_prop("+a[0]+','+a[1]+')');
   }
-function handleZ_add(engine, a) { 
+function handleZ_add(engine, a) {
     engine.logger('add',a[0]+'+'+a[1]);
     return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
-function handleZ_sub(engine, a) { 
+function handleZ_sub(engine, a) {
     engine.logger('sub',a[0]+'-'+a[1]);
     return engine._storer(a[0]+'-'+a[1]); }
-function handleZ_mul(engine, a) { 
+function handleZ_mul(engine, a) {
     engine.logger('mul',a[0]+'*'+a[1]);
     return engine._storer(a[0]+'*'+a[1]); }
 function handleZ_div(engine, a) {
     engine.logger('div',a[0]+'/'+a[1]);
     return engine._storer('_trunc_divide('+a[0]+','+a[1]+')');
   }
-function handleZ_mod(engine, a) { 
+function handleZ_mod(engine, a) {
     engine.logger('mod',a[0]+'%'+a[1]);
     return engine._storer(a[0]+'%'+a[1]);
   }
@@ -394,7 +394,7 @@ function handleZ_jump(engine, a) {
     if (a[0] & 0x8000) {
       a[0] = (~0xFFFF) | a[0];
     }
-				
+
     var addr=(a[0] + engine.m_pc) - 2;
     engine.logger('jump',"pc="+addr+";return");
     return "m_pc="+addr+";return";
@@ -407,7 +407,7 @@ function handleZ_load(engine, a) {
     engine.logger('load',"store " + c);
     return engine._storer('_varcode_get('+a[0]+')');
   }
-	
+
 function handleZ_rtrue(engine, a) {
     engine.logger('rtrue',"_func_return(1);return");
     engine.m_compilation_running=0;
@@ -440,7 +440,7 @@ function handleZ_restart(engine, a) {
     engine.m_compilation_running=0;
     return "m_effects=["+GNUSTO_EFFECT_RESTART+"];return";
   }
-		
+
 function handleZ_ret_popped(engine, a) {
     engine.logger('pop',"_func_return(gamestack.pop());return");
     engine.m_compilation_running=0;
@@ -467,7 +467,7 @@ function handleZ_new_line(engine, a) {
     engine.logger('newline','');
     return engine._handler_zOut("'\\n'",0);
 }
-		
+
 function handleZ_show_status(engine, a){ //(illegal from V4 onward)
     engine._handler_zOut(''); //chalk forces repaint of status bar
     return "";
@@ -476,16 +476,16 @@ function handleZ_show_status(engine, a){ //(illegal from V4 onward)
 function handleZ_verify(engine, a) {
 		return engine._brancher('_verify()');
 }
-		
+
 function handleZ_illegal_extended(engine, a) {
     // 190 can't be generated; it's the start of an extended opcode
     engine.logger('illegalop','190');
     gnusto_error(199);
   }
-		
+
 function handleZ_piracy(engine, a) {
     engine.m_compilation_running = 0;
-				
+
     var setter = 'm_rebound=function(){'+engine._brancher('(!m_answers[0])')+'};';
     engine.logger('piracy',"pc="+pc+";"+setter+"m_effects=[GNUSTO_EFFECT_PIRACY];return;");
     return "m_pc="+engine.m_pc+";"+setter+"m_effects=["+GNUSTO_EFFECT_PIRACY+"];return";
@@ -694,46 +694,46 @@ function handleZ_set_cursor(engine, a) {
     engine.logger('set_cursor',' ['+a[0]+', ' + a[1] + '] ');
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETCURSOR+","+a[0]+","+a[1]+"];return";
   }
-		
+
 function handleZ_get_cursor(engine, a) {
     engine.m_compilation_running=0;
     engine.logger('get_cursor',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_GETCURSOR+","+a[0]+"];return";
   }
-		
+
 function handleZ_set_text_style(engine, a) {
     engine.m_compilation_running=0;
     engine.logger('set_text_style',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_STYLE+","+a[0]+",0,0];return";
   }
-		
+
 function handleZ_buffer_mode(engine, a) {
     engine.m_compilation_running=0;
     engine.logger('buffer_mode',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETBUFFERMODE+","+a[0]+"];return";
   }
-		
+
 function handleZ_output_stream(engine, a) {
     engine.logger('output_stream',a[0]+', ' + a[1]);
     return '_set_output_stream('+a[0]+','+a[1]+')';
   }
-		
+
 function handleZ_input_stream(engine, a) {
     engine.m_compilation_running=0;
     engine.logger('input_stream',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETINPUTSTREAM+","+a[0]+"];return";
   }
-		
+
 function handleZ_sound_effect(engine, a) {
     // We're rather glossing over whether and how we
     // deal with callbacks at present.
-				
+
     engine.m_compilation_running=0;
     engine.logger('sound_effect','better logging later');
     while (a.length < 5) { a.push(0); }
     return "m_pc="+engine.m_pc+';m_effects=['+GNUSTO_EFFECT_SOUND+','+a[0]+','+a[1]+','+a[2]+','+a[3]+','+a[4]+'];return';
   }
-		
+
 // Maybe factor out "read" and this?
 function handleZ_read_char(engine, a) {
 
@@ -761,10 +761,10 @@ function handleZ_read_char(engine, a) {
 				// This is a timed routine.
 				// a[2] is the routine to call after a[1] deciseconds.
 				timeout_deciseconds = a[1];
-				
+
 				rebound_args_setter = "m_rebound_args=["+
 						engine.m_pc_translate_for_routine(a[2])+'];';
-						
+
 				rebound_setter = "m_rebound=function(){"+
 						"var t=1*m_answers[0];" +
 						"if(t<0){"+
@@ -788,16 +788,16 @@ function handleZ_read_char(engine, a) {
 						engine._storer("1*m_answers[0]") +
 						"};";
 		}
-		
-				
+
+
     return "m_pc="+engine.m_pc+";"+
 				rebound_args_setter +
 				rebound_setter +
 				"m_effects=["+GNUSTO_EFFECT_INPUT_CHAR+
 				","+timeout_deciseconds+"];return";
   }
-		
-function handleZ_scan_table(engine, a) { 
+
+function handleZ_scan_table(engine, a) {
     engine.logger('scan_table',"t=scan_table("+a[0]+','+a[1]+"&0xFFFF,"+a[2]+"&0xFFFF," + a[3]+");");
     if (a.length == 4) {
       return "t=_scan_table("+a[0]+','+a[1]+"&0xFFFF,"+a[2]+"&0xFFFF," + a[3]+");" +
@@ -807,7 +807,7 @@ function handleZ_scan_table(engine, a) {
 	engine._storer("t") + ";" +  engine._brancher('t');
     }
   }
-		
+
 function handleZ_not(engine, a) {
 		engine.logger('not','~'+a[1]+'&0xffff');
     return engine._storer('~'+a[1]+'&0xffff');
@@ -817,7 +817,7 @@ function handleZ_tokenise(engine, a) {
     engine.logger('tokenise',"tokenise("+a[0]+","+a[1]+","+a[2]+","+a[3]+")");
     return "_tokenise(("+a[0]+")&0xFFFF,("+a[1]+")&0xFFFF,"+a[2]+","+a[3]+")";
   }
-		
+
 function handleZ_encode_text(engine, a) {
     engine.logger('tokenise',"_encode_text("+a[0]+","+a[1]+","+a[2]+","+a[3]+")");
     return "_encode_text("+a[0]+","+a[1]+","+a[2]+","+a[3]+")";
@@ -827,16 +827,16 @@ function handleZ_copy_table(engine, a) {
     engine.logger('_copy_table',"copy_table("+a[0]+','+a[1]+','+a[2]+")");
     return "_copy_table("+a[0]+','+a[1]+','+a[2]+")";
   }
-		
+
 function handleZ_print_table(engine, a) {
-				
+
     // Jam in defaults:
     if (a.length < 3) { a.push(1); } // default height
     if (a.length < 4) { a.push(0); } // default skip
     engine.logger('print_table',"print_table("+a[0]+','+a[1]+','+a[2]+',' + a[3]+')');
     return "m_pc="+engine.m_pc+";m_effects=_print_table("+a[0]+","+a[1]+","+a[2]+","+a[3]+");return";
   }
-		
+
 function handleZ_check_arg_count(engine, a) {
     engine.logger('check_arg_count',a[0]+'<=param_count()');
     return engine._brancher(a[0]+'<=_param_count()');
@@ -861,7 +861,7 @@ function handleZ_saveV45678(engine, a) {
 				");m_pc="+engine.m_pc+";" +
 				setter+";m_effects=["+GNUSTO_EFFECT_SAVE+"];return";
 }
-		
+
 function handleZ_restoreV123(engine, a) {
     engine.m_compilation_running=0;
     engine._brancher(''); // Throw it away; it's never used
@@ -876,7 +876,7 @@ function handleZ_restoreV45678(engine, a) {
     return "m_pc="+engine.m_pc+";" + setter +
 				"m_effects=["+GNUSTO_EFFECT_RESTORE+"];return";
 }
-		
+
 function handleZ_log_shift(engine, a) {
     engine.logger('log_shift',"log_shift("+a[0]+','+a[1]+')');
     // log_shift logarithmic-bit-shift.  Right shifts are zero-padded
@@ -1030,7 +1030,7 @@ var handlers_v578 = {
     244: handleZ_input_stream,
     245: handleZ_sound_effect,
     246: handleZ_read_char,
-    247: handleZ_scan_table, 
+    247: handleZ_scan_table,
     248: handleZ_not,
     249: handleZ_call_vn,
     250: handleZ_call_vn, // call_vn2,
@@ -1051,13 +1051,13 @@ var handlers_v578 = {
     1009: handleZ_save_undo,
     1010: handleZ_restore_undo,
     1011: handleZ_print_unicode,
-    1012: handleZ_check_unicode,
+    1012: handleZ_check_unicode
 
     //1013-1015: illegal
     //1016: move_window (V6 opcode)
     //1017: window_size (V6 opcode)
     //1018: window_style (V6 opcode)
-    //1019: get_wind_prop (V6 opcode)		
+    //1019: get_wind_prop (V6 opcode)
     //1020: scroll_window (V6 opcode)
     //1021: pop_stack (V6 opcode)
     //1022: read_mouse (V6 opcode)
@@ -1102,7 +1102,7 @@ var handlers_fixups = {
 				241: 0, // set_text_style
 				242: 0, // buffer_mode
 				246: 0, // read_char
-				247: 0, // scan_table, 
+				247: 0, // scan_table,
 				248: 0, // not
 				249: 0, // call_vn
 				250: 0, // call_vn2
@@ -1110,7 +1110,7 @@ var handlers_fixups = {
 				252: 0, // encode_text
 				253: 0, // copy_table
 				254: 0, // print_table
-				255: 0, // check_arg_count
+				255: 0 // check_arg_count
 		},
 		2: {
 				25: 0, // call_2s
@@ -1136,7 +1136,7 @@ var handlers_fixups = {
 				241: 0, // set_text_style
 				242: 0, // buffer_mode
 				246: 0, // read_char
-				247: 0, // scan_table, 
+				247: 0, // scan_table,
 				248: 0, // not
 				249: 0, // call_vn
 				250: 0, // call_vn2
@@ -1144,7 +1144,7 @@ var handlers_fixups = {
 				252: 0, // encode_text
 				253: 0, // copy_table
 				254: 0, // print_table
-				255: 0, // check_arg_count
+				255: 0 // check_arg_count
 		},
 		3: {
 				25: 0, // call_2s
@@ -1170,7 +1170,7 @@ var handlers_fixups = {
 				241: 0, // set_text_style
 				242: 0, // buffer_mode
 				246: 0, // read_char
-				247: 0, // scan_table, 
+				247: 0, // scan_table,
 				248: 0, // not
 				249: 0, // call_vn
 				250: 0, // call_vn2
@@ -1178,7 +1178,7 @@ var handlers_fixups = {
 				252: 0, // encode_text
 				253: 0, // copy_table
 				254: 0, // print_table
-				255: 0, // check_arg_count
+				255: 0 // check_arg_count
 		},
 		4: { // z4 is fittingly somewhere between z3 and z5
 				26: 0, // call_2n
@@ -1197,18 +1197,18 @@ var handlers_fixups = {
 				252: 0, // encode_text
 				253: 0, // copy_table
 				254: 0, // print_table
-				255: 0, // check_arg_count
+				255: 0 // check_arg_count
 		},
 		5: '', // The base copy *is* v5
 		6: undefined, // very complicated, and not yet implemented-- see bug 3621
 		7: '', // Defined to be the same as 5
-		8: '', // Defined to be the same as 5
+		8: '' // Defined to be the same as 5
 };
 
 ////////////////////////////////////////////////////////////////
 //
 // pc_translate_*
-// 
+//
 // Each of these functions returns a string of JS code to set the PC
 // to the address in |packed_target|, based on the current architecture.
 //
@@ -1338,11 +1338,11 @@ GnustoEngine.prototype = {
 			this.m_memory = sourceFile;
 			this._initial_setup();
   },
-	
+
   loadSavedGame: function ge_loadSavedGame(memLen, mem, mem_is_compressed,
 																					 stacksLen, stacks, pc)
 	{
-																										 
+
 			// FIXME: Still to do here:
 			//  There's a bit which should survive restore.
 			//  There are several bytes which should be reset (e.g. terp ID).
@@ -1381,7 +1381,7 @@ GnustoEngine.prototype = {
 
 									temp = temp.concat(this.m_original_memory.slice(cursor_original,
 																																	cursor_original+run_length));
-									
+
 									cursor_original += run_length;
 
 							} else {
@@ -1394,7 +1394,7 @@ GnustoEngine.prototype = {
 
 					mem = temp;
 			}
-			
+
 			// Firstly, zap all the important variables...
 			// FIXME: Eventually we should work into copies,
 			// and only move these over when we're sure everything's good.
@@ -1513,7 +1513,7 @@ GnustoEngine.prototype = {
       this.m_memory = this.m_original_memory.slice(); // Make a copy.
 			this._initial_setup();
   },
-	
+
   version: function ge_version() {
 			gnusto_error(101, "'version' not implemented");
   },
@@ -1602,7 +1602,7 @@ GnustoEngine.prototype = {
 
     }
   },
-  
+
   walk: function ge_walk(answer) {
     gnusto_error(101, "'walk' not implemented");
   },
@@ -1727,7 +1727,7 @@ GnustoEngine.prototype = {
 					}
 			}
 			////////////////////////////////////////////////////////////////
-			
+
 			// Write out the stacks.
 
 			var stacks = [
@@ -1831,7 +1831,7 @@ GnustoEngine.prototype = {
   },
 
   getStatusLine: function ge_getStatusLine(width) {
-    //fnugry             
+    //fnugry
     var current_room_object_number = this.getUnsignedWord(this.m_vars_start);
     var object_properties_address = this.getUnsignedWord(this.m_property_list_addr_start+(this.m_object_size*current_room_object_number));
     var outtext = this._zscii_from(object_properties_address+1);
@@ -1844,7 +1844,7 @@ GnustoEngine.prototype = {
         var hours = this.getUnsignedWord(this.m_vars_start+2);
         var minutes = this.getUnsignedWord(this.m_vars_start+4);
         if (minutes < 10) {
-          var outtext2 = hours + ':0' + minutes;	
+          var outtext2 = hours + ':0' + minutes;
         } else {
           var outtext2 = hours + ':' + minutes;
         }
@@ -1853,21 +1853,21 @@ GnustoEngine.prototype = {
       }
       if ((outtext.length + outtext2.length + 1) > width) {
       	outtext2 = ' S:' + this.getUnsignedWord(this.m_vars_start+2) + ' M:' + this.getUnsignedWord(this.m_vars_start+4);
-        if ((outtext.length + outtext2.length + 1) > width) {               
+        if ((outtext.length + outtext2.length + 1) > width) {
           outtext2 = ' ' + this.getUnsignedWord(this.m_vars_start+2) + '/' + this.getUnsignedWord(this.m_vars_start+4);
         }
-        if ((outtext.length + outtext2.length + 1) > width) {               
-          outtext2 = '';	
+        if ((outtext.length + outtext2.length + 1) > width) {
+          outtext2 = '';
         }
       }
       var spacebuffer = '';
       while ((outtext.length + outtext2.length + spacebuffer.length) < width) {
-        spacebuffer += ' ';    	
+        spacebuffer += ' ';
       }
     }
-     	
+
     return outtext + spacebuffer + outtext2;
-  },	
+  },
 
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
@@ -1899,7 +1899,7 @@ GnustoEngine.prototype = {
       this.m_copperTrail = 0;
 
       this.m_version     = this.m_memory[0];
-      
+
       this.m_himem       = this.getUnsignedWord(0x4);
       this.m_pc          = this.getUnsignedWord(0x6);
       this.m_dict_start  = this.getUnsignedWord(0x8);
@@ -1920,12 +1920,12 @@ GnustoEngine.prototype = {
 	  this.m_object_size = 9;
       }
 
-      this.m_hext_start  = this.getUnsignedWord(0x36);		
-	
+      this.m_hext_start  = this.getUnsignedWord(0x36);
+
       this.m_original_memory = this.m_memory.slice(); // Make a copy.
 
       // Use the correct addressing mode for this Z-machine version...
-			
+
       if (this.m_version<=3) {
 	  // Versions 1 and 2 (prehistoric) and 3 ("Standard")
 	  this.m_pc_translate_for_routine = pc_translate_v123;
@@ -1947,9 +1947,9 @@ GnustoEngine.prototype = {
       } else {
 	  gnusto_error(170, 'impossible: unknown z-version got this far');
       }
-      
+
       // And pick up the relevant instruction set.
-      
+
       if (!(this.m_version in handlers_fixups)) {
 	  gnusto_error(311, 'unknown z-machine version');
       }
@@ -1987,12 +1987,12 @@ GnustoEngine.prototype = {
       }
 
       // Set up separators.
-      
+
       this.m_separator_count = this.m_memory[this.m_dict_start];
-      for (var i=0; i<this.m_separator_count; i++) {		  
+      for (var i=0; i<this.m_separator_count; i++) {
 					this.m_separators[i]=this._zscii_char_to_ascii(this.m_memory[this.m_dict_start + i+1]);
-      }	
-      
+      }
+
       // If there is a header extension...
       if (this.m_hext_start > 0) {
 	  // get start of custom unicode table, if any
@@ -2001,18 +2001,18 @@ GnustoEngine.prototype = {
 	      this.m_custom_unicode_charcount = this.m_memory[this.m_unicode_start];
 	      this.m_unicode_start += 1;
 	  }
-      }		
-    
+      }
+
       this.m_rebound = 0;
       this.m_rebound_args = [];
-    
+
       this.m_output_to_console = 1;
       this.m_streamthrees = [];
       this.m_output_to_script = 0;
-    
+
       this.m_console_buffer = '';
       this.m_transcript_buffer = '';
-        
+
       this.m_zalphabet[0] = 'abcdefghijklmnopqrstuvwxyz';
       this.m_zalphabet[1] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       // T = magic ten bit flag
@@ -2021,21 +2021,21 @@ GnustoEngine.prototype = {
       } else {
 	  this.m_zalphabet[2] = 'T\n0123456789.,!?_#\'"/\\-:()';
       }
-    
+
       var newchar;
-      var newcharcode;		
+      var newcharcode;
       if (this.m_alpha_start > 0) { // If there's a custom alphabet...
 	  for (var alpharow=0; alpharow<3; alpharow++){
 	      var alphaholder = '';
-	      for (var alphacol=0; alphacol<26; alphacol++) {	
+	      for (var alphacol=0; alphacol<26; alphacol++) {
 		  newcharcode = this.m_memory[this.m_alpha_start + (alpharow*26) + alphacol];
-		  if ((newcharcode >=155) && (newcharcode <=251)) {		     
+		  if ((newcharcode >=155) && (newcharcode <=251)) {
 		      // Yes, custom alphabets can refer to custom unicode tables.  Whee...
 		      if (this.m_unicode_start == 0) {
 			  alphaholder += String.fromCharCode(default_unicode_translation_table[newcharcode]);
 		      } else {
 			  if ((newcharcode-154)<= this.m_custom_unicode_charcount)
-			      alphaholder += String.fromCharCode(this.getUnsignedWord(this.m_unicode_start + ((newcharcode-155)*2)));					
+			      alphaholder += String.fromCharCode(this.getUnsignedWord(this.m_unicode_start + ((newcharcode-155)*2)));
 			  else
 			      alphaholder += ' ';
 		      }
@@ -2044,21 +2044,21 @@ GnustoEngine.prototype = {
 		      if (newchar == '^') newchar = '\n';  // This is hackish, but I don't know a better way.
 		      alphaholder += newchar;
 							}
-	      }		    
+	      }
 	      this.m_zalphabet[alpharow]= alphaholder;  // Replace the current row with the newly constructed one.
 	  }
       }
-		
-      
+
+
       // We don't also reset the debugging variables, because
       // they need to persist across re-creations of this object.
       // FIXME: Is this still true?
 
       // Clear the Z-engine's local variables.
       for (var i=0; i<16; i++) this.m_locals[i]=0;
-      
+
       this.m_printing_header_bits = 0;
-      
+
       this.m_leftovers = '';
   },
 
@@ -2119,7 +2119,7 @@ GnustoEngine.prototype = {
 					} else {
 							gnusto_error(171); // impossible
 					}
-						
+
 					types = (types << 2) | 0x3;
 			}
 	},
@@ -2146,27 +2146,27 @@ GnustoEngine.prototype = {
 					// So here we go...
 					// what's the opcode?
 					var instr = this.m_memory[this.m_pc++];
-			
+
 					if (instr==0) {
 							// If we just get a zero, we've probably
 							// been directed off into deep space somewhere.
 							gnusto_error(201); // lost in space
-					
+
 					} else if (instr==190) { // Extended opcode.
-							
+
 							instr = 1000+this.m_memory[this.m_pc++];
 							this._handle_variable_parameters(args,
 																							 this.m_memory[this.m_pc++],
 																							 1);
-					
+
 					} else if (instr & 0x80) {
 							if (instr & 0x40) { // Variable params
-									
+
 									if (!(instr & 0x20))
 											// This is a 2-op, despite having
 											// variable parameters; reassign it.
 											instr &= 0x1F;
-								
+
 									if (instr==250 || instr==236) {
 											// We get more of them!
 											var types = this.getUnsignedWord(this.m_pc);
@@ -2176,27 +2176,27 @@ GnustoEngine.prototype = {
 											this._handle_variable_parameters(args,
 																											 this.m_memory[this.m_pc++],
 																											 1);
-							
+
 							} else { // Short. All 1-OPs except for one 0-OP.
-									
+
 									switch(instr & 0x30) {
 									case 0x00:
 											args[0] = this.getWord(this.m_pc);
 											this.m_pc+=2;
 											instr = (instr & 0x0F) | 0x80;
 											break;
-											
+
 									case 0x10:
 											args[0] = this.m_memory[this.m_pc++];
 											instr = (instr & 0x0F) | 0x80;
 											break;
-									
+
 									case 0x20:
 											args[0] =
 													this._code_for_varcode(this.m_memory[this.m_pc++]);
 											instr = (instr & 0x0F) | 0x80;
 											break;
-									
+
 									case 0x30:
 											// 0-OP. We don't need to get parameters, but we
 											// *do* need to translate the opcode.
@@ -2205,19 +2205,19 @@ GnustoEngine.prototype = {
 									}
 							}
 					} else { // Long
-					
+
 							if (instr & 0x40)
 									args[0] =
 											this._code_for_varcode(this.m_memory[this.m_pc++]);
 							else
 									args[0] = this.m_memory[this.m_pc++];
-							
+
 							if (instr & 0x20)
 									args[1] =
 											this._code_for_varcode(this.m_memory[this.m_pc++]);
 							else
 									args[1] = this.m_memory[this.m_pc++];
-					
+
 							instr &= 0x1F;
 					}
 
@@ -2227,7 +2227,7 @@ GnustoEngine.prototype = {
 							//this.logger(code,'');
 					} else if (instr>=1128 && instr<=1255 &&
 										 "special_instruction_EXT"+(instr-1000) in this) {
-					
+
 							// ZMSD 14.2: We provide a hook for plug-in instructions.
 							// FIXME: This will no longer work in a component.
 							// Can we do anything else instead?
@@ -2249,9 +2249,9 @@ GnustoEngine.prototype = {
 			// the THIS.M_PC must be reset; but in debug mode it's perfectly possible
 			// to have |code| not read or write to the PC at all. So we need to
 			// set it automatically at the end of each fragment.
-			
+
 			if (this.m_single_step||this.m_debug_mode) {
-					code = code + 'm_pc='+this.m_pc; 
+					code = code + 'm_pc='+this.m_pc;
 					//this.logger(code,'');
 			}
 
@@ -2272,7 +2272,7 @@ GnustoEngine.prototype = {
 			} else if (target==2) {
 					this.m_memory[0x10] |= 0x1;
 			} else if (target==3) {
-					
+
 					if (this.m_streamthrees.length>15) {
 							gnusto_error(202); // too many nested stream-3s
 					}
@@ -2286,14 +2286,14 @@ GnustoEngine.prototype = {
 			} else if (target==-2) {
 					this.m_memory[0x10] &= ~0x1;
 			} else if (target==-3) {
-					
+
 					if (this.m_streamthrees.length<1) {
 							gnusto_error(203); // not enough nested stream-3s
 					}
 
 					var latest = this.m_streamthrees.shift();
 					this.setWord((latest[1]-latest[0])-2, latest[0]);
-					
+
 			} else if (target==-4) {
 					this.m_output_to_script = 0;
 			} else {
@@ -2302,7 +2302,7 @@ GnustoEngine.prototype = {
 	},
 
 	_trunc_divide: function ge_trunc_divide(over, under) {
-	
+
 			var result;
 
 			if (under==0) {
@@ -2316,8 +2316,8 @@ GnustoEngine.prototype = {
 					return Math.floor(result);
 			} else {
 					return Math.ceil(result);
-			}			
-		  
+			}
+
 	},
 
 	_zscii_char_to_ascii: function ge_zscii_char_to_ascii(zscii_code) {
@@ -2334,14 +2334,14 @@ GnustoEngine.prototype = {
 			} else if (zscii_code>=155 && zscii_code<=251) {
 					// Extra characters.
 
-					if (this.m_unicode_start == 0) 
+					if (this.m_unicode_start == 0)
 							return String.fromCharCode(default_unicode_translation_table[zscii_code]);
 					else { // if we're using a custom unicode translation table...
-							if ((zscii_code-154)<= this.m_custom_unicode_charcount) 
-									return String.fromCharCode(this.getUnsignedWord(this.m_unicode_start + ((zscii_code-155)*2)));					
-							else 
+							if ((zscii_code-154)<= this.m_custom_unicode_charcount)
+									return String.fromCharCode(this.getUnsignedWord(this.m_unicode_start + ((zscii_code-155)*2)));
+							else
 									gnusto_error(703, zscii_code); // unknown zscii code
-                                  
+
 					}
 
 
@@ -2396,7 +2396,7 @@ GnustoEngine.prototype = {
 					this.m_random_use_sequence = 1;
 
 					return 0;
-					
+
 			} else {
 
 					// Positive argument. So they actually want a random number,
@@ -2508,7 +2508,7 @@ GnustoEngine.prototype = {
 							'rebound_args': this.m_rebound_args,
 							'engine': this,
 							'pc': this.m_pc,
-							'effects': this.m_effects,
+							'effects': this.m_effects
 							});
 
 			this._func_gosub(to_address, [],
@@ -2528,7 +2528,7 @@ GnustoEngine.prototype = {
 	_tokenise: function ge_tokenise(text_buffer, parse_buffer, dictionary, overwrite) {
 
 			var tokenised_word_count = 0;
-			var cursor = parse_buffer + 2;                	
+			var cursor = parse_buffer + 2;
 			var words_count_addr = parse_buffer + 1;
 
 			if (isNaN(dictionary)) dictionary = 0;
@@ -2544,7 +2544,7 @@ GnustoEngine.prototype = {
 											// then they're the same
 											return 0;
 									}
-									
+
 									mem_char = engine.m_memory[mem_addr+j];
 									typed_char = typed.charCodeAt(j);
 									if (mem_char==typed_char) {
@@ -2566,7 +2566,7 @@ GnustoEngine.prototype = {
 					var is_sorted = 1;
 
 					if (entries_count < 0) {
-					
+
 							// This should actually only happen on user dictionaries,
 							// but the distinction isn't a useful one, and so we don't
 							// bother to check.
@@ -2575,7 +2575,7 @@ GnustoEngine.prototype = {
 							entries_count = -entries_count;
 					}
 
-					var oldword = word;				
+					var oldword = word;
 					word = engine._into_zscii(word);
 
 					if (is_sorted) {
@@ -2604,16 +2604,16 @@ GnustoEngine.prototype = {
 									}
 							}
 					} else {
-							// Unsorted search. Much simpler, but slower 
+							// Unsorted search. Much simpler, but slower
 							for (var i=0; i<entries_count; i++) {
 									var address = entries_start+i*entry_length;
-									
-									if (compare(engine, word, address)==0) { 
+
+									if (compare(engine, word, address)==0) {
 											return address;
 									}
 							}
 					}
-				
+
 					return 0;
 			}
 
@@ -2627,7 +2627,7 @@ GnustoEngine.prototype = {
 
 							engine.setByte(curword.length, cursor++);
 							engine.setByte(wordpos, cursor++);
-	
+
 					} else {
 
 							// In overwrite mode, if we don't know a word, we skip
@@ -2636,9 +2636,9 @@ GnustoEngine.prototype = {
 							cursor +=4;
 
 					}
-		
+
 					tokenised_word_count++;
-			
+
 					return 1;
 			}
 			////////////////////////////////////////////////////////////////
@@ -2686,7 +2686,7 @@ GnustoEngine.prototype = {
 			// FIXME: Do this with regexps, for goodness' sake.
 
 			for (var cpos=0; cpos < source.length; cpos++) {
-					
+
 					if (source[cpos]  == ' ') {
 							if (curword != '') {
 									words[wordindex] = curword;
@@ -2707,14 +2707,14 @@ GnustoEngine.prototype = {
 									add_to_parse_table(this, dictionary, words[wordindex],
 																		 cpos + wordpos_increment);
 									wordindex++;
-									curword = '';		
+									curword = '';
 							} else {
-									curword += source[cpos];	
+									curword += source[cpos];
 							}
 					}
 			}
-		
-			if (curword != '') {			
+
+			if (curword != '') {
 					words[wordindex] = curword;
 					add_to_parse_table(this, dictionary, words[wordindex],
 														 (cpos - words[wordindex].length) + wordpos_increment);
@@ -2736,13 +2736,13 @@ GnustoEngine.prototype = {
 			var max_chars;
 			var result;
 			if (!entered) {
-			  entered = ' ';	
+			  entered = ' ';
 			}
 
 			if (this.m_version <= 4) {
 
 					// In z1-z4, the array is null-terminated.
-			
+
 					max_chars = this.m_memory[text_buffer]+1;
 					result = entered.substring(0,max_chars).toLowerCase();
 
@@ -2751,7 +2751,7 @@ GnustoEngine.prototype = {
 					}
 
 					this.setByte(0, text_buffer + 1 + result.length);
-					
+
 			} else {
 
 					// In z5-z8, the array starts with a size byte.
@@ -2760,7 +2760,7 @@ GnustoEngine.prototype = {
 					result = entered.substring(0,max_chars);
 
 					this.setByte(result.length, text_buffer + 1);
-			
+
 					for (var i=0;i<result.length;i++) {
 							this.setByte(result.charCodeAt(i), text_buffer + 2 + i);
 					}
@@ -2787,7 +2787,7 @@ GnustoEngine.prototype = {
 					return '\r';
 			} else {
 					var terms_address = this.getWord(0x2e);
-					
+
 					var result = '\r';
 					while(1) {
 							var ch = this.m_memory[terms_address++];
@@ -2854,7 +2854,7 @@ GnustoEngine.prototype = {
 
 	_get_prop_addr: function ge_get_prop_addr(object, property) {
 		        if (object==0) {return 0;}
-		        		
+
 			var result = this._property_search(object, property, -1);
 			if (result[2]) {
 					return result[0];
@@ -2877,7 +2877,7 @@ GnustoEngine.prototype = {
 					if (value & 0x80) {
 							// A two-byte field, so we take the bottom five bits.
 							value = value & 0x3F;
-							
+
 							if (value==0) {
 									return 64;
 							} else {
@@ -2924,7 +2924,7 @@ GnustoEngine.prototype = {
 	},
 
 	_get_prop: function ge_get_prop(object, property) {
-			
+
 			if (object==0) return 0; // Kill that V0EFH before it starts.
 
 			var temp = this._property_search(object, property, -1);
@@ -2941,9 +2941,9 @@ GnustoEngine.prototype = {
 					// error here, so we probably shouldn't either.  Also, currently
 					// calling gnusto_error here tanks the browser.  Don't yet know
 					// why.  So commenting it out for now.
-					
+
 					// gnusto_error(706, object, property);
-					
+
 					return this.getWord(temp[0]);
 			}
 
@@ -2988,7 +2988,7 @@ GnustoEngine.prototype = {
 
 			// Skip the property table's header.
 			props_address = props_address + this.m_memory[props_address]*2 + 1;
-			
+
 			// Now loop over each property and consider it.
 
 			var previous_prop = 0;
@@ -3086,9 +3086,9 @@ GnustoEngine.prototype = {
 
 
 	_get_older_sibling: function ge_get_older_sibling(object) {
-		
+
 		        if (object==0) { return 0;}
-		        		
+
 			// Start at the eldest child.
 			var candidate = this._get_child(this._get_parent(object));
 
@@ -3126,7 +3126,7 @@ GnustoEngine.prototype = {
 			}
 
 			// Now, slip it into the new place.
-			
+
 			this._set_parent(mover, new_parent);
 
 			if (new_parent) {
@@ -3141,8 +3141,8 @@ GnustoEngine.prototype = {
 	},
 
 	_get_family: function ge_get_family(from, relationship) {
-		
-                        if (from==0) {return 0;}		
+
+                        if (from==0) {return 0;}
 
 			if (this.m_version < 4) {
 
@@ -3247,7 +3247,7 @@ GnustoEngine.prototype = {
 																			table_length, table_form)
 	{
 			// TODO: Optimise this some.
-	                         
+
 			var jumpby = table_form & 0x7F;
 			var usewords = ((table_form & 0x80) == 0x80);
 			var lastlocation = target_table + (table_length*jumpby);
@@ -3271,7 +3271,7 @@ GnustoEngine.prototype = {
 							target_table += jumpby;
 					}
 			}
-			return 0;	
+			return 0;
 	},
 
 	////////////////////////////////////////////////////////////////
@@ -3310,7 +3310,7 @@ GnustoEngine.prototype = {
 						        if (address<0) { address &= 0xFFFF; }
 							s=s+this._zscii_char_to_ascii(this.m_memory[address++]);
 					}
-					
+
 					lines.push(s);
 
 					address += skip;
@@ -3328,7 +3328,7 @@ GnustoEngine.prototype = {
 					this.logger('zscii_from ' + address,'already in THIS.M_JIT');
 
 					// Already seen this one.
-					
+
 					if (tell_length)
 					return this.m_jit[address];
 					else
@@ -3366,7 +3366,7 @@ GnustoEngine.prototype = {
 
 							if (abbreviation) {
 								        temp = temp + this._zscii_from(this.getUnsignedWord((32*(abbreviation-1)+code)*2+this.m_abbr_start)*2);
-									abbreviation = 0;	
+									abbreviation = 0;
 									alph=home_alph;
 						} else if (tenbit==-2) {
 
@@ -3379,15 +3379,15 @@ GnustoEngine.prototype = {
 											}
 									} else {
 											if (code==0) { temp = temp + ' '; alph=home_alph; }
-											else if (code<4) { 
+											else if (code<4) {
 											    if (this.getByte(0) > 2) {abbreviation = code;}
 											    else {
 											      if (code==2){
 											          alph += 1;
-											          if (alph > 2) {alph=0;}                       								      											      	
+											          if (alph > 2) {alph=0;}
 											      } else if (code==3) {
 											      	  alph -= 1;
-											      	  if (alph < 0) {alph=2;}											      
+											      	  if (alph < 0) {alph=2;}
 											      }
 											      else {
 											        if (this.getByte(0)==2) {
@@ -3396,7 +3396,7 @@ GnustoEngine.prototype = {
 											            temp = temp + '\n';  //in z-1 this is a newline
 											            alph = home_alph;
 											        }
-											      } 
+											      }
 											    }
 											}
 											else {
@@ -3404,14 +3404,14 @@ GnustoEngine.prototype = {
 											  else {
 											      if (code==4){
 											          home_alph += 1;
-											          if (home_alph > 2) {home_alph=0;}                       								      											      	
+											          if (home_alph > 2) {home_alph=0;}
 											      } else {
 											      	  home_alph -= 1;
-											      	  if (home_alph < 0) {home_alph=2;}											      
+											      	  if (home_alph < 0) {home_alph=2;}
 											      }
-											      alph=home_alph;											   
+											      alph=home_alph;
 											  }
-											
+
 											}
 									}
 
@@ -3453,7 +3453,7 @@ GnustoEngine.prototype = {
 
 			while (length>0) {
 					var b = this.m_memory[zscii_text];
-		
+
 					if (b==0) break;
 
 					source = source + this._zscii_char_to_ascii(b);
@@ -3473,11 +3473,11 @@ GnustoEngine.prototype = {
 	//
 	// Encodes the ZSCII string |str| to its compressed form,
 	// and returns it.
-	// 
+	//
 	_into_zscii: function ge_into_zscii(str) {
 			var result = '';
 			var buffer = [];
-			
+
 			var dictionary_entry_length;
 			if (this.m_version < 4) {
 					dictionary_entry_length = 4;
@@ -3508,7 +3508,7 @@ GnustoEngine.prototype = {
 			// handle alphabetic characters (A0).
 			// Also need to handle ten-bit characters.
 			// FIXME: Are the above still true?
-		
+
 			var cursor = 0;
 
 			while (cursor<str.length && result.length<6) {
@@ -3523,7 +3523,7 @@ GnustoEngine.prototype = {
 							emit(ch-91);
 					} else {
 							var z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
-							
+
 							if (z2!=-1) {
 								        if (this.getByte(0)>2) {
 									  emit(5); // shift to weird stuff
@@ -3602,13 +3602,13 @@ GnustoEngine.prototype = {
 
 					var bits = this.m_memory[0x10] & 0x03;
 					var changed = bits != this.m_printing_header_bits;
-					effect_parameters = this.m_printing_header_bits; 
+					effect_parameters = this.m_printing_header_bits;
 					this.m_printing_header_bits = bits;
 
 					// OK, so should we bail?
 
 					if (changed) {
-							
+
 							this.m_leftovers = text;
 							this.m_rebound = this._print_leftovers;
 
@@ -3647,9 +3647,9 @@ GnustoEngine.prototype = {
 
 	_is_separator: function ge_IsSeparator(value) {
 			for (var sepindex=0; sepindex < this.m_separator_count; sepindex++) {
-					if (value == this.m_separators[sepindex]) return 1;	
+					if (value == this.m_separators[sepindex]) return 1;
 			}
-			return 0;	
+			return 0;
 	},
 
 	////////////////////////////////////////////////////////////////
@@ -3869,7 +3869,7 @@ GnustoEngine.prototype = {
 	// (this function is written in terms of that function).
 	// See the comments for that function for details.
 	_handler_print: function ge_handler_print(suffix, is_return) {
-		
+
 			var zf = this._zscii_from(this.m_pc,65535,1);
 			var message = zf[0];
 
@@ -3889,7 +3889,7 @@ GnustoEngine.prototype = {
 
 	_log_shift: function ge_log_shift(value, shiftbits) {
 			// log_shift logarithmic-bit-shift.  Right shifts are zero-padded
-			if (shiftbits < 0) {		
+			if (shiftbits < 0) {
 					return (value >>> (-1* shiftbits)) & 0x7FFF;
 			} else {
 					return (value << shiftbits) & 0x7FFF;
@@ -3898,15 +3898,15 @@ GnustoEngine.prototype = {
 
 	_art_shift: function ge_art_shift(value, shiftbits) {
 			// arithmetic-bit-shift.  Right shifts are sign-extended
-			if (shiftbits < 0) {		
+			if (shiftbits < 0) {
 					return (value >> (-1* shiftbits)) & 0x7FFF;
 			} else {
 					return (value << shiftbits) &0x7FFF;
-			}	
+			}
 	},
 
 	_touch: function ge_touch(address) {
-			
+
 			// Check for a breakpoint.
 			// Actually, don't for now: we have no plans as to what we'd do
 			// if we found one.
@@ -3989,7 +3989,7 @@ GnustoEngine.prototype = {
 					'm_locals_stack': this.m_locals_stack,
 					'm_param_counts': this.m_param_counts,
 					'm_result_targets': this.m_result_targets,
-					'm_gamestack': this.m_gamestack,
+					'm_gamestack': this.m_gamestack
 			};
 
 			return result;
@@ -4002,18 +4002,18 @@ GnustoEngine.prototype = {
 	// header for comparison, not the one in the current header.
 
 	_verify: function ge_verify() {
-		
+
 			var total = 0;
 			var checksum = (this.m_original_memory[0x1c]<<8 |
 											this.m_original_memory[0x1d]);
-		
+
 			for (var i=0x40; i<this.m_original_memory.length; i++) {
 					total += this.m_original_memory[i];
 			}
 
 			return (total & 0xFFFF) == checksum;
 	},
-		
+
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
   //                                                            //
@@ -4035,7 +4035,7 @@ GnustoEngine.prototype = {
 	// Hash mapping Z-code instructions to functions which return a
 	// JavaScript string to handle them.
 	m_handlers: 0,
-  
+
   // |this.m_jit| is a cache for the results of compile(): it maps
   // memory locations to JS function objects. Theoretically,
   // executing the function associated with a given address is
@@ -4051,10 +4051,10 @@ GnustoEngine.prototype = {
   //       have the effect of 1), but won't stop us replacing it with
   //       real code later.
   m_jit: [],
-  
+
 	// If this is nonzero, the engine will report as it passes each instruction.
 	m_goldenTrail: 0,
-	
+
 	// When this is nonzero, we should print JIT information to the burin,
 	// for debugging.
 	m_copperTrail: 0,
@@ -4067,7 +4067,7 @@ GnustoEngine.prototype = {
   // |m_compilation_running| to 0, and compile() will stop after the current
   // iteration.
   m_compilation_running: 0,
-  
+
   // |gamestack| is the Z-machine's stack.
   m_gamestack: 0,
 
@@ -4078,7 +4078,7 @@ GnustoEngine.prototype = {
   // |himem| is the high memory mark. This is rarely used in practice;
   // we might stop noting it.
   m_himem: 0,
-  
+
   // |pc| is the Z-machine's program counter.
   //
 	// During compilation:
@@ -4089,76 +4089,76 @@ GnustoEngine.prototype = {
 	//    it points to the next address to be executed. It gets set
   //    using _touch().
   m_pc: 0,
-  
+
   // |this_instr_pc| is the address of the start of the current instruction.
 	// during compilation. This is not identical to |m_pc|, because that
 	// can point to addresses within the middles of instructions.
   m_this_instr_pc: 0,
-  
+
   // |dict_start| is the address of the dictionary in the Z-machine's memory.
   m_dict_start: 0,
-  
+
   // |objs_start| is the address of the object table in the Z-machine's memory.
   m_objs_start: 0,
-  
+
   // |vars_start| is the address of the global variables in the Z-machine's
   // memory.
   m_vars_start: 0,
-  
+
   // |stat_start| is the address of the bottom of static memory.
   // Anything below this can change during the games. Anything
   // above this does not change like the shifting shadows.
   m_stat_start: 0,
-  
+
   // Address of the start of the abbreviations table in memory. (Can this
   // be changed? If not, we could decode them all first.)
   m_abbr_start: 0,
-  
+
   // Address of the start of the header extension table in memory.
   m_hext_start: 0,
-  
+
   // Address of custom alphabet table (if any).
   m_alpha_start: 0,
 
   // Holder for the z-alphabet
   m_zalphabet: [],
-  
+
   // Address of start of strings.
   // Only used in versions 6 and 7; otherwise undefined.
   m_string_start: 0,
-  
+
   // Address of start of routines.
   // Only used in versions 6 and 7; otherwise undefined.
   m_routine_start: 0,
-  
+
   // Address of Unicode Translation Table (if any).
   m_unicode_start: 0,
   m_custom_unicode_charcount: 0,
-  
+
   // Information about the defined list of word separators
   m_separator_count: 0,
   m_separators: [],
-  
+
   // |version| is the current Z-machine version.
   m_version: 0,
 
   // |call_stack| stores all the return addresses for all the functions
   // which are currently executing.
   m_call_stack: 0,
-  
+
   // |locals| is an array of the Z-machine's local variables.
   m_locals: [],
-  
+
   // |locals_stack| is a stack of the values of |locals| for functions
   // further down the call stack than the current function.
   m_locals_stack: 0,
-  
+
   // |param_counts| is an array which stores the number of parameters for
   // each of the variables on |call_stack|, and the current function (so
   // that the number of parameters to the current function is in
   // param_counts[0]). (Hmm, that's a bit inconsistent. We should change it.)
   m_param_counts: 0,
-  
+
   // |result_targets| is a stack whose use parallels |call_stack|. Instead of
   // storing return addresses, though, |result_targets| stores varcodes to
   // store a function's result into as it returns. For example, if a
@@ -4178,23 +4178,23 @@ GnustoEngine.prototype = {
   //
   // Also, the magic value -1 causes the function's result to be thrown away.
   m_result_targets: [],
-  
+
   // The function object to run first next time run() gets called,
   // before any other execution gets under way. Its argument will be the
   // |answer| formal parameter of run(). It can also be 0, which
   // is a no-op. run() will clear it to 0 after running it, whatever
   // happens.
   m_rebound: 0,
-  
+
 	// Any extra arguments for m_rebound.
   m_rebound_args: [],
 
   // Whether we're writing output to the ordinary screen (stream 1).
   m_output_to_console: 0,
-  
+
   // Stream 2 is whether we're writing output to a game transcript,
   // but the state for that is stored in a bit in "Flags 2" in the header.
-  
+
   // A list of streams writing out to main memory (collectively, stream 3).
   // The stream at the start of the list is the current one.
   // Each stream is represented as a list with two elements: [|start|, |end|].
@@ -4202,18 +4202,18 @@ GnustoEngine.prototype = {
   // of the block will be stored after the stream is closed. |end| is the
   // current end of the block.
   m_streamthrees: [],
-  
+
   // Whether we're writing copies of input to a script file (stream 4).
   // fixme: This is really something we need to tell the environment about,
   // since we can't deal with it ourselves.
   m_output_to_script: 0,
-  
+
   // FIXME: Clarify the distinction here
   // If this is 1, run() will "wimp out" after every opcode.
   m_single_step: 0,
   m_debug_mode: 0,
   m_parser_debugging: 0,
-  
+
   // Hash of breakpoints. If compile() reaches one of these, it will stop
   // before executing that instruction with GNUSTO_EFFECT_BREAKPOINT, and the
   // PC set to the address of that instruction.
@@ -4222,10 +4222,10 @@ GnustoEngine.prototype = {
   // defined; at present, all values should be 1, except that if a breakpoint's
   // value is 2, it won't trigger, but it will be reset to 1.
   m_breakpoints: {},
-  
+
   // Buffer of text written to console.
   m_console_buffer: '',
-  
+
   // Buffer of text written to transcript.
   m_transcript_buffer: '',
 
@@ -4240,12 +4240,12 @@ GnustoEngine.prototype = {
   m_random_use_seed: 0,
   m_random_use_sequence: 0,
 	m_random_sequence_max: 0,
-  
+
   // Values of the bottom two bits in Flags 2 (address 0x10),
   // used by the zOut function.
   // See <http://mozdev.org/bugs/show_bug.cgi?id=3344>.
   m_printing_header_bits: 0,
-  
+
   // Leftover text which should be printed next run(), since
   // we couldn't print it this time because the flags had
   // changed.
@@ -4304,7 +4304,7 @@ GnustoEngine.prototype = {
 	// for the current interrupt service routines to do their jobs.
 	// Usually ISRs don't interrupt other ISRs, so this stack will have
 	// either one or no elements.
-	m_interrupt_information: [],
+	m_interrupt_information: []
 
 };
 
