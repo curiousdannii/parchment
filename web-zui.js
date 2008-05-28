@@ -546,7 +546,7 @@ $(document).ready(function() {
   var story = qs.get("story", "stories/troll.z5");
 
   if (jQuery.browser.msie) {
-    jQuery.getScript(basefile + ".js");
+    jQuery.getScript(story + ".js");
   } else {
     gStory = story;
     loadBinaryUrl(story, _zcodeLoaded, true);
