@@ -43,19 +43,19 @@ function WebZui(logfunc) {
     },
 
     _bindEventHandlers: function() {
-      $(window).keypress(self._windowKeypress)
-               .resize(self._windowResize)
-               .keyup(self._windowKeyup)
-               .keydown(self._windowKeydown)
-               .mousewheel(self._windowMousewheel);
+      $(document).keypress(self._windowKeypress)
+                 .keyup(self._windowKeyup)
+                 .keydown(self._windowKeydown)
+                 .mousewheel(self._windowMousewheel);
+      $(window).resize(self._windowResize);
     },
 
     _unbindEventHandlers: function() {
-      $(window).unbind("keypress", self._windowKeypress)
-               .unbind("resize", self._windowResize)
-               .unbind("keyup", self._windowKeyup)
-               .unbind("keydown", self._windowKeydown)
-               .unbind("mousewheel", self._windowMousewheel);
+      $(document).unbind("keypress", self._windowKeypress)
+                 .unbind("keyup", self._windowKeyup)
+                 .unbind("keydown", self._windowKeydown)
+                 .unbind("mousewheel", self._windowMousewheel);
+      $(window).unbind("resize", self._windowResize);
     },
 
     _windowMousewheel: function(event, delta) {
@@ -80,7 +80,7 @@ function WebZui(logfunc) {
     _windowKeydown: function(event) {
       if (self._isHotKey(event))
         return true;
-      if (jQuery.browser.safari) {
+      if (jQuery.browser.safari || jQuery.browser.msie) {
         var newEvent = new Object();
         if (event.keyCode > 20 && event.keyCode < 127) {
           newEvent.charCode = String.fromCharCode(event.keyCode)
