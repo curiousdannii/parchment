@@ -163,9 +163,10 @@ function WebZui(logfunc) {
           self._currentCallback = null;
           finalInputString = finalInputString.entityify();
           self._lastSeenY = $("#current-input").get(0).offsetTop;
+          var styles = $("#current-input").attr("class");
           $("#current-input").replaceWith(
-            ('<span class="finished-input">' + finalInputString +
-             '</span><br/>')
+            ('<span class="finished-input ' + styles + '">' +
+             finalInputString + '</span><br/>')
           );
           callback(finalInputString);
         }
@@ -210,6 +211,7 @@ function WebZui(logfunc) {
       $("#content").append(
         '<span id="current-input"><span id="cursor">_</span></span>'
       );
+      $("#current-input").attr("class", self._calcFinalStyles());
     },
 
     onCharacterInput: function(callback) {
@@ -373,7 +375,7 @@ function WebZui(logfunc) {
       }
     },
 
-    onPrint: function(output) {
+    _calcFinalStyles: function() {
       var fg = self._foreground;
       var bg = self._background;
 
@@ -387,16 +389,16 @@ function WebZui(logfunc) {
       }
 
       var colors = ["fg-" + fg, "bg-" + bg];
-      var styles = colors.concat(self._currStyles).join(" ");
+      return colors.concat(self._currStyles).join(" ");
+    },
+
+    onPrint: function(output) {
+      var styles = self._calcFinalStyles();
 
       self._log("print wind: " + self._activeWindow + " output: " +
                 output.quote() + " style: " + styles);
 
       if (self._activeWindow == 0) {
-        // Ensure any text input, cursor, etc. inherits the proper
-        // style.
-        $("#current-input").attr("class", styles);
-
         var lines = output.split("\n");
         for (var i = 0; i < lines.length; i++) {
           var addNewline = false;
