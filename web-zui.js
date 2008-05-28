@@ -134,10 +134,6 @@ function WebZui(logfunc) {
             var callback = self._currentCallback;
 
             self._currentCallback = null;
-
-            // TODO: This may not be the most accurate calculation.
-            self._lastSeenY = $("#bottom").get(0).offsetTop;
-
             callback(keyCode);
           }
         }
