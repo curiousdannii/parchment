@@ -460,56 +460,6 @@ FatalError.prototype.onError = function(e) {
                        '</pre></div>');
 }
 
-function downloadViaProxy(relPath, callback) {
-  var PROXY_URL = gBaseUrl + "/cgi-bin/xhr_proxy.py";
-  var url = PROXY_URL + "?file=" + relPath.slice(IF_ARCHIVE_PREFIX.length);
-
-  // TODO: Ideally the proxy should be communicated with via an HTTP
-  // POST, since we're trying to change data on the server.
-
-   $.ajax({url: url,
-          success: function(data, textStatus) {
-            if (data.indexOf("SUCCESS") == 0)
-              loadBinaryUrl(relPath, callback, false);
-            else
-              callback("error", "downloadViaProxy() failed: " + data);
-          },
-          error: function(XMLHttpRequest, textStatus, errorThrown) {
-            callback("error", "downloadViaProxy() failed: " + textStatus);
-          } });
-}
-
-function loadBinaryUrl(relPath, callback, useProxy) {
-  var url = gBaseUrl + "/" + relPath;
-  var req = new XMLHttpRequest();
-  req.open('GET',url,true);
-  //XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-  req.overrideMimeType('text/plain; charset=x-user-defined');
-  req.onreadystatechange = function(evt) {
-    if (req.readyState == 4)
-      if (req.status == 200)
-        callback("success", req.responseText);
-      else if (relPath.indexOf(IF_ARCHIVE_PREFIX) == 0 && useProxy) {
-        downloadViaProxy(relPath, callback);
-      } else {
-        callback("error", "loadBinaryUrl() failed, status " + req.status);
-      }
-  };
-  req.send(null);
-};
-
-function _zcodeLoaded(status, data) {
-  if (status == "success") {
-    gZcode = new Array(data.length);
-    for (var i = 0; i < data.length; i++) {
-      gZcode[i] = data.charCodeAt(i) & 0xff;
-    }
-    _webZuiStartup();
-  } else {
-    throw new FatalError("Error occurred when retrieving z-code: " + data);
-  }
-}
-
 function _webZuiStartup() {
   var logfunc = function() {};
 
@@ -539,12 +489,8 @@ var IF_ARCHIVE_PREFIX = "if-archive/";
 
 $(document).ready(function() {
   var qs = new Querystring();
-  var story = qs.get("story", "stories/troll.z5");
+  var story = qs.get("story", "stories/troll.z5.js");
 
-  if (jQuery.browser.msie || jQuery.browser.opera) {
-    jQuery.getScript(story + ".js");
-  } else {
-    gStory = story;
-    loadBinaryUrl(story, _zcodeLoaded, true);
-  }
+  gStory = story;
+  jQuery.getScript(story);
 });
