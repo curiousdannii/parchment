@@ -106,7 +106,7 @@ function WebZui(logfunc) {
 
     _handleKeyEvent: function(event) {
       self._removeBufferedWindows();
-      self._lastSeenY = document.height;
+      self._lastSeenY = $("#bottom").get(0).offsetTop;
       self._scrollBottomWindow();
 
       if ($("#current-input").length == 0) {
@@ -136,7 +136,7 @@ function WebZui(logfunc) {
             self._currentCallback = null;
 
             // TODO: This may not be the most accurate calculation.
-            self._lastSeenY = document.height;
+            self._lastSeenY = $("#bottom").get(0).offsetTop;
 
             callback(keyCode);
           }
