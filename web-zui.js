@@ -80,7 +80,7 @@ function WebZui(logfunc) {
     _windowKeydown: function(event) {
       if (self._isHotKey(event))
         return true;
-      if (jQuery.browser.safari || jQuery.browser.msie) {
+      if (!jQuery.browser.mozilla) {
         var newEvent = new Object();
         if (event.keyCode > 20 && event.keyCode < 127) {
           newEvent.charCode = String.fromCharCode(event.keyCode)
@@ -541,7 +541,7 @@ $(document).ready(function() {
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5");
 
-  if (jQuery.browser.msie) {
+  if (jQuery.browser.msie || jQuery.browser.opera) {
     jQuery.getScript(story + ".js");
   } else {
     gStory = story;
