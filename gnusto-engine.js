@@ -3374,8 +3374,8 @@ GnustoEngine.prototype = {
 											if (alph==2 && code==6)
 													tenbit = -1;
 											else {
-													temp = temp + this.m_zalphabet[alph][code-6];
-											                alph = home_alph;
+                          temp = temp + this.m_zalphabet[alph].charAt(code-6);
+ 											                alph = home_alph;
 											}
 									} else {
 											if (code==0) { temp = temp + ' '; alph=home_alph; }

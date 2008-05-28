@@ -60,13 +60,13 @@ Console.prototype = {
     for (var i = 0; i < string.length; i++) {
       var character = null;
 
-      if (string[i] == " ")
+      if (string.charAt(i) == " ")
         character = "&nbsp;";
-      else if (string[i] == "\n") {
+      else if (string.charAt(i) == "\n") {
         x = 0;
         y += 1;
       } else
-        character = string[i].entityify();
+        character = string.charAt(i).entityify();
 
       if (character != null) {
         this._characters[y][x] = character;

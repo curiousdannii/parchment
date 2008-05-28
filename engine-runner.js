@@ -97,7 +97,7 @@ function EngineRunner(engine, zui, logfunc) {
 
   var self = this;
 
-  this.__proto__ = {
+  var methods = {
     stop: function() {
       self._isRunning = false;
     },
@@ -248,4 +248,6 @@ function EngineRunner(engine, zui, logfunc) {
       self._isInLoop = false;
     }
   };
+  for (name in methods)
+    self[name] = methods[name];
 }

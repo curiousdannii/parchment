@@ -22,7 +22,7 @@ function WebZui(logfunc) {
 
   var self = this;
 
-  this.__proto__ = {
+  var methods = {
     onConsoleRender: function() {
       var height = $("#top-window").get(0).clientHeight;
       $("#content").get(0).style.padding = "" + height + "px 0 0 0";
@@ -441,6 +441,9 @@ function WebZui(logfunc) {
     }
   };
 
+  for (name in methods)
+    self[name] = methods[name];
+
   self._setFixedPitchSizes();
 
   $("#top-window").get(0).style.width = self._pixelWidth + "px";
@@ -527,6 +530,11 @@ function _webZuiStartup() {
   runner.run();
 }
 
+function processBase64Zcode(content) {
+    gZcode = decode_base64(content);
+    _webZuiStartup();
+}
+
 var gThisUrl = location.protocol + "//" + location.host + location.pathname;
 var gBaseUrl = gThisUrl.slice(0, gThisUrl.lastIndexOf("/"));
 var gStory = "";
@@ -537,6 +545,10 @@ $(document).ready(function() {
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5");
 
-  gStory = story;
-  loadBinaryUrl(story, _zcodeLoaded, true);
+  if (jQuery.browser.msie) {
+    jQuery.getScript(basefile + ".js");
+  } else {
+    gStory = story;
+    loadBinaryUrl(story, _zcodeLoaded, true);
+  }
 });
