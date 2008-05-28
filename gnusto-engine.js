@@ -2687,7 +2687,7 @@ GnustoEngine.prototype = {
 
 			for (var cpos=0; cpos < source.length; cpos++) {
 
-					if (source[cpos]  == ' ') {
+          if (source.charAt(cpos)  == ' ') {
 							if (curword != '') {
 									words[wordindex] = curword;
 									add_to_parse_table(this, dictionary, words[wordindex],
@@ -2696,20 +2696,20 @@ GnustoEngine.prototype = {
 									curword = '';
 							}
 					} else {
-							if (this._is_separator(source[cpos])) {
+              if (this._is_separator(source.charAt(cpos))) {
 									if (curword != '') {
 											words[wordindex] = curword;
 											add_to_parse_table(this, dictionary, words[wordindex],
 																				 (cpos - words[wordindex].length) + wordpos_increment);
 											wordindex++;
 									}
-									words[wordindex] = source[cpos];
+									words[wordindex] = source.charAt(cpos);
 									add_to_parse_table(this, dictionary, words[wordindex],
 																		 cpos + wordpos_increment);
 									wordindex++;
 									curword = '';
 							} else {
-									curword += source[cpos];
+                  curword += source.charAt(cpos);
 							}
 					}
 			}
