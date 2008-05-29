@@ -1,0 +1,39 @@
+body {
+    font-family: palatino, georgia, verdana, arial, sans-serif;
+    text-align: center;
+    background: white;
+}
+
+#content {
+    text-align: left;
+    margin: 0 auto;
+    width: 640px;
+}
+
+a {
+    color: grey;
+    text-decoration: none;
+}
+
+a:hover {
+    color: black;
+}
+
+p a {
+    font-style: italic;
+    color: black;
+}
+
+h1 {
+    text-align: center;
+    font-weight: normal;
+}
+
+#post-file-upload, #post-url-entry {
+    display: none;
+    background: yellow;
+}
+
+input {
+    border: 1px solid black;
+}

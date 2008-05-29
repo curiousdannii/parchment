@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" media="all"
+        href="zcode2js.css" />
+  <title></title>
+</head>
+<body>
+<h1>zcode2js</h1>
+<div id="content">
+  <p>This page can help you convert your Z-machine stories into
+  Javascript code that can be loaded by <a
+  href="http://code.google.com/p/parchment">Parchment</a>.</p>
+  <p>Please load your Z-code file in the field below.</p>
+  <input id="file-upload" type="file" size="60" />
+  <div id="post-file-upload">
+    <p>You can download the Javascript version of your story by clicking
+    <a id="js-file-download">here</a>.</p>
+  </div>
+  <p>If the above doesn't work, you can try either downloading <a
+  href="http://www.getfirefox.com">Firefox 3</a> or using the <a
+  href="zcode2js.py">zcode2js.py</a> Python script.</p>
+  <p>Once you have a Javascript version of your story, you should
+  upload it to a server.  Just paste the URL to the story in the field
+  below.</p>
+  <input id="url-entry" type="text" size="60" />
+  <div id="post-url-entry">
+    <p>The link for playing your story is:</p>
+    <p><a id="play-url"></a></p>
+  </div>
+</div>
+</body>
+<script type="text/javascript" src="jquery-1.2.3.js"></script>
+<script type="text/javascript" src="base64.js"></script>
+<script type="text/javascript" src="zcode2js.js"></script>
+</html>
