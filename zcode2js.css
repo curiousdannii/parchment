@@ -27,6 +27,7 @@ p a {
 h1 {
     text-align: center;
     font-weight: normal;
+    font-family: monaco, courier, courier new, monospace;
 }
 
 #post-file-upload, #post-url-entry {
