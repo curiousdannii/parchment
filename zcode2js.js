@@ -1,13 +1,17 @@
 function _onFileUpload() {
-  var data = $("#file-upload").get(0).files[0].getAsBinary();
-  var storyBytes = [];
-  for (var i = 0; i < data.length; i++)
-    storyBytes.push(String.charCodeAt(data[i]));
-  var storyString = ("data:text/javascript,processBase64Zcode('" +
-                     encode_base64(storyBytes) +
-                     "');");
-  $("#js-file-download").attr("href", storyString);
-  $("#post-file-upload").fadeIn();
+  if ($("#file-upload").get(0).files) {
+    var data = $("#file-upload").get(0).files[0].getAsBinary();
+    var storyBytes = [];
+    for (var i = 0; i < data.length; i++)
+      storyBytes.push(String.charCodeAt(data[i]));
+    var storyString = ("data:text/javascript,processBase64Zcode('" +
+                       encode_base64(storyBytes) +
+                       "');");
+    $("#js-file-download").attr("href", storyString);
+    $("#post-file-upload").fadeIn();
+  } else {
+    $("#post-file-upload-failed").fadeIn();
+  }
 }
 
 function _onUrlEntry() {

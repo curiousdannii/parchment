@@ -8,24 +8,29 @@
   <title></title>
 </head>
 <body>
-<h1>zcode2js</h1>
+<h1>&mdash; zcode2js &mdash;</h1>
 <div id="content">
   <p>This page can help you convert your Z-machine stories into
   Javascript code that can be loaded by <a
   href="http://code.google.com/p/parchment">Parchment</a>.</p>
   <p>Please load your Z-code file in the field below.</p>
-  <input id="file-upload" type="file" size="60" />
+  <div class="input"><input id="file-upload" type="file" size="60" /></div>
   <div id="post-file-upload">
     <p>You can download the Javascript version of your story by clicking
     <a id="js-file-download">here</a>.</p>
   </div>
-  <p>If the above doesn't work, you can try either downloading <a
-  href="http://www.getfirefox.com">Firefox 3</a> or using the <a
+  <div id="post-file-upload-failed">
+    <p>My apologies for the inconvenience, but I can't seem to access
+    the contents of the file you selected.  You may want to get <a
+    href="http://www.getfirefox.com">Firefox 3</a>, which this page is
+    guaranteed to work with.</p>
+  </div>
+  <p>Alternatively, if you like using the command-line, you can use the <a
   href="zcode2js.py">zcode2js.py</a> Python script.</p>
   <p>Once you have a Javascript version of your story, you should
-  upload it to a server.  Just paste the URL to the story in the field
+  upload it to a server.  Just enter the URL to the story in the field
   below.</p>
-  <input id="url-entry" type="text" size="60" />
+  <div class="input"><input id="url-entry" type="text" size="60" /></div>
   <div id="post-url-entry">
     <p>The link for playing your story is:</p>
     <p><a id="play-url"></a></p>

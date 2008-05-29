@@ -34,6 +34,15 @@ h1 {
     background: yellow;
 }
 
+#post-file-upload-failed {
+    display: none;
+    background: red;
+}
+
 input {
-    border: 1px solid black;
+    border: 1px dotted gray;
+}
+
+.input {
+    text-align: center;
 }
