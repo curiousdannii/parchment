@@ -359,9 +359,8 @@ function WebZui(logfunc) {
           // until the user has entered some input.
 
           var newDiv = document.createElement("div");
-          var html = $("#top-window").get(0).innerHTML;
           newDiv.className = "buffered-window";
-          newDiv.innerHTML = html;
+          newDiv.innerHTML = self._console.renderHtml();
           newDiv.style.width = self._pixelWidth + "px";
           newDiv.style.lineHeight = self._pixelLineHeight + "px";
           $("#buffered-windows").append(newDiv);

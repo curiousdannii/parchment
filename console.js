@@ -4,6 +4,7 @@ function Console(width, height, element, observer) {
   this._element = element;
   this._pos = [0, 0];
   this._observer = observer;
+  this._isRenderScheduled = false;
   this.clear();
 }
 
@@ -23,7 +24,7 @@ Console.prototype = {
       for (y = 0; y < -linesAdded; y++)
         this._delRow();
     this.height = height;
-    this.render();
+    this._scheduleRender();
   },
 
   _delRow: function() {
@@ -47,7 +48,7 @@ Console.prototype = {
     this._styles = [];
     for (var y = 0; y < this.height; y++)
       this._addRow();
-    this.render();
+    this._scheduleRender();
   },
 
   moveTo: function(x, y) {
@@ -75,10 +76,18 @@ Console.prototype = {
       }
     }
     this._pos = [x, y];
-    this.render();
+    this._scheduleRender();
   },
 
-  render: function() {
+  _scheduleRender: function() {
+    if (!this._isRenderScheduled) {
+      this._isRenderScheduled = true;
+      var self = this;
+      window.setTimeout(function() { self._doRender(); }, 0);
+    }
+  },
+
+  renderHtml: function() {
     var string = "";
     for (var y = 0; y < this.height; y++) {
       var currStyle = null;
@@ -96,7 +105,12 @@ Console.prototype = {
         string += "</span>";
       string += "<br/>";
     }
-    this._element.innerHTML = string;
+    return string;
+  },
+
+  _doRender: function() {
+    this._element.innerHTML = this.renderHtml();
+    this._isRenderScheduled = false;
     this._observer.onConsoleRender();
   },
 
@@ -104,4 +118,4 @@ Console.prototype = {
     this._element.innerHTML = "";
     this._observer.onConsoleRender();
   }
-}
+};
