@@ -255,7 +255,7 @@ function WebZui(logfunc) {
     },
 
     onWimpOut: function(callback) {
-      window.setTimeout(callback, 100);
+      window.setTimeout(callback, 50);
     },
 
     onSetStyle: function(textStyle, foreground, background) {
