@@ -13,6 +13,7 @@ function WebZui(logfunc) {
   this._reverseVideo = false;
   this._lastSeenY = 0;
   this._currStyles = ["z-roman"];
+  this._expectedHash = window.location.hash;
 
   if (logfunc) {
     this._log = logfunc;
@@ -48,6 +49,7 @@ function WebZui(logfunc) {
                  .keydown(self._windowKeydown)
                  .mousewheel(self._windowMousewheel);
       $(window).resize(self._windowResize);
+      self._intervalId = window.setInterval(self._windowHashCheck, 1000);
     },
 
     _unbindEventHandlers: function() {
@@ -56,6 +58,7 @@ function WebZui(logfunc) {
                  .unbind("keydown", self._windowKeydown)
                  .unbind("mousewheel", self._windowMousewheel);
       $(window).unbind("resize", self._windowResize);
+      window.clearInterval(self._intervalId);
     },
 
     _windowMousewheel: function(event, delta) {
@@ -186,6 +189,11 @@ function WebZui(logfunc) {
       $(".buffered-window").css({left: contentLeft});
     },
 
+    _windowHashCheck: function() {
+      if (window.location.hash != self._expectedHash)
+        self._restart();
+    },
+
     _removeBufferedWindows: function() {
       var windows = $("#buffered-windows > .buffered-window");
       windows.fadeOut("slow", function() { windows.remove(); });
@@ -196,6 +204,11 @@ function WebZui(logfunc) {
     _eraseBottomWindow: function() {
       $("#content").empty();
       this._lastSeenY = 0;
+    },
+
+    _restart: function() {
+      self._finalize();
+      window.setTimeout(_webZuiStartup, 0);
     },
 
     setVersion: function(version) {
@@ -224,7 +237,12 @@ function WebZui(logfunc) {
       // available; if none are available, we should return false.
 
       var saveKey = gStory + '_saveData';
-      globalStorage[location.hostname][saveKey] = encode_base64(data);
+      var b64data = encode_base64(data);
+
+      if (window.globalStorage)
+        window.globalStorage[location.hostname][saveKey] = b64data;
+      window.location.hash = "#" + b64data;
+      self._expectedHash = window.location.hash;
       return true;
     },
 
@@ -232,10 +250,22 @@ function WebZui(logfunc) {
       // TODO: Attempt to use other forms of local storage if
       // available; if none are available, we should return null.
 
-      var saveData = globalStorage[location.hostname][gStory + '_saveData'];
-      if (saveData)
-        return decode_base64(saveData.value);
-      else
+      var b64data = null;
+
+      if (window.location.hash)
+        b64data = window.location.hash.slice(1);
+
+      if (!b64data && window.globalStorage) {
+        var saveData = globalStorage[location.hostname][gStory + '_saveData'];
+        if (saveData)
+          b64data = saveData.value;
+      }
+
+      if (b64data) {
+        window.location.hash = "#" + b64data;
+        self._expectedHash = window.location.hash;
+        return decode_base64(b64data);
+      } else
         return null;
     },
 
@@ -251,7 +281,8 @@ function WebZui(logfunc) {
       // preserve the "transcribing to printer" bit and the "use
       // fixed-pitch font" bit when restarting.
 
-      window.setTimeout(_webZuiStartup, 0);
+      window.location.hash = "";
+      self._restart();
     },
 
     onWimpOut: function(callback) {
@@ -474,6 +505,12 @@ function _webZuiStartup() {
 
   beret.load(gZcode.slice());
   logfunc("Story type: " + beret.m_filetype);
+  if (window.location.hash) {
+    var b64data = window.location.hash.slice(1);
+    beret.load(decode_base64(b64data));
+    logfunc("Load game story type: " + beret.m_filetype);
+  }
+
   runner.run();
 }
 
