@@ -107,7 +107,7 @@ body {
 }
 
 #cursor {
-    text-decoration: blink;
+    text-decoration: underline;
 }
 
 .finished-input {
