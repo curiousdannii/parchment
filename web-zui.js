@@ -170,8 +170,8 @@ function WebZui(logfunc) {
 
   var methods = {
     onConsoleRender: function() {
-      var height = $("#top-window").get(0).clientHeight;
-      $("#content").get(0).style.padding = "" + height + "px 0 0 0";
+      var height = $("#top-window").height();
+      $("#content").css({padding: "" + height + "px 0 0 0"});
       self._scrollBottomWindow();
     },
 
@@ -254,7 +254,7 @@ function WebZui(logfunc) {
 
     _handleKeyEvent: function(event) {
       self._removeBufferedWindows();
-      self._lastSeenY = $("#bottom").get(0).offsetTop;
+      self._lastSeenY = $("#bottom").offset().top;
       self._scrollBottomWindow();
 
       if ($("#current-input").length == 0) {
@@ -296,7 +296,7 @@ function WebZui(logfunc) {
 
         self._currentCallback = null;
         finalInputString = finalInputString.entityify();
-        self._lastSeenY = $("#current-input").get(0).offsetTop;
+        self._lastSeenY = $("#current-input").offset().top;
         var styles = $("#current-input").attr("class");
         $("#current-input").replaceWith(
           ('<span class="finished-input ' + styles + '">' +
@@ -340,7 +340,7 @@ function WebZui(logfunc) {
     },
 
     _windowResize: function() {
-      var contentLeft = $("#content").get(0).offsetLeft + "px";
+      var contentLeft = $("#content").offset().left + "px";
       $(".buffered-window").css({left: contentLeft});
     },
 
@@ -547,8 +547,8 @@ function WebZui(logfunc) {
           var newDiv = document.createElement("div");
           newDiv.className = "buffered-window";
           newDiv.innerHTML = self._console.renderHtml();
-          newDiv.style.width = self._pixelWidth + "px";
-          newDiv.style.lineHeight = self._pixelLineHeight + "px";
+          $(newDiv).css({width: self._pixelWidth + "px",
+                         lineHeight: self._pixelLineHeight + "px"});
           $("#buffered-windows").append(newDiv);
 
           // Pretend the window was just resized, which will position
@@ -629,9 +629,9 @@ function WebZui(logfunc) {
 
   self._setFixedPitchSizes();
 
-  $("#top-window").get(0).style.width = self._pixelWidth + "px";
-  $("#top-window").get(0).style.lineHeight = self._pixelLineHeight + "px";
-  $("#content").get(0).style.width = self._pixelWidth + "px";
+  $("#top-window").css({width: self._pixelWidth + "px",
+                        lineHeight: self._pixelLineHeight + "px"});
+  $("#content").css({width: self._pixelWidth + "px"});
 
   self._windowResize();
   self._bindEventHandlers();
