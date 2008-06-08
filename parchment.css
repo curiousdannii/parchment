@@ -106,8 +106,12 @@ body {
     margin: 0 auto;
 }
 
-#cursor {
+#editing-cursor {
     text-decoration: underline;
+}
+
+#cursor {
+    text-decoration: blink;
 }
 
 .finished-input {

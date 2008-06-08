@@ -317,22 +317,24 @@ function WebZui(logfunc) {
         var prefix = self._lineEditor.line.slice(0, self._lineEditor.pos);
         var suffix;
         var point;
+        var cursorId;
         if (self._lineEditor.line.length <= self._lineEditor.pos) {
           suffix = "";
           point = "_";
+          cursorId = "cursor";
         } else {
           suffix = self._lineEditor.line.slice(self._lineEditor.pos+1);
           point = self._lineEditor.line.charAt(self._lineEditor.pos);
+          cursorId = "editing-cursor";
           if (point == " ") {
             point = "&nbsp;";
           } else {
             point = point.entityify();
           }
         }
-        $("#current-input").html(
-          prefix.entityify() + '<span id="cursor">' + point + '</span>' +
-          suffix.entityify()
-        );
+        $("#current-input").html(prefix.entityify() + '<span id="' +
+                                 cursorId + '">' + point + '</span>' +
+                                 suffix.entityify());
       }
       return false;
     },
