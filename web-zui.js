@@ -618,8 +618,8 @@ function WebZui(logfunc) {
       row.innerHTML = "<span>" + row.innerHTML + "</span>";
 
       $("#buffered-windows").append(row);
-      self._pixelWidth = row.clientWidth;
-      self._pixelLineHeight = row.firstChild.offsetHeight;
+      self._pixelWidth = $(row).width();
+      self._pixelLineHeight = $(row.firstChild).height();
       $("#buffered-windows").empty();
     }
   };
