@@ -669,6 +669,14 @@ function _webZuiStartup() {
   runner.run();
 }
 
+function processZcodeAppspotResponse(content) {
+  console.log("RESPONSE");
+  console.log(content);
+  if (content.error)
+    throw new FatalError("Error loading story: " + content.error.entityify());
+  processBase64Zcode(content.data);
+}
+
 function processBase64Zcode(content) {
     gZcode = decode_base64(content);
     _webZuiStartup();
@@ -678,12 +686,18 @@ var gThisUrl = location.protocol + "//" + location.host + location.pathname;
 var gBaseUrl = gThisUrl.slice(0, gThisUrl.lastIndexOf("/"));
 var gStory = "";
 var gZcode = null;
+
 var IF_ARCHIVE_PREFIX = "if-archive/";
+var ZCODE_APPSPOT_URL = "http://zcode.appspot.com/";
 
 $(document).ready(function() {
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5.js");
 
   gStory = story;
-  jQuery.getScript(story);
+  if (story.slice(-3).toLowerCase() == ".js")
+    jQuery.getScript(story);
+  else
+    jQuery.getScript(ZCODE_APPSPOT_URL + "?url=" + escape(story) +
+                     "&jsonp=processZcodeAppspotResponse");
 });
