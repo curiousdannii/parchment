@@ -670,8 +670,6 @@ function _webZuiStartup() {
 }
 
 function processZcodeAppspotResponse(content) {
-  console.log("RESPONSE");
-  console.log(content);
   if (content.error)
     throw new FatalError("Error loading story: " + content.error.entityify());
   processBase64Zcode(content.data);
