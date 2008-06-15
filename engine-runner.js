@@ -241,8 +241,17 @@ function EngineRunner(engine, zui, logfunc) {
         break;
       case GNUSTO_EFFECT_SETINPUTSTREAM:
       case GNUSTO_EFFECT_GETCURSOR:
-      case GNUSTO_EFFECT_PRINTTABLE:
         throw new FatalError("Unimplemented effect: " + effect);
+        break;
+      case GNUSTO_EFFECT_PRINTTABLE:
+        var numLines = engine.effect(1);
+        // TODO: There's probably a more concise way of doing this
+        // by using some built-in array function.
+        var lines = [];
+        for (i = 0; i < numLines; i++)
+          lines.push(engine.effect(2+i));
+        self._zui.onPrintTable(lines);
+        break;
       }
 
       self._isInLoop = false;

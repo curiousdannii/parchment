@@ -610,6 +610,14 @@ function WebZui(logfunc) {
       }
     },
 
+    onPrintTable: function(lines) {
+      // TODO: Not sure if we should be appending newlines to
+      // these lines or not, or setting the current text style
+      // to monospace if we're displaying in the bottom window.
+      for (var i = 0; i < lines.length; i++)
+        self.onPrint(lines[i]);
+    },
+
     _setFixedPitchSizes: function() {
       var row = document.createElement("div");
       row.className = "buffered-window";
