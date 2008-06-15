@@ -398,6 +398,9 @@ function WebZui(logfunc) {
         window.globalStorage[location.hostname][saveKey] = b64data;
       window.location.hash = "#" + b64data;
       self._expectedHash = window.location.hash;
+      self.onPrint("Your game has been saved to the URL. You may want " +
+                   "to bookmark this page now; just reload it at any " +
+                   "time to restore your game from this point.\n");
       return true;
     },
 
