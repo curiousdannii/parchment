@@ -10,10 +10,15 @@
 <body>
 <h1>zcode2js</h1>
 <div id="content">
-  <p>This page can help you convert your Z-machine stories into
-  Javascript code that can be loaded by <a
-  href="http://code.google.com/p/parchment">Parchment</a>.</p>
-  <p>Please load your Z-code file in the field below.</p>
+  <p>One of the minor downsides of having Parchment transparently use
+  <tt>zcode.appspot.com</tt> to convert your Z-machine story, as
+  described in <a href="zcode.html">zcode</a>, is that it takes
+  additional time for the user's browser to ask the web service for
+  your story, especially if the web service is overloaded with
+  requests.  If you want to improve load time and reliability, you may
+  want to consider converting your Z-machine story into a JavaScript
+  representation Parchment can understand beforehand.  If you'd like
+  to try this, please load your Z-code file in the field below.</p>
   <div class="input"><input id="file-upload" type="file" size="60" /></div>
   <div id="post-file-upload">
     <p>You can download the Javascript version of your story by clicking
@@ -27,9 +32,9 @@
   </div>
   <p>Alternatively, if you like using the command-line, you can use the <a
   href="zcode2js.py">zcode2js.py</a> Python script.</p>
-  <p>Once you have a Javascript version of your story, you should
-  upload it to a server.  Just enter the URL to the story in the field
-  below.</p>
+  <p>Once you have the Javascript version of your story, you should
+  upload it to a server.  Just make sure the file has a <tt>.js</tt>
+  extension and enter the URL to the story in the field below.</p>
   <div class="input"><input id="url-entry" type="text" size="60" /></div>
   <div id="post-url-entry">
     <p>The link for playing your story is:</p>
