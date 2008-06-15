@@ -220,7 +220,10 @@ function EngineRunner(engine, zui, logfunc) {
                              engine.effect(3));
         break;
       case GNUSTO_EFFECT_SOUND:
-        throw new FatalError("Unimplemented effect: " + effect);
+        // TODO: Actually implement this; for now we'll just
+        // ignore it since it's not a required element of 'terps
+        // and we don't want the game to crash.
+        break;
       case GNUSTO_EFFECT_SPLITWINDOW:
         self._zui.onSplitWindow(engine.effect(1));
         break;
