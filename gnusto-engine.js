@@ -404,7 +404,7 @@ function handleZ_print_paddr(engine, a) {
     return engine._handler_zOut("_zscii_from("+engine.m_pc_translate_for_string(a[0])+")",0);
 }
 function handleZ_load(engine, a) {
-    engine.logger('load',"store " + c);
+    engine.logger('load',"store " + a[0]);
     return engine._storer('_varcode_get('+a[0]+')');
   }
 
