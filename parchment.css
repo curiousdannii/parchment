@@ -89,7 +89,7 @@ body {
 .buffered-window {
     text-align: center;
     margin: 0 auto;
-    font-family: monaco, courier, courier new, monospace;
+    font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
     font-size: 10pt;
     top: 0px;
     left: 0px;
@@ -130,7 +130,7 @@ body {
 }
 
 .z-fixed-pitch {
-    font-family: monaco, courier, courier new, monospace;
+    font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
     white-space: pre;
 }
 
