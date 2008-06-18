@@ -4242,7 +4242,7 @@ GnustoEngine.prototype = {
 
   // Values of the bottom two bits in Flags 2 (address 0x11),
   // used by the zOut function.
-  // See <http://mozdev.org/bugs/show_bug.cgi?id=3344>.
+  // See http://code.google.com/p/parchment/issues/detail?id=14.
   m_printing_header_bits: 0,
 
   // Leftover text which should be printed next run(), since
