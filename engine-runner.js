@@ -27,6 +27,8 @@ Zui.prototype = {
   },
   onBreakpoint: function(callback) {
   },
+  onFlagsChanged: function(isToTranscript, isFixedWidth) {
+  },
 
   // From the Z-Machine spec for set_text_style: Sets the text style
   // to: Roman (if 0), Reverse Video (if 1), Bold (if 2), Italic (4),
@@ -211,7 +213,12 @@ function EngineRunner(engine, zui, logfunc) {
         self._zui.onWimpOut(self._unWimpOut);
         break;
       case GNUSTO_EFFECT_BREAKPOINT:
+        throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_FLAGS_CHANGED:
+        var isToTranscript = engine.m_printing_header_bits & 0x1;
+        var isFixedWidth = engine.m_printing_header_bits & 0x2;
+        self._zui.onFlagsChanged(isToTranscript, isFixedWidth);
+        break;
       case GNUSTO_EFFECT_PIRACY:
         throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_STYLE:

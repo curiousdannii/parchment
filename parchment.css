@@ -130,7 +130,8 @@ body {
 }
 
 .z-fixed-pitch {
-    font-family: monaco;
+    font-family: monaco, courier, courier new, monospace;
+    white-space: pre;
 }
 
 #top-window .z-bold {

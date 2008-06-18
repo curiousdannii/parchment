@@ -159,6 +159,7 @@ function WebZui(logfunc) {
   this._lastSeenY = 0;
   this._currStyles = ["z-roman"];
   this._expectedHash = window.location.hash;
+  this._isFixedWidth = false;
 
   if (logfunc) {
     this._log = logfunc;
@@ -447,6 +448,11 @@ function WebZui(logfunc) {
       window.setTimeout(callback, 50);
     },
 
+    onFlagsChanged: function(isToTranscript, isFixedWidth) {
+      // TODO: Deal with isToTranscript.
+      self._isFixedWidth = isFixedWidth;
+    },
+
     onSetStyle: function(textStyle, foreground, background) {
       switch (textStyle) {
       case -1:
@@ -577,6 +583,13 @@ function WebZui(logfunc) {
       }
 
       var colors = ["fg-" + fg, "bg-" + bg];
+
+      // TODO: Also test to see if we don't already have z-fixed-pitch
+      // in self._currStyles, without using Array.indexOf(), which
+      // doesn't seem to be part of MS JScript.
+      if (self._isFixedWidth)
+        colors.push("z-fixed-pitch");
+
       return colors.concat(self._currStyles).join(" ");
     },
 

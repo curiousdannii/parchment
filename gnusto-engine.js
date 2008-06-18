@@ -156,7 +156,6 @@ var GNUSTO_EFFECT_BREAKPOINT = '"BP"';
 // Returned if either of the two header bits which
 // affect printing have changed since last time
 // (or if either of them is set on first printing).
-// FIXME: This needs to be moved out of the private use area.
 var GNUSTO_EFFECT_FLAGS_CHANGED = '"XC"';
 
 // Returned if the story wants to check whether it's been pirated.
@@ -2270,7 +2269,7 @@ GnustoEngine.prototype = {
 			} else if (target==1) {
 					this.m_output_to_console = 1;
 			} else if (target==2) {
-					this.m_memory[0x10] |= 0x1;
+					this.m_memory[0x11] |= 0x1;
 			} else if (target==3) {
 
 					if (this.m_streamthrees.length>15) {
@@ -2284,7 +2283,7 @@ GnustoEngine.prototype = {
 			} else if (target==-1) {
 					this.m_output_to_console = 0;
 			} else if (target==-2) {
-					this.m_memory[0x10] &= ~0x1;
+					this.m_memory[0x11] &= ~0x1;
 			} else if (target==-3) {
 
 					if (this.m_streamthrees.length<1) {
@@ -3600,7 +3599,7 @@ GnustoEngine.prototype = {
 					this.m_streamthrees[0][1] = address;
 			} else {
 
-					var bits = this.m_memory[0x10] & 0x03;
+					var bits = this.m_memory[0x11] & 0x03;
 					var changed = bits != this.m_printing_header_bits;
 					effect_parameters = this.m_printing_header_bits;
 					this.m_printing_header_bits = bits;
@@ -4241,7 +4240,7 @@ GnustoEngine.prototype = {
   m_random_use_sequence: 0,
 	m_random_sequence_max: 0,
 
-  // Values of the bottom two bits in Flags 2 (address 0x10),
+  // Values of the bottom two bits in Flags 2 (address 0x11),
   // used by the zOut function.
   // See <http://mozdev.org/bugs/show_bug.cgi?id=3344>.
   m_printing_header_bits: 0,
