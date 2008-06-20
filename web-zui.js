@@ -496,10 +496,18 @@ function WebZui(logfunc) {
     },
 
     onSetWindow: function(window) {
-      // From the Z-Spec, section 8.7.2.
-      if (window == 1)
+      if (window == 1) {
+        // The following isn't outlined in the Z-Spec, but Fredrik
+        // Ramsberg's "Aventyr" sets the top window shortly after
+        // collapsing its height to 0 (via erasing window -1); so
+        // we'll implicitly create a top window with height 1 now.
+        // See issue 33 for more information:
+        // http://code.google.com/p/parchment/issues/detail?id=33
+        if (!self._console)
+          self.onSplitWindow(1);
+        // From the Z-Spec, section 8.7.2.
         self._console.moveTo(0, 0);
-
+      }
       self._activeWindow = window;
     },
 
