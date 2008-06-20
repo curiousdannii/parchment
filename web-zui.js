@@ -449,7 +449,9 @@ function WebZui(logfunc) {
     },
 
     onFlagsChanged: function(isToTranscript, isFixedWidth) {
-      // TODO: Deal with isToTranscript.
+      if (isToTranscript)
+        // TODO: Deal with isToTranscript.
+        throw new FatalError("To transcript not yet implemented!");
       self._isFixedWidth = isFixedWidth;
     },
 
