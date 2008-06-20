@@ -160,6 +160,7 @@ function WebZui(logfunc) {
   this._currStyles = ["z-roman"];
   this._expectedHash = window.location.hash;
   this._isFixedWidth = false;
+  this._bufferMode = 0;
 
   if (logfunc) {
     this._log = logfunc;
@@ -539,7 +540,14 @@ function WebZui(logfunc) {
     },
 
     onSetBufferMode: function(flag) {
-      // TODO: How to emulate non-word wrapping in HTML?
+      // The way that stories use this instruction is odd; it seems to
+      // be set just after a quotation meant to overlay the current
+      // text is displayed, just before a split-window instruction.
+      // Based on this, we'll set a flag, and if it's set when we're
+      // asked to split the window, we'll leave an "imprint" of what
+      // was drawn there until the user presses a key, at which point
+      // it'll fade away.
+      self._bufferMode = flag;
     },
 
     onSplitWindow: function(numlines) {
@@ -549,7 +557,8 @@ function WebZui(logfunc) {
           self._console = null;
         }
       } else {
-        if (!self._console || self._version == 3) {
+        if (!self._console || self._version == 3 ||
+            !self._bufferMode) {
           self._console = new Console(self._size[0],
                                       numlines,
                                       $("#top-window").get(0),
@@ -577,6 +586,7 @@ function WebZui(logfunc) {
           self._console.resize(numlines);
         }
       }
+      self._bufferMode = 0;
     },
 
     _calcFinalStyles: function() {
