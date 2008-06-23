@@ -697,7 +697,7 @@ function _webZuiStartup() {
   if (window.console)
     logfunc = function(msg) { console.log(msg); };
 
-  var engine = new GnustoEngine();
+  var engine = new GnustoEngine(logfunc);
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
   var beret = new Beret(engine);

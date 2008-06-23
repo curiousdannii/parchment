@@ -227,10 +227,8 @@ var GNUSTO_EFFECT_PRINTTABLE     = '"PT"';
 function handleZ_je(engine, a) {
 
     if (a.length<2) {
-      engine.logger('je','noop');
       return ''; // it's a no-op
     } else if (a.length==2) {
-      engine.logger('je',a[0] + '==' + a[1]);
       return engine._brancher(a[0]+'=='+a[1]);
     } else {
       var condition = '';
@@ -238,153 +236,117 @@ function handleZ_je(engine, a) {
 	if (i!=1) condition = condition + '||';
 	condition = condition + 't=='+a[i];
       }
-      engine.logger('je','t=' + a[0] + ';' + condition);
       return 't='+a[0]+';'+engine._brancher(condition);
     }
   }
 
 function handleZ_jl(engine, a) {
-    engine.logger('jl',a[0] + '<' + a[1]);
     return engine._brancher(a[0]+'<'+a[1]); }
 
 function handleZ_jg(engine, a) {
-    engine.logger('jg',a[0] + '>'+a[1]);
     return engine._brancher(a[0]+'>'+a[1]); }
 
 function handleZ_dec_chk(engine, a) {
-    engine.logger('dec_chk',a[0] + '-1 < ' + a[1]);
     return 't='+a[0]+';t2=_varcode_get(t)-1;_varcode_set(t2,t);'+engine._brancher('t2<'+a[1]);
   }
 function handleZ_inc_chk(engine, a) {
-    engine.logger('inc_chk',a[0] + '+1 > ' + a[1]);
     return 't='+a[0]+';t2=_varcode_get(t)+1;_varcode_set(t2,t);'+engine._brancher('t2>'+a[1]);
   }
 
 function handleZ_jin(engine, a) {
-    engine.logger('jin',a[0] + ',' + a[1]);
     return engine._brancher("_obj_in("+a[0]+','+a[1]+')');
   }
 function handleZ_test(engine, a) {
-    engine.logger('test','t='+a[1]+';br(' + a[0] + '&t)==t)');
     return 't='+a[1]+';'+engine._brancher('('+a[0]+'&t)==t');
   }
 function handleZ_or(engine, a) {
-    engine.logger('or','('+a[0] + '|' + a[1]+')&0xFFFF');
     return engine._storer('('+a[0]+'|'+a[1]+')&0xffff');
   }
 function handleZ_and(engine, a) {
-    engine.logger('and',a[0] + '&' + a[1] + '&0xFFFF');
     return engine._storer(a[0]+'&'+a[1]+'&0xffff');
   }
 function handleZ_test_attr(engine, a) {
-    engine.logger('test_attr',a[0] + ',' + a[1]);
     return engine._brancher('_test_attr('+a[0]+','+a[1]+')');
   }
 function handleZ_set_attr(engine, a) {
-    engine.logger('set_attr',a[0] + ',' + a[1]);
     return '_set_attr('+a[0]+','+a[1]+')';
   }
 function handleZ_clear_attr(engine, a) {
-    engine.logger('clear_attr',a[0] + ',' + a[1]);
     return '_clear_attr('+a[0]+','+a[1]+')';
   }
 function handleZ_store(engine, a) {
-    engine.logger('store',a[0] + ',' + a[1]);
     return "_varcode_set("+a[1]+","+a[0]+")";
   }
 function handleZ_insert_obj(engine, a) {
-    engine.logger('insert_obj',a[0] + ',' + a[1]);
     return "_insert_obj("+a[0]+','+a[1]+")";
   }
 function handleZ_loadw(engine, a) {
-    engine.logger('loadw',"getWord((1*"+a[0]+"+2*"+a[1]+")&0xFFFF)");
     return engine._storer("getWord((1*"+a[0]+"+2*"+a[1]+")&0xFFFF)");
   }
 function handleZ_loadb(engine, a) {
     return engine._storer("m_memory[0xFFFF&(1*"+a[0]+"+1*"+a[1]+")]");
   }
 function handleZ_get_prop(engine, a) {
-    engine.logger('get_prop',a[0]+','+a[1]);
     return engine._storer("_get_prop("+a[0]+','+a[1]+')');
   }
 function handleZ_get_prop_addr(engine, a) {
-    engine.logger('get_prop_addr',a[0]+','+a[1]);
     return engine._storer("_get_prop_addr("+a[0]+','+a[1]+')');
   }
 function handleZ_get_next_prop(engine, a) {
-    engine.logger('get_next_prop',a[0]+','+a[1]);
     return engine._storer("_get_next_prop("+a[0]+','+a[1]+')');
   }
 function handleZ_add(engine, a) {
-    engine.logger('add',a[0]+'+'+a[1]);
     return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
 function handleZ_sub(engine, a) {
-    engine.logger('sub',a[0]+'-'+a[1]);
     return engine._storer(a[0]+'-'+a[1]); }
 function handleZ_mul(engine, a) {
-    engine.logger('mul',a[0]+'*'+a[1]);
     return engine._storer(a[0]+'*'+a[1]); }
 function handleZ_div(engine, a) {
-    engine.logger('div',a[0]+'/'+a[1]);
     return engine._storer('_trunc_divide('+a[0]+','+a[1]+')');
   }
 function handleZ_mod(engine, a) {
-    engine.logger('mod',a[0]+'%'+a[1]);
     return engine._storer(a[0]+'%'+a[1]);
   }
 function handleZ_set_colour(engine, a) {
-    engine.logger('set_colour',a[0] + ',' + a[1]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_STYLE+",-1,"+a[0]+','+a[1]+"];return";
   }
 function handleZ_throw(engine, a) {
-    engine.logger('throw','throw_stack_frame('+a[0]+');return');
     engine.m_compilation_running = 0;
     return "_throw_stack_frame("+a[0]+");return";
   }
 function handleZ_jz(engine, a) {
-    engine.logger('jz',a[0]+'==0');
     return engine._brancher(a[0]+'==0');
   }
 function handleZ_get_sibling(engine, a) {
-    engine.logger('get_sibling',"t=get_sibling("+a[0]+");");
     return "t=_get_sibling("+a[0]+");"+engine._storer("t")+";"+engine._brancher("t");
   }
 function handleZ_get_child(engine, a) {
-    engine.logger('get_child',"t=get_child("+a[0]+");");
     return "t=_get_child("+a[0]+");"+
       engine._storer("t")+";"+
       engine._brancher("t");
   }
 function handleZ_get_parent(engine, a) {
-    engine.logger('get_parent',"get_parent("+a[0]+");");
     return engine._storer("_get_parent("+a[0]+")");
   }
 function handleZ_get_prop_len(engine, a) {
-    engine.logger('get_prop_len',"get_prop_len("+a[0]+");");
     return engine._storer("_get_prop_len("+a[0]+')');
   }
 function handleZ_inc(engine, a) {
-    engine.logger('inc',a + '+1');
     return "t="+a[0]+';_varcode_set(_varcode_get(t)+1, t)';
   }
 function handleZ_dec(engine, a) {
-    engine.logger('dec',a[0] + '-1');
     return "t="+a[0]+';_varcode_set(_varcode_get(t)-1, t)';
   }
 function handleZ_print_addr(engine, a) {
-    engine.logger('print_addr','zscii_from('+a[0]+')');
     return engine._handler_zOut('_zscii_from('+a[0]+')',0);
   }
 function handleZ_remove_obj(engine, a) {
-    engine.logger('remove_obj',"remove_obj("+a[0]+','+a[1]+")");
     return "_remove_obj("+a[0]+','+a[1]+")";
   }
 function handleZ_print_obj(engine, a) {
-    engine.logger('print_obj','name_of_object('+a[0]+',0)');
     return engine._handler_zOut("_name_of_object("+a[0]+")",0);
 }
 function handleZ_ret(engine, a) {
-    engine.logger('ret',"_func_return("+a[0]+');return');
     engine.m_compilation_running=0;
     return "_func_return("+a[0]+');return';
   }
@@ -395,60 +357,49 @@ function handleZ_jump(engine, a) {
     }
 
     var addr=(a[0] + engine.m_pc) - 2;
-    engine.logger('jump',"pc="+addr+";return");
     return "m_pc="+addr+";return";
   }
 function handleZ_print_paddr(engine, a) {
-    engine.logger('print_paddr',"zscii_from((("+a[0]+")&0xFFFF)*4)");
     return engine._handler_zOut("_zscii_from("+engine.m_pc_translate_for_string(a[0])+")",0);
 }
 function handleZ_load(engine, a) {
-    engine.logger('load',"store " + a[0]);
     return engine._storer('_varcode_get('+a[0]+')');
   }
 
 function handleZ_rtrue(engine, a) {
-    engine.logger('rtrue',"_func_return(1);return");
     engine.m_compilation_running=0;
     return "_func_return(1);return";
   }
 function handleZ_rfalse(engine, a) {
-    engine.logger('rfalse',"_func_return(0);return");
     engine.m_compilation_running=0;
     return "_func_return(0);return";
 }
 
 function handleZ_print(engine, a) {
-    engine.logger('printret',"see handler_print");
     return engine._handler_print('', 0);
 }
 
 function handleZ_print_ret(engine, a) {
     engine.m_compilation_running = 0;
-    engine.logger('printret',"see handler_print");
     return engine._handler_print('\n', 1)+';_func_return(1);return';
 }
 
 function handleZ_nop(engine, a) {
-    engine.logger('noop','');
     return "";
   }
 
 function handleZ_restart(engine, a) {
-    engine.logger('restart','');
     engine.m_compilation_running=0;
     return "m_effects=["+GNUSTO_EFFECT_RESTART+"];return";
   }
 
 function handleZ_ret_popped(engine, a) {
-    engine.logger('pop',"_func_return(gamestack.pop());return");
     engine.m_compilation_running=0;
     return "_func_return(m_gamestack.pop());return";
   }
 function handleZ_catch(engine, a) {
     // The stack frame cookie is specified by Quetzal 1.3b s6.2
     // to be the number of frames on the stack.
-    engine.logger('catch',"store call_stack.length");
     return engine._storer("call_stack.length");
 }
 
@@ -457,13 +408,11 @@ function handleZ_pop(engine, a) {
 }
 
 function handleZ_quit(engine, a) {
-    engine.logger('quit','');
     engine.m_compilation_running=0;
     return "m_effects=["+GNUSTO_EFFECT_QUIT+"];return";
   }
 
 function handleZ_new_line(engine, a) {
-    engine.logger('newline','');
     return engine._handler_zOut("'\\n'",0);
 }
 
@@ -478,7 +427,6 @@ function handleZ_verify(engine, a) {
 
 function handleZ_illegal_extended(engine, a) {
     // 190 can't be generated; it's the start of an extended opcode
-    engine.logger('illegalop','190');
     gnusto_error(199);
   }
 
@@ -486,7 +434,6 @@ function handleZ_piracy(engine, a) {
     engine.m_compilation_running = 0;
 
     var setter = 'm_rebound=function(){'+engine._brancher('(!m_answers[0])')+'};';
-    engine.logger('piracy',"pc="+pc+";"+setter+"m_effects=[GNUSTO_EFFECT_PIRACY];return;");
     return "m_pc="+engine.m_pc+";"+setter+"m_effects=["+GNUSTO_EFFECT_PIRACY+"];return";
 }
 
@@ -531,17 +478,14 @@ function handleZ_call_vs(engine, a) {
 ////////////////////////////////////////////////////////////////
 
 function handleZ_store_w(engine, a) {
-    engine.logger('storew',"setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")");
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
 
 function handleZ_storeb(engine, a) {
-    engine.logger('storeb',"setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")");
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
   }
 
 function handleZ_putprop(engine, a) {
-    engine.logger('putprop',"put_prop("+a[0]+','+a[1]+','+a[2]+')');
     return "_put_prop("+a[0]+','+a[1]+','+a[2]+')';
   }
 
@@ -648,78 +592,63 @@ function handleZ_read(engine, a) {
 }
 
 function handleZ_print_char(engine, a) {
-    engine.logger('print_char','zscii_char_to_ascii('+a[0]+')');
     return engine._handler_zOut('_zscii_char_to_ascii('+a[0]+')',0);
 }
 function handleZ_print_num(engine, a) {
-    engine.logger('print_num','handler_zout('+a[0]+')');
     return engine._handler_zOut(a[0],0);
 }
 function handleZ_random(engine, a) {
-    engine.logger('random',"random_number("+a[0]+")");
     return engine._storer("_random_number("+a[0]+")");
   }
 function handleZ_push(engine, a) {
-    engine.logger('push',a[0]);
     return 'm_gamestack.push('+a[0]+')';
   }
 function handleZ_pull(engine, a) {
-    engine.logger('pull',a[0] +'=gamestack.pop()');
     return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
   }
 
 function handleZ_split_window(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('split_window','lines=' + a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SPLITWINDOW+","+a[0]+"];return";
   }
 function handleZ_set_window(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('set_window','win=' + a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETWINDOW+","+a[0]+"];return";
   }
 function handleZ_erase_window(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('erase_window','win=' + a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_ERASEWINDOW+","+a[0]+"];return";
   }
 function handleZ_erase_line(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('erase_line',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_ERASELINE+","+a[0]+"];return";
   }
 function handleZ_set_cursor(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('set_cursor',' ['+a[0]+', ' + a[1] + '] ');
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETCURSOR+","+a[0]+","+a[1]+"];return";
   }
 
 function handleZ_get_cursor(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('get_cursor',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_GETCURSOR+","+a[0]+"];return";
   }
 
 function handleZ_set_text_style(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('set_text_style',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_STYLE+","+a[0]+",0,0];return";
   }
 
 function handleZ_buffer_mode(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('buffer_mode',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETBUFFERMODE+","+a[0]+"];return";
   }
 
 function handleZ_output_stream(engine, a) {
-    engine.logger('output_stream',a[0]+', ' + a[1]);
     return '_set_output_stream('+a[0]+','+a[1]+')';
   }
 
 function handleZ_input_stream(engine, a) {
     engine.m_compilation_running=0;
-    engine.logger('input_stream',a[0]);
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_SETINPUTSTREAM+","+a[0]+"];return";
   }
 
@@ -728,7 +657,6 @@ function handleZ_sound_effect(engine, a) {
     // deal with callbacks at present.
 
     engine.m_compilation_running=0;
-    engine.logger('sound_effect','better logging later');
     while (a.length < 5) { a.push(0); }
     return "m_pc="+engine.m_pc+';m_effects=['+GNUSTO_EFFECT_SOUND+','+a[0]+','+a[1]+','+a[2]+','+a[3]+','+a[4]+'];return';
   }
@@ -797,7 +725,6 @@ function handleZ_read_char(engine, a) {
   }
 
 function handleZ_scan_table(engine, a) {
-    engine.logger('scan_table',"t=scan_table("+a[0]+','+a[1]+"&0xFFFF,"+a[2]+"&0xFFFF," + a[3]+");");
     if (a.length == 4) {
       return "t=_scan_table("+a[0]+','+a[1]+"&0xFFFF,"+a[2]+"&0xFFFF," + a[3]+");" +
 	engine._storer("t") + ";" +  engine._brancher('t');
@@ -808,22 +735,18 @@ function handleZ_scan_table(engine, a) {
   }
 
 function handleZ_not(engine, a) {
-		engine.logger('not','~'+a[1]+'&0xffff');
     return engine._storer('~'+a[1]+'&0xffff');
 }
 
 function handleZ_tokenise(engine, a) {
-    engine.logger('tokenise',"tokenise("+a[0]+","+a[1]+","+a[2]+","+a[3]+")");
     return "_tokenise(("+a[0]+")&0xFFFF,("+a[1]+")&0xFFFF,"+a[2]+","+a[3]+")";
   }
 
 function handleZ_encode_text(engine, a) {
-    engine.logger('tokenise',"_encode_text("+a[0]+","+a[1]+","+a[2]+","+a[3]+")");
     return "_encode_text("+a[0]+","+a[1]+","+a[2]+","+a[3]+")";
   }
 
 function handleZ_copy_table(engine, a) {
-    engine.logger('_copy_table',"copy_table("+a[0]+','+a[1]+','+a[2]+")");
     return "_copy_table("+a[0]+','+a[1]+','+a[2]+")";
   }
 
@@ -832,12 +755,10 @@ function handleZ_print_table(engine, a) {
     // Jam in defaults:
     if (a.length < 3) { a.push(1); } // default height
     if (a.length < 4) { a.push(0); } // default skip
-    engine.logger('print_table',"print_table("+a[0]+','+a[1]+','+a[2]+',' + a[3]+')');
     return "m_pc="+engine.m_pc+";m_effects=_print_table("+a[0]+","+a[1]+","+a[2]+","+a[3]+");return";
   }
 
 function handleZ_check_arg_count(engine, a) {
-    engine.logger('check_arg_count',a[0]+'<=param_count()');
     return engine._brancher(a[0]+'<=_param_count()');
   }
 
@@ -877,19 +798,16 @@ function handleZ_restoreV45678(engine, a) {
 }
 
 function handleZ_log_shift(engine, a) {
-    engine.logger('log_shift',"log_shift("+a[0]+','+a[1]+')');
     // log_shift logarithmic-bit-shift.  Right shifts are zero-padded
     return engine._storer("_log_shift("+a[0]+','+a[1]+')');
   }
 
 function handleZ_art_shift(engine, a) {
-    engine.logger('log_shift',"art_shift("+a[0]+','+a[1]+')');
     // arithmetic-bit-shift.  Right shifts are sign-extended
     return engine._storer("_art_shift("+a[0]+','+a[1]+')');
   }
 
 function handleZ_set_font(engine, a) {
-    engine.logger('set_font','('+a[0]+'<2?1:0) <<We only provide font 1.>>');
     // We only provide font 1.
     return engine._storer('('+a[0]+'<2?1:0)');
   }
@@ -909,12 +827,10 @@ function handleZ_restore_undo(engine, a) {
 }
 
 function handleZ_print_unicode(engine, a) {
-    engine.logger('print_unicode',"String.fromCharCode(" +a[0]+")");
     return engine._handler_zOut("String.fromCharCode(" +a[0]+")",0);
 }
 
 function handleZ_check_unicode(engine, a) {
-    engine.logger('check_unicode','we always say yes');
     // We have no way of telling from JS whether we can
     // read or write a character, so let's assume we can
     // read and write all of them. We can always provide
@@ -1552,8 +1468,6 @@ GnustoEngine.prototype = {
   // Main point of entry for gnusto. Be sure to call start_game()
   // before calling this the first time.
   run: function ge_run() {
-
-    //this.logger('run', answer);
     var start_pc = 0;
     var turns = 0;
     var jscode;
@@ -1593,8 +1507,8 @@ GnustoEngine.prototype = {
 
 				// Some useful debugging code:
 				if (this.m_copperTrail) {
-						this.logger('pc : ' + start_pc.toString(16));
-						this.logger('jit : ' + jscode);
+          this.logger('pc', start_pc.toString(16));
+          this.logger('jit', jscode);
 				}
 
       jscode();
@@ -2223,7 +2137,6 @@ GnustoEngine.prototype = {
 					if (this.m_handlers[instr]) {
 
 							code = code + this.m_handlers[instr](this, args)+';';
-							//this.logger(code,'');
 					} else if (instr>=1128 && instr<=1255 &&
 										 "special_instruction_EXT"+(instr-1000) in this) {
 
@@ -2235,8 +2148,6 @@ GnustoEngine.prototype = {
 							code = code +
 									this["special_instruction_EXT"+(instr-1000)](args)+
 									';';
-							//this.logger(code,'');
-
 					} else {
 							gnusto_error(200,
 													 this.m_pc.toString(16)); // no handler
@@ -2251,7 +2162,6 @@ GnustoEngine.prototype = {
 
 			if (this.m_single_step||this.m_debug_mode) {
 					code = code + 'm_pc='+this.m_pc;
-					//this.logger(code,'');
 			}
 
 			// Name the function after the starting position, to make life
@@ -3324,8 +3234,6 @@ GnustoEngine.prototype = {
 	_zscii_from: function ge_zscii_from(address, max_length, tell_length) {
 
 			if (address in this.m_jit) {
-					this.logger('zscii_from ' + address,'already in THIS.M_JIT');
-
 					// Already seen this one.
 
 					if (tell_length)
@@ -3428,7 +3336,6 @@ GnustoEngine.prototype = {
 					this.m_jit[start_address] = [temp, address];
 			}
 
-			this.logger('zscii_from ' + address,temp);
 			if (tell_length) {
 					return [temp, address];
 			} else {
@@ -3583,7 +3490,7 @@ GnustoEngine.prototype = {
 	// which does all this for you.)
 
 	_zOut: function ge_zOut(text) {
-
+      this.logger("_zOut", text);
 			if (this.m_streamthrees.length) {
 
 					// Stream threes disable any other stream while they're on.
@@ -3882,7 +3789,6 @@ GnustoEngine.prototype = {
 
 			this.m_pc=zf[1];
 
-			this.logger('print',message);
 			return this._handler_zOut(message, is_return);
 	},
 
@@ -3926,7 +3832,7 @@ GnustoEngine.prototype = {
 			//			}
 
 			if (this.m_goldenTrail) {
-					this.logger("pc : "+address.toString(16));
+        this.logger("pc", address.toString(16));
 			}
 
 			this.m_pc = address;
