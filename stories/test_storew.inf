@@ -1,0 +1,9 @@
+Array myArray --> 2;
+
+[ Main;
+  myArray-->1 = 0;
+  @push 2;
+  @push 1;
+  @storew myArray sp sp;
+  print "myArray-->1 is ", myArray-->1, "^";
+];
