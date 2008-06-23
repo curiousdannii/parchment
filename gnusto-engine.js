@@ -107,6 +107,9 @@ var CHILD_REC = 2;
 
 var CALLED_FROM_INTERRUPT = 0;
 
+// Placeholder when decoding arguments for opcodes to indicate that
+// an argument needs to be popped from the stack.
+var ARG_STACK_POP = "SP";
 
 ////////////////////////////////////////////////////////////////
 // Effect codes, returned from run(). See the explanation below
@@ -2047,6 +2050,9 @@ GnustoEngine.prototype = {
 			code = '';
 			var starting_pc = this.m_pc;
 
+      // Counter for naming any temporary variables that we create.
+      var temp_var_counter = 0;
+
 			do {
 					// List of arguments to the opcode.
 					var args = [];
@@ -2133,6 +2139,21 @@ GnustoEngine.prototype = {
 
 							instr &= 0x1F;
 					}
+
+          // We need to ensure that arguments are popped from the
+          // stack in the right order, regardless of the order in
+          // which code in JITspace uses them; so here we figure out
+          // what arguments are taken from the stack and evaluate them
+          // into temporary variables before calling the generated JIT
+          // code for the instruction. See issue 43 for more information:
+          //
+          // http://code.google.com/p/parchment/issues/detail?id=43
+          for (var i = 0; i < args.length; i++)
+              if (args[i] == ARG_STACK_POP) {
+                  var temp_var_name = "tmp_" + temp_var_counter++;
+                  code += "var " + temp_var_name + " = m_gamestack.pop();";
+                  args[i] = temp_var_name;
+              }
 
 					if (this.m_handlers[instr]) {
 
@@ -3566,7 +3587,7 @@ GnustoEngine.prototype = {
 	//
 	_code_for_varcode: function ge_code_for_varcode(varcode) {
 			if (varcode==0) {
-					return 'm_gamestack.pop()';
+          return ARG_STACK_POP;
 			} else if (varcode < 0x10) {
 					return 'm_locals['+(varcode-1)+']';
 			} else {
