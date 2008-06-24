@@ -530,13 +530,14 @@ function WebZui(logfunc) {
         self._eraseBottomWindow();
       } else if (window == 0) {
         self._eraseBottomWindow();
-      } else if (window == 1) {
+      } else if (window == 1 && self._console) {
         self._console.clear();
       }
     },
 
     onSetCursor: function(x, y) {
-      self._console.moveTo(x - 1, y - 1);
+      if (self._console)
+        self._console.moveTo(x - 1, y - 1);
     },
 
     onSetBufferMode: function(flag) {
