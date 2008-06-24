@@ -145,3 +145,8 @@ body {
     padding: 10px;
     margin: 10px;
 }
+
+#loading-screen {
+    padding: 50px;
+    text-align: center;
+}
