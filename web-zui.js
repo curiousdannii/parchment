@@ -627,6 +627,16 @@ function WebZui(logfunc) {
 
           if (lines[i]) {
             var chunk = lines[i].entityify();
+
+            // TODO: This isn't an ideal solution for having breaking
+            // whitespace while preserving its structure, but it
+            // deals with the most common case.
+            var singleSpaceBetweenWords = /(\S) (\S)/g;
+            chunk = chunk.replace(
+              singleSpaceBetweenWords,
+              "$1<span class=\"z-breaking-whitespace\"> </span>$2"
+            );
+
             chunk = '<span class="' + styles + '">' + chunk + '</span>';
             $("#content").append(chunk);
             if (i < lines.length - 1)

@@ -135,6 +135,10 @@ body {
     font-size: 10pt;
 }
 
+.z-breaking-whitespace {
+    white-space: normal;
+}
+
 #top-window .z-bold {
     text-decoration: underline;
     font-variant: normal;
