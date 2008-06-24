@@ -132,6 +132,7 @@ body {
 .z-fixed-pitch {
     font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
     white-space: pre;
+    font-size: 10pt;
 }
 
 #top-window .z-bold {
