@@ -3511,7 +3511,7 @@ GnustoEngine.prototype = {
 	// which does all this for you.)
 
 	_zOut: function ge_zOut(text) {
-      this.logger("_zOut", text);
+    //this.logger("_zOut", text);
 			if (this.m_streamthrees.length) {
 
 					// Stream threes disable any other stream while they're on.
@@ -3889,7 +3889,7 @@ GnustoEngine.prototype = {
 			this.m_param_counts = this.m_undo.m_param_counts;
 			this.m_result_targets = this.m_undo.m_result_targets;
 			this.m_gamestack = this.m_undo.m_gamestack;
-
+      this.m_gamestack_callbreaks = this.m_undo.m_gamestack_callbreaks;
 			var mem = this.m_undo.m_memory;
 			this.m_memory = mem.concat(this.m_memory.slice(mem.length));
 
@@ -3901,7 +3901,7 @@ GnustoEngine.prototype = {
 			this.m_pc = this.m_undo.m_pc+1;
 
 			// OK, clear that out so we can't un-undo.
-			this.undo = 0;
+			this.m_undo = 0;
 
 			return 1;
 	},
@@ -3910,12 +3910,13 @@ GnustoEngine.prototype = {
 			var result = {
 					'm_memory': this.m_memory.slice(0, this.m_stat_start),
 					'm_pc': this.m_pc + varcode_offset, // move onto target varcode,
-					'm_call_stack': this.m_call_stack,
-					'm_locals': this.m_locals,
-					'm_locals_stack': this.m_locals_stack,
-					'm_param_counts': this.m_param_counts,
-					'm_result_targets': this.m_result_targets,
-					'm_gamestack': this.m_gamestack
+					'm_call_stack': this.m_call_stack.slice(),
+					'm_locals': this.m_locals.slice(),
+					'm_locals_stack': this.m_locals_stack.slice(),
+					'm_param_counts': this.m_param_counts.slice(),
+					'm_result_targets': this.m_result_targets.slice(),
+					'm_gamestack': this.m_gamestack.slice(),
+          'm_gamestack_callbreaks': this.m_gamestack_callbreaks.slice()
 			};
 
 			return result;
@@ -4070,7 +4071,7 @@ GnustoEngine.prototype = {
 
   // |call_stack| stores all the return addresses for all the functions
   // which are currently executing.
-  m_call_stack: 0,
+  m_call_stack: [],
 
   // |locals| is an array of the Z-machine's local variables.
   m_locals: [],
