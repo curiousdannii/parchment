@@ -224,25 +224,25 @@ function WebZui(logfunc) {
     },
 
     _windowKeyup: function(event) {
-      return self._isHotKey(event);
+      if (jQuery.browser.mozilla)
+        return self._isHotKey(event);
+      else
+        return true;
     },
 
     _windowKeydown: function(event) {
-      if (self._isHotKey(event))
+      if (jQuery.browser.mozilla)
+        return self._isHotKey(event);
+      else if (((jQuery.browser.safari || jQuery.browser.msie) &&
+               (event.keyCode == LEFT_KEYCODE ||
+                event.keyCode == UP_KEYCODE ||
+                event.keyCode == RIGHT_KEYCODE ||
+                event.keyCode == DOWN_KEYCODE)) ||
+               (jQuery.browser.msie &&
+                event.keyCode == BACKSPACE_KEYCODE))
+          return self._handleKeyEvent(event);
+      else
         return true;
-      if (!jQuery.browser.mozilla) {
-        var newEvent = new Object();
-        if (event.keyCode > 20 && event.keyCode < 127) {
-          newEvent.charCode = String.fromCharCode(event.keyCode)
-                                    .toLowerCase()
-                                    .charCodeAt(0);
-        } else {
-          newEvent.charCode = 0;
-          newEvent.keyCode = event.keyCode;
-        }
-        return self._handleKeyEvent(newEvent);
-      } else
-        return false;
     },
 
     _windowKeypress: function(event) {
@@ -250,11 +250,21 @@ function WebZui(logfunc) {
         return true;
       if (jQuery.browser.mozilla)
         return self._handleKeyEvent(event);
-      else
-        return false;
+      else {
+        var newEvent = new Object();
+
+        newEvent.charCode = event.which;
+        newEvent.keyCode = event.keyCode;
+        return self._handleKeyEvent(newEvent);
+      }
     },
 
     _handleKeyEvent: function(event) {
+      if (event.keyCode == SHIFT_KEYCODE)
+        // This only seems to happen on Opera, but just in case it happens
+        // on some other browsers too, we're not special-casing it.
+        return false;
+
       self._removeBufferedWindows();
       self._lastSeenY = $("#bottom").offset().top;
       self._scrollBottomWindow();
