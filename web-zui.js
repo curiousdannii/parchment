@@ -234,12 +234,12 @@ function WebZui(logfunc) {
       if (jQuery.browser.mozilla)
         return self._isHotKey(event);
       else if (((jQuery.browser.safari || jQuery.browser.msie) &&
-               (event.keyCode == LEFT_KEYCODE ||
-                event.keyCode == UP_KEYCODE ||
-                event.keyCode == RIGHT_KEYCODE ||
-                event.keyCode == DOWN_KEYCODE)) ||
-               (jQuery.browser.msie &&
-                event.keyCode == BACKSPACE_KEYCODE))
+                (!jQuery.browser.opera) &&
+                (event.keyCode == LEFT_KEYCODE ||
+                 event.keyCode == UP_KEYCODE ||
+                 event.keyCode == RIGHT_KEYCODE ||
+                 event.keyCode == DOWN_KEYCODE ||
+                 event.keyCode == BACKSPACE_KEYCODE)))
           return self._handleKeyEvent(event);
       else
         return true;
@@ -253,8 +253,30 @@ function WebZui(logfunc) {
       else {
         var newEvent = new Object();
 
-        newEvent.charCode = event.which;
-        newEvent.keyCode = event.keyCode;
+        if (jQuery.browser.opera) {
+          newEvent.charCode = event.which;
+          // Opera doesn't seem to let us distinguish between whether
+          // an arrow key was pressed vs. ', %, &, or (, so we'll play
+          // it safe and force the ASCII character instead of the
+          // arrow key, since some games are unwinnable if the user
+          // can't type such characters.
+          if (event.which != LEFT_KEYCODE &&
+              event.which != RIGHT_KEYCODE &&
+              event.which != UP_KEYCODE &&
+              event.which != DOWN_KEYCODE)
+            newEvent.keyCode = event.keyCode;
+        } else if (jQuery.browser.safari) {
+          if (event.charCode && event.keyCode != RETURN_KEYCODE)
+            newEvent.charCode = event.charCode;
+          else
+            newEvent.keyCode = event.keyCode;
+        } else if (jQuery.browser.msie) {
+          if (event.keyCode == RETURN_KEYCODE)
+            newEvent.keyCode = event.keyCode;
+          else
+            newEvent.charCode = event.keyCode;
+        }
+
         return self._handleKeyEvent(newEvent);
       }
     },
@@ -317,8 +339,6 @@ function WebZui(logfunc) {
         callback(finalInputString);
       } else if (event.keyCode in keyCodeMap) {
           self._lineEditor[keyCodeMap[event.keyCode]]();
-      } else if (event.charCode in keyCodeMap) {
-          self._lineEditor[keyCodeMap[event.charCode]]();
       } else if (event.charCode) {
         self._lineEditor.selfInsert(event.charCode);
       }
