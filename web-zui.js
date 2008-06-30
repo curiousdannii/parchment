@@ -1,3 +1,4 @@
+var ESCAPE_KEYCODE = 27;
 var BACKSPACE_KEYCODE = 8;
 var RETURN_KEYCODE = 13;
 var SHIFT_KEYCODE = 16;
@@ -6,10 +7,18 @@ var UP_KEYCODE = 38;
 var RIGHT_KEYCODE = 39;
 var DOWN_KEYCODE = 40;
 
+var ZSCII_UP = 129;
+var ZSCII_DOWN = 130;
+var ZSCII_LEFT = 131;
+var ZSCII_RIGHT = 132;
+var ZSCII_NEWLINE = 13;
+var ZSCII_DELETE = 8;
+var ZSCII_ESCAPE = 27;
+
 // We want to use named constants, but because of the way JS's object
 // literals work, our named constants will just be strings; we'll
 // convert them to their integer values at load time.
-var __originalKeyCodeMap = {
+var __origKeyCodeHandlerMap = {
   BACKSPACE_KEYCODE  : "backwardDeleteChar",
   LEFT_KEYCODE       : "backwardChar",
   UP_KEYCODE         : "previousHistory",
@@ -17,11 +26,28 @@ var __originalKeyCodeMap = {
   DOWN_KEYCODE       : "nextHistory"
 };
 
-var keyCodeMap = {};
+// Mapping from JS key codes to equivalent ZSCII characters, as
+// defined in section 3.8 of the Z-Machine Specification.
+var __originalKeyCodeToZSCIIMap = {
+  RETURN_KEYCODE     : ZSCII_NEWLINE,
+  BACKSPACE_KEYCODE  : ZSCII_DELETE,
+  ESCAPE_KEYCODE     : ZSCII_ESCAPE,
+  LEFT_KEYCODE       : ZSCII_LEFT,
+  UP_KEYCODE         : ZSCII_UP,
+  RIGHT_KEYCODE      : ZSCII_RIGHT,
+  DOWN_KEYCODE       : ZSCII_DOWN
+};
 
-for (name in __originalKeyCodeMap) {
-  keyCodeMap[this[name]] = __originalKeyCodeMap[name];
+function constKeysToValues(originalMap, constObj) {
+  var finalMap = {};
+  for (name in originalMap) {
+    finalMap[constObj[name]] = originalMap[name];
+  }
+  return finalMap;
 }
+
+var keyCodeHandlerMap = constKeysToValues(__origKeyCodeHandlerMap, this);
+var keyCodeToZSCIIMap = constKeysToValues(__originalKeyCodeToZSCIIMap, this);
 
 function LineEditor() {
   this.line = "";
@@ -302,15 +328,10 @@ function WebZui(logfunc) {
         //   http://www.gnelson.demon.co.uk/zspec/sect03.html
         if (self._currentCallback) {
           var keyCode = 0;
-          if (event.charCode) {
+          if (event.charCode)
             keyCode = event.charCode;
-          } else {
-            switch (event.keyCode) {
-            case RETURN_KEYCODE:
-              keyCode = event.keyCode;
-              break;
-            }
-          }
+          else if (keyCodeToZSCIIMap[event.keyCode])
+              keyCode = keyCodeToZSCIIMap[event.keyCode];
           if (keyCode != 0) {
             var callback = self._currentCallback;
 
@@ -337,8 +358,8 @@ function WebZui(logfunc) {
            finalInputString + '</span><br/>')
         );
         callback(finalInputString);
-      } else if (event.keyCode in keyCodeMap) {
-          self._lineEditor[keyCodeMap[event.keyCode]]();
+      } else if (event.keyCode in keyCodeHandlerMap) {
+          self._lineEditor[keyCodeHandlerMap[event.keyCode]]();
       } else if (event.charCode) {
         self._lineEditor.selfInsert(event.charCode);
       }
