@@ -350,12 +350,11 @@ function WebZui(logfunc) {
         var callback = self._currentCallback;
 
         self._currentCallback = null;
-        finalInputString = finalInputString.entityify();
         self._lastSeenY = $("#current-input").offset().top;
         var styles = $("#current-input").attr("class");
         $("#current-input").replaceWith(
           ('<span class="finished-input ' + styles + '">' +
-           finalInputString + '</span><br/>')
+           finalInputString.entityify() + '</span><br/>')
         );
         callback(finalInputString);
       } else if (event.keyCode in keyCodeHandlerMap) {
