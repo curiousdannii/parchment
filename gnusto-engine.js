@@ -2665,9 +2665,6 @@ GnustoEngine.prototype = {
 
 			var max_chars;
 			var result;
-			if (!entered) {
-			  entered = ' ';
-			}
 
 			if (this.m_version <= 4) {
 
