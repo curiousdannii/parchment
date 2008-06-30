@@ -122,6 +122,12 @@ function EngineRunner(engine, zui, logfunc) {
 
     _receiveLineInput: function(input) {
       self._isWaitingForCallback = false;
+
+      // For now we'll say that a carriage return is the
+      // terminating character, because we don't actually support
+      // other terminating characters.
+      self._engine.answer(0, 13);
+
       self._engine.answer(1, input);
       if (!self._isInLoop) {
         self._continueRunning();
