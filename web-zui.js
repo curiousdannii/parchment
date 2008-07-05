@@ -793,9 +793,18 @@ var gZcode = null;
 var IF_ARCHIVE_PREFIX = "if-archive/";
 var ZCODE_APPSPOT_URL = "http://zcode.appspot.com/";
 
+function getFilenameFromUrl(url) {
+  var lastSlash = url.lastIndexOf("/");
+  return url.slice(lastSlash + 1);
+}
+
 $(document).ready(function() {
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5.js");
+  var storyName = getFilenameFromUrl(story);
+
+  storyName = storyName ? storyName + " - Parchment" : "Parchment";
+  window.document.title = storyName;
 
   gStory = story;
   if (story.slice(-3).toLowerCase() == ".js")
