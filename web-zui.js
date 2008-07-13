@@ -799,6 +799,15 @@ function getFilenameFromUrl(url) {
 }
 
 $(document).ready(function() {
+  if (jQuery.browser.safari) {
+    // The iPhone needs an actual text field focused in order to
+    // display the on-screen keyboard, so add a hidden one and
+    // focus it.
+    $("#bottom").html('<textarea id="iphone-text-field" rows="1" ' +
+                      'cols="80"></textarea>');
+    $("#iphone-text-field").focus();
+  }
+
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5.js");
   var storyName = getFilenameFromUrl(story);

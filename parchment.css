@@ -156,3 +156,9 @@ body {
     text-align: center;
     color: gray;
 }
+
+#iphone-text-field {
+    border: none;
+    background: inherit;
+    opacity: 0;
+}
