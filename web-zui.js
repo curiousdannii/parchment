@@ -806,7 +806,7 @@ function processZcodeAppspotResponse(content) {
 
 function processBase64Zcode(content) {
     gZcode = decode_base64(content);
-    _webZuiStartup();
+    window.setTimeout(_webZuiStartup, 10);
 }
 
 var gThisUrl = location.protocol + "//" + location.host + location.pathname;
