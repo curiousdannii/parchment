@@ -343,6 +343,14 @@ function WebZui(logfunc) {
 
       self._removeBufferedWindows();
       self._lastSeenY = $("#bottom").offset().top;
+
+      if (gIsIphone)
+        // Page height on the iPhone is very odd and it's often possible
+        // for there to be lots of empty space at the bottom of a page,
+        // which makes putting the top of the viewport at the top of the
+        // "#bottom" element focus on it.  So we'll scroll up half a screen.
+        self._lastSeenY -= 240;
+
       self._scrollBottomWindow();
 
       if ($("#current-input").length == 0) {
