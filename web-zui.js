@@ -174,7 +174,9 @@ function LineEditor() {
 
 
 function WebZui(logfunc) {
-  this._size = [80, 25];
+  var widthInChars = gIsIphone ? 58 : 80;
+
+  this._size = [widthInChars, 25];
   this._console = null;
   this._activeWindow = 0;
   this._lineEditor = new LineEditor();
@@ -204,8 +206,7 @@ function WebZui(logfunc) {
     },
 
     _scrollBottomWindow: function() {
-      var scrollX = gIsIphone ? window.scrollX : 0;
-      window.scroll(scrollX, self._lastSeenY);
+      window.scroll(0, self._lastSeenY);
     },
 
     _finalize: function() {
@@ -259,6 +260,9 @@ function WebZui(logfunc) {
     },
 
     _iphoneKeyup: function(event) {
+      // Put a single space in the text field so that the UI
+      // doesn't attempt to auto-capitalize.
+      $("#iphone-text-field").val(" ");
       var newEvent = new Object();
       switch (event.keyCode) {
       case 127:
@@ -852,7 +856,7 @@ $(document).ready(function() {
     // The iPhone needs an actual text field focused in order to
     // display the on-screen keyboard, so add a hidden one.
     $("#bottom").html('<textarea id="iphone-text-field" rows="1" ' +
-                      'cols="10"></textarea>');
+                      'cols="10"> </textarea>');
   }
 
   var qs = new Querystring();
