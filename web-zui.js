@@ -804,9 +804,37 @@ function processZcodeAppspotResponse(content) {
   processBase64Zcode(content.data);
 }
 
+function decodeBase64Zcode(data, callback, decodedSoFar) {
+  var CHUNK_SIZE = 50000;
+
+  var firstChunk = data.slice(0, CHUNK_SIZE);
+  var restOfData = data.slice(CHUNK_SIZE);
+
+  if (typeof(decodedSoFar) == "undefined")
+    decodedSoFar = [];
+
+  decode_base64(firstChunk, decodedSoFar);
+
+  var next_func;
+
+  if (restOfData)
+    next_func = function decode_rest() {
+      decodeBase64Zcode(restOfData, callback, decodedSoFar);
+    };
+  else
+    next_func = function finish() {
+      callback(decodedSoFar);
+    };
+
+  window.setTimeout(next_func, 10);
+}
+
 function processBase64Zcode(content) {
-    gZcode = decode_base64(content);
+  function setZcode(data) {
+    gZcode = data;
     window.setTimeout(_webZuiStartup, 10);
+  }
+  decodeBase64Zcode(content, setZcode);
 }
 
 var gThisUrl = location.protocol + "//" + location.host + location.pathname;

@@ -29,8 +29,10 @@ function encode_base64(data) {
     return out;
 }
 
-function decode_base64(data) {
-    var out = [], c1, c2, c3, e1, e2, e3, e4;
+function decode_base64(data, out) {
+    if (typeof(out) == "undefined")
+      out = [];
+    var c1, c2, c3, e1, e2, e3, e4;
     for (var i = 0; i < data.length; ) {
         e1 = base64_tab.indexOf(data.charAt(i++));
         e2 = base64_tab.indexOf(data.charAt(i++));
