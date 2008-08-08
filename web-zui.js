@@ -804,7 +804,7 @@ function processZcodeAppspotResponse(content) {
   processBase64Zcode(content.data);
 }
 
-function decodeBase64Zcode(data, callback, decodedSoFar) {
+function processBase64Zcode(data, decodedSoFar) {
   var CHUNK_SIZE = 50000;
 
   var firstChunk = data.slice(0, CHUNK_SIZE);
@@ -813,28 +813,24 @@ function decodeBase64Zcode(data, callback, decodedSoFar) {
   if (typeof(decodedSoFar) == "undefined")
     decodedSoFar = [];
 
+  $("#progress-text").html("Decoding " + data.length +
+                           " more bytes...");
   decode_base64(firstChunk, decodedSoFar);
 
   var next_func;
 
   if (restOfData)
     next_func = function decode_rest() {
-      decodeBase64Zcode(restOfData, callback, decodedSoFar);
+      processBase64Zcode(restOfData, decodedSoFar);
     };
   else
     next_func = function finish() {
-      callback(decodedSoFar);
+      gZcode = decodedSoFar;
+      $("#progress-text").html("Starting interpreter...");
+      _webZuiStartup();
     };
 
   window.setTimeout(next_func, 10);
-}
-
-function processBase64Zcode(content) {
-  function setZcode(data) {
-    gZcode = data;
-    window.setTimeout(_webZuiStartup, 10);
-  }
-  decodeBase64Zcode(content, setZcode);
 }
 
 var gThisUrl = location.protocol + "//" + location.host + location.pathname;
@@ -865,6 +861,8 @@ $(document).ready(function() {
 
   storyName = storyName ? storyName + " - Parchment" : "Parchment";
   window.document.title = storyName;
+
+  $("#progress-text").html("Retrieving story file...");
 
   gStory = story;
   if (story.slice(-3).toLowerCase() == ".js")
