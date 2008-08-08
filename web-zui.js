@@ -204,7 +204,8 @@ function WebZui(logfunc) {
     },
 
     _scrollBottomWindow: function() {
-      window.scroll(0, self._lastSeenY);
+      var scrollX = gIsIphone ? window.scrollX : 0;
+      window.scroll(scrollX, self._lastSeenY);
     },
 
     _finalize: function() {
@@ -217,19 +218,27 @@ function WebZui(logfunc) {
     },
 
     _bindEventHandlers: function() {
-      $(document).keypress(self._windowKeypress)
-                 .keyup(self._windowKeyup)
-                 .keydown(self._windowKeydown)
-                 .mousewheel(self._windowMousewheel);
+      if (gIsIphone) {
+        $(document).keyup(self._iphoneKeyup);
+      } else {
+        $(document).keypress(self._windowKeypress)
+                   .keyup(self._windowKeyup)
+                   .keydown(self._windowKeydown)
+                   .mousewheel(self._windowMousewheel);
+      }
       $(window).resize(self._windowResize);
       self._intervalId = window.setInterval(self._windowHashCheck, 1000);
     },
 
     _unbindEventHandlers: function() {
-      $(document).unbind("keypress", self._windowKeypress)
-                 .unbind("keyup", self._windowKeyup)
-                 .unbind("keydown", self._windowKeydown)
-                 .unbind("mousewheel", self._windowMousewheel);
+      if (gIsIphone) {
+        $(document).unbind("keyup", self._iphoneKeyup);
+      } else {
+        $(document).unbind("keypress", self._windowKeypress)
+                   .unbind("keyup", self._windowKeyup)
+                   .unbind("keydown", self._windowKeydown)
+                   .unbind("mousewheel", self._windowMousewheel);
+      }
       $(window).unbind("resize", self._windowResize);
       window.clearInterval(self._intervalId);
     },
@@ -247,6 +256,21 @@ function WebZui(logfunc) {
 
     _isHotKey: function(event) {
       return (event.altKey || event.ctrlKey || event.metaKey);
+    },
+
+    _iphoneKeyup: function(event) {
+      var newEvent = new Object();
+      switch (event.keyCode) {
+      case 127:
+        newEvent.keyCode = BACKSPACE_KEYCODE;
+        break;
+      case 10:
+        newEvent.keyCode = RETURN_KEYCODE;
+        break;
+      default:
+        newEvent.charCode = event.keyCode;
+      }
+      return self._handleKeyEvent(newEvent);
     },
 
     _windowKeyup: function(event) {
@@ -789,6 +813,7 @@ var gThisUrl = location.protocol + "//" + location.host + location.pathname;
 var gBaseUrl = gThisUrl.slice(0, gThisUrl.lastIndexOf("/"));
 var gStory = "";
 var gZcode = null;
+var gIsIphone = navigator.userAgent.match(/iPhone/i);
 
 var IF_ARCHIVE_PREFIX = "if-archive/";
 var ZCODE_APPSPOT_URL = "http://zcode.appspot.com/";
@@ -799,13 +824,11 @@ function getFilenameFromUrl(url) {
 }
 
 $(document).ready(function() {
-  if (jQuery.browser.safari) {
+  if (gIsIphone) {
     // The iPhone needs an actual text field focused in order to
-    // display the on-screen keyboard, so add a hidden one and
-    // focus it.
+    // display the on-screen keyboard, so add a hidden one.
     $("#bottom").html('<textarea id="iphone-text-field" rows="1" ' +
-                      'cols="80"></textarea>');
-    $("#iphone-text-field").focus();
+                      'cols="10"></textarea>');
   }
 
   var qs = new Querystring();
