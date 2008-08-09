@@ -174,7 +174,7 @@ function LineEditor() {
 
 
 function WebZui(logfunc) {
-  var widthInChars = gIsIphone ? 58 : 80;
+  var widthInChars = gIsIphone ? 38 : 80;
 
   this._size = [widthInChars, 25];
   this._console = null;
@@ -206,7 +206,11 @@ function WebZui(logfunc) {
     },
 
     _scrollBottomWindow: function() {
-      window.scroll(0, self._lastSeenY);
+      // If we're on the iPhone, do nothing; the iPhone will handle
+      // scrolling as it likes and anything we do to stop it will
+      // just result in confusion.
+      if (!gIsIphone)
+        window.scroll(0, self._lastSeenY);
     },
 
     _finalize: function() {
@@ -343,13 +347,6 @@ function WebZui(logfunc) {
 
       self._removeBufferedWindows();
       self._lastSeenY = $("#bottom").offset().top;
-
-      if (gIsIphone)
-        // Page height on the iPhone is very odd and it's often possible
-        // for there to be lots of empty space at the bottom of a page,
-        // which makes putting the top of the viewport at the top of the
-        // "#bottom" element focus on it.  So we'll scroll up half a screen.
-        self._lastSeenY -= 240;
 
       self._scrollBottomWindow();
 

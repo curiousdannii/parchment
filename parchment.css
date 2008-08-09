@@ -1,3 +1,7 @@
+html {
+    -webkit-text-size-adjust: none;
+}
+
 .fg-default {
     color: black;
 }
@@ -167,5 +171,5 @@ body {
     background: inherit;
     opacity: 0;
     font-family: palatino, georgia, verdana, arial, sans-serif;
-    font-size: 24pt;
+    font-size: 14pt;
 }
