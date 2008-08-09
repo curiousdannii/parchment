@@ -774,6 +774,23 @@ function WebZui(logfunc) {
   self._windowResize();
   self._bindEventHandlers();
   self._eraseBottomWindow();
+
+  if (gIsIphone) {
+    // The iPhone needs an actual text field focused in order to
+    // display the on-screen keyboard, so add a hidden one.
+    $("#bottom").html(
+      '<textarea class="iphone-visible" ' +
+        'id="iphone-text-field" rows="1" ' +
+        'cols="20" autocapitalize="off">' +
+        'Tap here to enter text.</textarea>'
+    );
+    function onClick() {
+      $(this).removeClass("iphone-visible");
+      $(this).addClass("iphone-invisible");
+      $(this).unbind("click", onClick);
+    }
+    $("#iphone-text-field").click(onClick);
+  }
 }
 
 FatalError.prototype.onError = function(e) {
@@ -857,13 +874,6 @@ function getFilenameFromUrl(url) {
 }
 
 $(document).ready(function() {
-  if (gIsIphone) {
-    // The iPhone needs an actual text field focused in order to
-    // display the on-screen keyboard, so add a hidden one.
-    $("#bottom").html('<textarea id="iphone-text-field" rows="1" ' +
-                      'cols="10" autocapitalize="off"></textarea>');
-  }
-
   var qs = new Querystring();
   var story = qs.get("story", "stories/troll.z5.js");
   var storyName = getFilenameFromUrl(story);

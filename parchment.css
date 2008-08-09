@@ -166,10 +166,17 @@ body {
     font-size: 10pt;
 }
 
+.iphone-visible {
+    opacity: 0.5;
+}
+
+.iphone-invisible {
+    opacity: 0;
+}
+
 #iphone-text-field {
     border: none;
     background: inherit;
-    opacity: 0;
     font-family: palatino, georgia, verdana, arial, sans-serif;
     font-size: 14pt;
 }
