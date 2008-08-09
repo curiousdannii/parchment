@@ -266,7 +266,7 @@ function WebZui(logfunc) {
     _iphoneKeyup: function(event) {
       // Put a single space in the text field so that the UI
       // doesn't attempt to auto-capitalize.
-      $("#iphone-text-field").val(" ");
+      $("#iphone-text-field").val("");
       var newEvent = new Object();
       switch (event.keyCode) {
       case 127:
@@ -861,7 +861,7 @@ $(document).ready(function() {
     // The iPhone needs an actual text field focused in order to
     // display the on-screen keyboard, so add a hidden one.
     $("#bottom").html('<textarea id="iphone-text-field" rows="1" ' +
-                      'cols="10"> </textarea>');
+                      'cols="10" autocapitalize="off"></textarea>');
   }
 
   var qs = new Querystring();
