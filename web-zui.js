@@ -264,8 +264,6 @@ function WebZui(logfunc) {
     },
 
     _iphoneKeyup: function(event) {
-      // Put a single space in the text field so that the UI
-      // doesn't attempt to auto-capitalize.
       $("#iphone-text-field").val("");
       var newEvent = new Object();
       switch (event.keyCode) {
