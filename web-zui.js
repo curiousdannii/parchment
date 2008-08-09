@@ -775,13 +775,16 @@ function WebZui(logfunc) {
 
   if (gIsIphone) {
     // The iPhone needs an actual text field focused in order to
-    // display the on-screen keyboard, so add a hidden one.
-    $("#bottom").html(
+    // display the on-screen keyboard, so add a hidden one that
+    // attempts to overlap any text prompt that may be visible.
+    $(document.body).append(
       '<textarea class="iphone-visible" ' +
         'id="iphone-text-field" rows="1" ' +
         'cols="20" autocapitalize="off">' +
         'Tap here to enter text.</textarea>'
     );
+    var itfHeight = -1 * $("#iphone-text-field").height();
+    $("#iphone-text-field").css({top: itfHeight + "px"});
     function onClick() {
       $(this).removeClass("iphone-visible");
       $(this).addClass("iphone-invisible");
