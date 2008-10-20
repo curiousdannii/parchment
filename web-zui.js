@@ -841,11 +841,14 @@ function _webZuiStartup() {
   var engine = new GnustoEngine(logfunc);
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
-  var beret = new Beret(engine);
 
-  beret.load(gZcode.slice());
-  logfunc("Story type: " + beret.m_filetype);
+	var story = new base2.file.story(gZcode.slice());
+	if (story.zcode)
+		engine.loadStory(story.zcode);
+	logfunc("Story type: " + story.filetype);
+
   if (window.location.hash) {
+	var beret = new Beret(engine);
     var b64data = window.location.hash.slice(1);
     beret.load(decode_base64(b64data));
     logfunc("Load game story type: " + beret.m_filetype);

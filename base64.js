@@ -19,7 +19,7 @@ var base64_tab2 = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 
 
 function encode_base64(data) {
     var out = "", c1, c2, c3, e1, e2, e3, e4;
-	for (var i = 0; i < data.length; ) {
+	for (var i = 0, l = data.length; i < l; ) {
 		c1 = data[i++];
 		c2 = data[i++];
 		c3 = data[i++];
@@ -34,9 +34,9 @@ function encode_base64(data) {
 			base64_tab.charAt(e3) +
 			base64_tab.charAt(e4));
 	}
-	if (isNaN(b2))
+	if (isNaN(c2))
 		out = out.slice(0, -2) + "==";
-	else if (isNaN(b3))
+	else if (isNaN(c3))
 		out = out.slice(0, -1) + "=";
 	return out;
 }
@@ -45,7 +45,7 @@ function decode_base64(data, out) {
     if (typeof(out) == "undefined")
       out = [];
     var c1, c2, c3, e1, e2, e3, e4;
-    for (var i = 0; i < data.length; ) {
+    for (var i = 0, l = data.length; i < l; ) {
         e1 = base64_tab2[data.charAt(i++)];
         e2 = base64_tab2[data.charAt(i++)];
         e3 = base64_tab2[data.charAt(i++)];
