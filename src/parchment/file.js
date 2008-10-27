@@ -24,6 +24,26 @@ new function(_)
 			String.fromCharCode(s[offset+3]);
 	}
 
+	// Parse a string into an XML Document
+	// From http://www.w3schools.com/Dom/dom_parser.asp
+	function parseXMLString(text)
+	{
+		try
+		{
+			// IE
+			var DOM = new ActiveXObject('Microsoft.XMLDOM');
+			DOM.async = 'false';
+			DOM.loadXML(text);
+		}
+		catch (e)
+		{
+			// All other browsers hopefully
+			var parser = new DOMParser();
+			var DOM = parser.parseFromString(text, 'text/xml');
+		}
+		return DOM;
+	}
+
 	// IFF file class
 	var iff = base2.Base.extend({
 		// Parse a byte array or construct an empty IFF file
@@ -51,7 +71,6 @@ new function(_)
 
 					this.chunks.push({
 						type: type,
-						length: chunk_length,
 						data: data.slice(i + 8, i + 8 + chunk_length)
 					});
 
@@ -76,7 +95,6 @@ new function(_)
 				this.base();
 				this.chunks.push({
 					type: 'ZCOD',
-					length: data.length,
 					data: data
 				});
 				this.zcode = data;
@@ -91,11 +109,26 @@ new function(_)
 					// Go through the chunks and extract the useful ones
 					for (i = 0, l = this.chunks.length; i < l; i++)
 					{
-						if (this.chunks[i].type == 'ZCOD' && !this.zcode)
+						var type = this.chunks[i].type;
+						if (type == 'ZCOD' && !this.zcode)
 							// Parchment uses the first ZCOD chunk it finds, but the Blorb spec says the RIdx chunk should be used
 							this.zcode = this.chunks[i].data;
+
+						else if (type == 'IFmd')
+						{
+							// Treaty of Babel metadata
+							// Will most likely break UTF-8
+							this.metadata = String.fromCharCode.apply(this, this.chunks[i].data);
+							var metadataDOM = parseXMLString(this.metadata);
+							if (metadataDOM)
+								this.metadataDOM = metadataDOM;
+						}
 					}
-					this.filetype = 'ok story blorbed zcode';
+
+					if (this.zcode)
+						this.filetype = 'ok story blorbed zcode';
+					else
+						this.filetype = 'error: no zcode in blorb';
 				}
 				// Not a blorb
 				else if (this.type == 'IFZS')
@@ -106,6 +139,15 @@ new function(_)
 			else
 				// Not a story file
 				this.filetype = 'error unknown general';
+		},
+
+		// Load zcode into engine
+		load: function loadIntoEngine(engine)
+		{
+			if (this.zcode)
+				engine.loadStory(this.zcode);
+			if (this.metadataDOM)
+				window.document.title = $('title', this.metadata).text() + ' - Parchment';
 		}
 	});
 

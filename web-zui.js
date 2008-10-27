@@ -842,9 +842,8 @@ function _webZuiStartup() {
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
 
-	var story = new base2.file.story(gZcode.slice());
-	if (story.zcode)
-		engine.loadStory(story.zcode);
+	window.story = new base2.file.story(gZcode.slice());
+	story.load(engine);
 	logfunc("Story type: " + story.filetype);
 
   if (window.location.hash) {
