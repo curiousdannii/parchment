@@ -182,3 +182,14 @@ body {
     text-align: right;
     position: relative;
 }
+
+/* Hide the pastebox */
+#pastebox, #pastebox input
+{
+	background: transparent;
+	border: none;
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 1px;
+}
