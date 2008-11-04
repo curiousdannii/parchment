@@ -12,7 +12,7 @@ new function(_)
 	// Get a 32 bit number from a byte array
 	function num_from(s, offset)
 	{
-		return s[offset]<<24 | s[offset+1]<<16 | s[offset+2]<<8 | s[offset+3];
+		return s[offset] << 24 | s[offset + 1] << 16 | s[offset + 2] << 8 | s[offset + 3];
 	}
 
 	// Get a 4 byte string from a byte array
@@ -22,26 +22,6 @@ new function(_)
 			String.fromCharCode(s[offset+1]) +
 			String.fromCharCode(s[offset+2]) +
 			String.fromCharCode(s[offset+3]);
-	}
-
-	// Parse a string into an XML Document
-	// From http://www.w3schools.com/Dom/dom_parser.asp
-	function parseXMLString(text)
-	{
-		try
-		{
-			// IE
-			var DOM = new ActiveXObject('Microsoft.XMLDOM');
-			DOM.async = 'false';
-			DOM.loadXML(text);
-		}
-		catch (e)
-		{
-			// All other browsers hopefully
-			var parser = new DOMParser();
-			var DOM = parser.parseFromString(text, 'text/xml');
-		}
-		return DOM;
 	}
 
 	// IFF file class
@@ -119,9 +99,15 @@ new function(_)
 							// Treaty of Babel metadata
 							// Will most likely break UTF-8
 							this.metadata = String.fromCharCode.apply(this, this.chunks[i].data);
-							var metadataDOM = parseXMLString(this.metadata);
+							var metadataDOM = $(this.metadata);
 							if (metadataDOM)
+							{
 								this.metadataDOM = metadataDOM;
+
+								// Extract the IFID
+								if ($('ifid', metadataDOM))
+									this.ifid = $('ifid', metadataDOM).text();
+							}
 						}
 					}
 
@@ -147,7 +133,7 @@ new function(_)
 			if (this.zcode)
 				engine.loadStory(this.zcode);
 			if (this.metadataDOM)
-				window.document.title = $('title', this.metadata).text() + ' - Parchment';
+				window.document.title = $('title', this.metadataDOM).text() + ' - Parchment';
 		}
 	});
 
