@@ -2251,7 +2251,7 @@ GnustoEngine.prototype = {
 	},
 
 	_zscii_char_to_ascii: function ge_zscii_char_to_ascii(zscii_code) {
-			if (zscii_code<0 || zscii_code>1023) {
+			if (zscii_code < 0) {
 					gnusto_error(702, zscii_code); // illegal zscii code
 			}
 

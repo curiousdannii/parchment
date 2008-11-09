@@ -835,6 +835,9 @@ FatalError.prototype.onError = function(e) {
 function _webZuiStartup() {
   var logfunc = function() {};
 
+	if (window.loadFirebugConsole)
+		window.loadFirebugConsole();
+
   if (window.console)
     logfunc = function(msg) { console.log(msg); };
 
