@@ -4,7 +4,7 @@ new function(_)
 	// Based largely on code by Thomas Thurman
 	var file = new base2.Package(this, {
 		name: 'file',
-		exports: 'iff, story'
+		exports: 'iff, image, story'
 	});
 
 	eval(this.imports);
@@ -51,6 +51,7 @@ new function(_)
 
 					this.chunks.push({
 						type: type,
+						offset: i,
 						data: data.slice(i + 8, i + 8 + chunk_length)
 					});
 
@@ -86,11 +87,23 @@ new function(_)
 				if (this.type == 'IFRS')
 				{
 					// We have Blorb!
+					this.images = [];
+					this.resources = [];
+
 					// Go through the chunks and extract the useful ones
-					for (i = 0, l = this.chunks.length; i < l; i++)
+					for (var i = 0, l = this.chunks.length; i < l; i++)
 					{
 						var type = this.chunks[i].type;
-						if (type == 'ZCOD' && !this.zcode)
+						if (type == 'RIdx')
+							// The Resource Index Chunk, used by parchment for numbering images correctly
+							for (var j = 0, c = num_from(this.chunks[i].data, 0); j < c; j++)
+								this.resources.push({
+									usage: string_from(this.chunks[i].data, 4 + j * 12),
+									number: num_from(this.chunks[i].data, 8 + j * 12),
+									start: num_from(this.chunks[i].data, 12 + j * 12)
+								});
+
+						else if (type == 'ZCOD' && !this.zcode)
 							// Parchment uses the first ZCOD chunk it finds, but the Blorb spec says the RIdx chunk should be used
 							this.zcode = this.chunks[i].data;
 
@@ -109,6 +122,19 @@ new function(_)
 									this.ifid = $('ifid', metadataDOM).text();
 							}
 						}
+
+						else if (type == 'PNG ' || type == 'JPEG')
+							for (var j = 0, c = this.resources.length; j < c; j++)
+							{
+								if (this.resources[j].usage == 'Pict' && this.resources[j].start == this.chunks[i].offset)
+								{
+									// A numbered image!
+									this.images[this.resources[j].number] = new image(this.chunks[i]);
+								}
+							}
+
+						else if (type == 'Fspc')
+							this.frontispiece = num_from(this.chunks[i].data, 0);
 					}
 
 					if (this.zcode)
@@ -134,6 +160,25 @@ new function(_)
 				engine.loadStory(this.zcode);
 			if (this.metadataDOM)
 				window.document.title = $('title', this.metadataDOM).text() + ' - Parchment';
+		}
+	});
+
+	// Images made from byte arrays
+	var image = base2.Base.extend({
+		// Initialise the image with a byte array
+		constructor: function init_image(chunk)
+		{
+			this.chunk = chunk;
+
+			this.dataURI = function create_dataURI()
+			{
+				// Only create the image when first requested, the encoding could be quite slow
+				var encoded = encode_base64(this.chunk.data);
+				if (this.chunk.type == 'PNG ')
+					this.dataURI = 'data:image/png;base64,' + encoded;
+				else if (this.chunk.type == 'JPEG')
+					this.dataURI = 'data:image/jpeg;base64,' + encoded;
+			};
 		}
 	});
 
