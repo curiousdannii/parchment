@@ -2684,7 +2684,7 @@ GnustoEngine.prototype = {
 					// In z5-z8, the array starts with a size byte.
 
 					max_chars = this.m_memory[text_buffer];
-					result = entered.substring(0,max_chars);
+					result = entered.substring(0,max_chars).toLowerCase();
 
 					this.setByte(result.length, text_buffer + 1);
 
@@ -3428,42 +3428,57 @@ GnustoEngine.prototype = {
 					}
 			}
 
-			// Need to handle other alphabets. At present we only
-			// handle alphabetic characters (A0).
-			// Also need to handle ten-bit characters.
-			// FIXME: Are the above still true?
+		// Huge thanks to fredrik.ramsberg for fixing the following section!
 
-			var cursor = 0;
+		var cursor = 0;
 
-			while (cursor<str.length && result.length<6) {
-					var ch = str.charCodeAt(cursor++);
+		while (cursor < str.length && result.length < dictionary_entry_length)
+		{
+			var ch = str.charCodeAt(cursor++);
 
-					if (ch>=65 && ch<=90) { // A to Z
-							// These are NOT mapped to A1. ZSD3.7
-							// explicitly forbids use of upper case
-							// during encoding.
-							emit(ch-59);
-					} else if (ch>=97 && ch<=122) { // a to z
-							emit(ch-91);
+			// Downcase any uppercase characters
+			// However, we can only do this if the default table is used.
+			// As all input is already passed through toLowerCase let's leave it for now.
+			//if((ch>=65 && ch<=90) || (ch>=192 && ch<=222 && ch != 215)) {
+			//	ch += 32;
+
+			var z2 = this.m_zalphabet[0].indexOf(String.fromCharCode(ch));
+			if (z2 != -1)
+				// ch was found in alphabet A0: Just output position + 6
+				emit(z2+6);
+			else
+			{
+				z2=this.m_zalphabet[1].indexOf(String.fromCharCode(ch));
+				if (z2 != -1)
+				{
+					// ch was found in alphabet A1. Output a shift character and ch + 6
+					if (this.getByte(0) > 2)
+						emit(4); // shift to A1
+    			else
+						emit(2); // shift is positioned differently in z1-2
+    			emit(z2+6);
+				} else {
+					z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
+					if (z2 != -1)
+					{
+						// ch was found in alphabet A2. Output a shift character and ch + 6
+						if (this.getByte(0) > 2)
+							emit(5); // shift to A2
+						else
+							emit(3); // shift is positioned differently in in z1-2
+						emit(z2+6);
 					} else {
-							var z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
-
-							if (z2!=-1) {
-								        if (this.getByte(0)>2) {
-									  emit(5); // shift to weird stuff
-									} else { emit(3);} //use a shift as 5 is shift_lock in z1-2
-
-									emit(z2+6);
-							} else {
-								        if (this.getByte(0)>2) {
-									  emit(5);
-									} else { emit(3);} //use a shift as 5 is shift_lock in z1-2
-									emit(6);
-									emit(ch >> 5);
-									emit(ch &  0x1F);
-							}
+						if (this.getByte(0) > 2)
+							emit(5); 
+						else
+							emit(3); //shift is positioned differently in z1-2 
+						emit(6); 
+						emit(ch >> 5); 
+						emit(ch & 0x1F);
 					}
+				}
 			}
+		}
 
 			while (result.length<dictionary_entry_length) {
 					emit(5);
