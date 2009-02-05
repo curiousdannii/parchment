@@ -40,8 +40,8 @@ new function(_)
 				// Parse the file
 				this.type = string_from(data, 8);
 
-				var i = 12;
-				while (i < data.length)
+				var i = 12, l = data.length;
+				while (i < l)
 				{
 					var type = string_from(data, i);
 					var chunk_length = num_from(data, i + 4);
@@ -65,8 +65,10 @@ new function(_)
 	// A story file
 	var story = iff.extend({
 		// Parse a zblorb or naked zcode story file
-		constructor: function parse_zblorb(data)
+		constructor: function parse_zblorb(data, story_name)
 		{
+			this.title = story_name;
+
 			// Check for naked zcode
 			// FIXME: This check is way too simple. We should look at
 			// some of the other fields as well for sanity-checking.
@@ -117,7 +119,9 @@ new function(_)
 							{
 								this.metadataDOM = metadataDOM;
 
-								// Extract the IFID
+								// Extract some useful info
+								if ($('title', metadataDOM))
+									this.title = $('title', metadataDOM).text();
 								if ($('ifid', metadataDOM))
 									this.ifid = $('ifid', metadataDOM).text();
 							}
@@ -127,10 +131,8 @@ new function(_)
 							for (var j = 0, c = this.resources.length; j < c; j++)
 							{
 								if (this.resources[j].usage == 'Pict' && this.resources[j].start == this.chunks[i].offset)
-								{
 									// A numbered image!
 									this.images[this.resources[j].number] = new image(this.chunks[i]);
-								}
 							}
 
 						else if (type == 'Fspc')
@@ -158,8 +160,7 @@ new function(_)
 		{
 			if (this.zcode)
 				engine.loadStory(this.zcode);
-			if (this.metadataDOM)
-				window.document.title = $('title', this.metadataDOM).text() + ' - Parchment';
+			window.document.title = this.title + ' - Parchment';
 		}
 	});
 
@@ -173,11 +174,14 @@ new function(_)
 			this.dataURI = function create_dataURI()
 			{
 				// Only create the image when first requested, the encoding could be quite slow
+				// Would be good to replace with a getter if it can be done reliably
 				var encoded = encode_base64(this.chunk.data);
 				if (this.chunk.type == 'PNG ')
-					this.dataURI = 'data:image/png;base64,' + encoded;
+					this.URI = 'data:image/png;base64,' + encoded;
 				else if (this.chunk.type == 'JPEG')
-					this.dataURI = 'data:image/jpeg;base64,' + encoded;
+					this.URI = 'data:image/jpeg;base64,' + encoded;
+				this.dataURI = function() {return this.URI;};
+				return this.URI;
 			};
 		}
 	});

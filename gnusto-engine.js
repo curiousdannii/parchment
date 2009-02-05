@@ -3430,22 +3430,35 @@ GnustoEngine.prototype = {
 
 		// Huge thanks to fredrik.ramsberg for fixing the following section!
 
-		var cursor = 0;
+		var ch, cursor = 0, z2;
 
 		while (cursor < str.length && result.length < dictionary_entry_length)
 		{
-			var ch = str.charCodeAt(cursor++);
+			ch = str.charCodeAt(cursor++);
 
-			// Downcase any uppercase characters
-			// However, we can only do this if the default table is used.
-			// As all input is already passed through toLowerCase let's leave it for now.
-			//if((ch>=65 && ch<=90) || (ch>=192 && ch<=222 && ch != 215)) {
-			//	ch += 32;
+			// Downcase any uppercase characters 
+			if (ch >= 65 && ch <= 90)
+				ch += 32;
+			else if (ch > 154 && this.m_unicode_start == 0)
+			{
+				// It's an extended character AND the game uses the regular 
+				// unicode translation table, so we know how to downcase. 
+				if ((ch >= 158 && ch <= 160) || (ch >= 167 && ch <= 168) || (ch >= 208 && ch <= 210))
+					ch -= 3;
+				else if (ch >= 175 && ch <= 180)
+					ch -= 6;
+				else if ((ch >= 186 && ch <= 190) || (ch >= 196 && ch <= 200))
+					ch -= 5;
+				else if (ch == 217 || ch == 218)
+					ch -= 2;
+				else if (ch == 202 || ch == 204 || ch == 212 || ch == 214 || ch == 221)
+					ch -= 1;
+			}
 
-			var z2 = this.m_zalphabet[0].indexOf(String.fromCharCode(ch));
+			z2 = this.m_zalphabet[0].indexOf(String.fromCharCode(ch));
 			if (z2 != -1)
 				// ch was found in alphabet A0: Just output position + 6
-				emit(z2+6);
+				emit(z2 + 6);
 			else
 			{
 				z2=this.m_zalphabet[1].indexOf(String.fromCharCode(ch));
@@ -3456,7 +3469,7 @@ GnustoEngine.prototype = {
 						emit(4); // shift to A1
     			else
 						emit(2); // shift is positioned differently in z1-2
-    			emit(z2+6);
+    			emit(z2 + 6);
 				} else {
 					z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
 					if (z2 != -1)
@@ -3466,7 +3479,7 @@ GnustoEngine.prototype = {
 							emit(5); // shift to A2
 						else
 							emit(3); // shift is positioned differently in in z1-2
-						emit(z2+6);
+						emit(z2 + 6);
 					} else {
 						if (this.getByte(0) > 2)
 							emit(5); 
@@ -3532,9 +3545,38 @@ GnustoEngine.prototype = {
 					var current = this.m_streamthrees[0];
 					var address = this.m_streamthrees[0][1];
 
-					for (var i=0; i<text.length; i++) {
-							this.setByte(text.charCodeAt(i), address++);
-					}
+			// Decode from ZSCII
+			for (var i = 0; i < text.length; i++)
+			{
+				var cc = text.charCodeAt(i);
+				if (cc > 126)
+				{
+					// Charcodes above 126 must be looked up in the unicode
+					// translation table first, to find the corresponding
+					// ZSCII value
+					if (this.m_unicode_start == 0)
+						// The default translation table is enabled
+						for (var k in default_unicode_translation_table)
+						{
+							if(default_unicode_translation_table[k] == cc)
+							{
+								cc = k;
+								break;
+							}
+						}
+					else
+						// The game provides its own set of extra ZSCII characters
+						for (var k = 0; k < this.m_custom_unicode_charcount; k++)
+						{
+							if (this.getUnsignedWord(this.m_unicode_start + (k*2)) == cc)
+							{
+								cc = k + 155;
+								break;
+							}
+						}
+				}
+				this.setByte(cc, address++);
+			}
 
 					this.m_streamthrees[0][1] = address;
 			} else {
