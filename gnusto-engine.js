@@ -100,6 +100,7 @@ var default_unicode_translation_table = {
   222:0xa1, // inverted pling
   223:0xbf // inverted query
 };
+var reverse_unicode_table = {};
 
 var PARENT_REC = 0;
 var SIBLING_REC = 1;
@@ -1916,7 +1917,18 @@ GnustoEngine.prototype = {
 	  if (this.m_unicode_start > 0) { // if there is one, get the char count-- characters beyond that point are undefined.
 	      this.m_custom_unicode_charcount = this.m_memory[this.m_unicode_start];
 	      this.m_unicode_start += 1;
+	      // Populate reverse lookup table
+	      for(var i=0; i<this.m_custom_unicode_charcount; i++)
+		  reverse_unicode_table[this.getUnsignedWord(this.m_unicode_start + (i*2))] = i + 155;
 	  }
+      }
+
+      if(!(this.m_unicode_start>0)) {
+	  // The game doesn't provide its own set of unicode characters, so
+	  // now is the time to populate the reverse_unicode_table with the 
+	  // default unicode characters
+	  for(var i in default_unicode_translation_table)
+	      reverse_unicode_table[default_unicode_translation_table[i]] = i;
       }
 
       this.m_rebound = 0;
@@ -2285,6 +2297,33 @@ GnustoEngine.prototype = {
 			}
 
 			return String.fromCharCode(result);
+	},
+
+	_ascii_code_to_zscii_code: function ge_ascii_char_to_zscii(ascii_code) {
+		if ((ascii_code>=32 && ascii_code<=126) || ascii_code==0) {
+			// Most common case - keep it as fast as possible
+			return ascii_code;
+		}
+		
+		var result;
+		
+		if (ascii_code < 0) {
+			gnusto_error(702, 'Illegal unicode character:' + ascii_code); // illegal ascii code
+		} else if (ascii_code==13 || ascii_code==10) {
+			result = 10;
+		} else if ((ascii_code>=32 && ascii_code<=126) || ascii_code==0) {
+			result = ascii_code;
+		} else {
+			// Must be among extra characters.
+			result = reverse_unicode_table[ascii_code];
+			if(!result) {
+				// gnusto_error(703, 'No ZSCII equivalent found for this unicode character code: ' + ascii_code); // unknown ascii code
+				// Let's translate it into '*' for now. Should we raise an error instead?
+				result = '*'.charCodeAt(0);
+			}
+		}
+		
+		return result;
 	},
 
 	_random_number: function ge_random_number(arg) {
@@ -2665,32 +2704,31 @@ GnustoEngine.prototype = {
 
 			var max_chars;
 			var result;
+			var storage;
 
 			if (this.m_version <= 4) {
 
-					// In z1-z4, the array is null-terminated.
+				// In z1-z4, the array is null-terminated.
 
-					max_chars = this.m_memory[text_buffer]+1;
-					result = entered.substring(0,max_chars).toLowerCase();
-
-					for (var i=0;i<result.length;i++) {
-							this.setByte(result.charCodeAt(i), text_buffer + 1 + i);
-					}
-
-					this.setByte(0, text_buffer + 1 + result.length);
+				max_chars = this.m_memory[text_buffer]+1;
+				result = entered.substring(0,max_chars).toLowerCase();
+				storage = text_buffer + 1;
+				this.setByte(0, text_buffer + 1 + result.length);
 
 			} else {
 
-					// In z5-z8, the array starts with a size byte.
+				// In z5-z8, the array starts with a size byte.
 
-					max_chars = this.m_memory[text_buffer];
-					result = entered.substring(0,max_chars).toLowerCase();
+				max_chars = this.m_memory[text_buffer];
+				result = entered.substring(0,max_chars).toLowerCase();
+				storage = text_buffer + 2;
+				this.setByte(result.length, text_buffer + 1);
 
-					this.setByte(result.length, text_buffer + 1);
+			}
 
-					for (var i=0;i<result.length;i++) {
-							this.setByte(result.charCodeAt(i), text_buffer + 2 + i);
-					}
+			// Turn into ZSCII and store in text buffer
+			for (var i=0;i<result.length;i++) {
+				this.setByte(this._ascii_code_to_zscii_code(result.charCodeAt(i)), storage + i);
 			}
 
 			if (parse_buffer!=0 || this.m_version<5) {
@@ -3380,7 +3418,7 @@ GnustoEngine.prototype = {
 
 					if (b==0) break;
 
-					source = source + this._zscii_char_to_ascii(b);
+					source = source + String.fromCharCode(b);
 					zscii_text++;
 					length--;
 			}
@@ -3439,29 +3477,43 @@ GnustoEngine.prototype = {
 			// Downcase any uppercase characters 
 			if (ch >= 65 && ch <= 90)
 				ch += 32;
-			else if (ch > 154 && this.m_unicode_start == 0)
+			else if (ch > 154) 
 			{
-				// It's an extended character AND the game uses the regular 
-				// unicode translation table, so we know how to downcase. 
-				if ((ch >= 158 && ch <= 160) || (ch >= 167 && ch <= 168) || (ch >= 208 && ch <= 210))
-					ch -= 3;
-				else if (ch >= 175 && ch <= 180)
-					ch -= 6;
-				else if ((ch >= 186 && ch <= 190) || (ch >= 196 && ch <= 200))
-					ch -= 5;
-				else if (ch == 217 || ch == 218)
-					ch -= 2;
-				else if (ch == 202 || ch == 204 || ch == 212 || ch == 214 || ch == 221)
-					ch -= 1;
+				if(this.m_unicode_start == 0)
+				{
+					// It's an extended character AND the game uses the regular 
+					// unicode translation table, so we know how to downcase. 
+					if ((ch >= 158 && ch <= 160) || (ch >= 167 && ch <= 168) || (ch >= 208 && ch <= 210))
+						ch -= 3;
+					else if (ch >= 175 && ch <= 180)
+						ch -= 6;
+					else if ((ch >= 186 && ch <= 190) || (ch >= 196 && ch <= 200))
+						ch -= 5;
+					else if (ch == 217 || ch == 218)
+						ch -= 2;
+					else if (ch == 202 || ch == 204 || ch == 212 || ch == 214 || ch == 221)
+						ch -= 1;
+				}
+				else
+				{
+					// For extended characters using custom unicode translation table,
+					// rely on JavaScripts downcasing function
+					var cnew = this._ascii_code_to_zscii_code(this._zscii_char_to_ascii(ch).toLowerCase().charCodeAt(0));
+					if(cnew > 0 && cnew <= 251 && cnew != '*'.charCodeAt(0))
+						ch = cnew;
+				}
 			}
 
-			z2 = this.m_zalphabet[0].indexOf(String.fromCharCode(ch));
+			// Convert ch to unicode, since alphabet tables are in unicode.
+			var ch_uni = String.fromCharCode(this._zscii_char_to_ascii(ch).charCodeAt(0));
+
+			z2 = this.m_zalphabet[0].indexOf(ch_uni);
 			if (z2 != -1)
 				// ch was found in alphabet A0: Just output position + 6
 				emit(z2 + 6);
 			else
 			{
-				z2=this.m_zalphabet[1].indexOf(String.fromCharCode(ch));
+				z2=this.m_zalphabet[1].indexOf(ch_uni);
 				if (z2 != -1)
 				{
 					// ch was found in alphabet A1. Output a shift character and ch + 6
@@ -3471,7 +3523,7 @@ GnustoEngine.prototype = {
 						emit(2); // shift is positioned differently in z1-2
     			emit(z2 + 6);
 				} else {
-					z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
+					z2 = this.m_zalphabet[2].indexOf(ch_uni);
 					if (z2 != -1)
 					{
 						// ch was found in alphabet A2. Output a shift character and ch + 6
@@ -3545,38 +3597,10 @@ GnustoEngine.prototype = {
 					var current = this.m_streamthrees[0];
 					var address = this.m_streamthrees[0][1];
 
-			// Decode from ZSCII
-			for (var i = 0; i < text.length; i++)
-			{
-				var cc = text.charCodeAt(i);
-				if (cc > 126)
-				{
-					// Charcodes above 126 must be looked up in the unicode
-					// translation table first, to find the corresponding
-					// ZSCII value
-					if (this.m_unicode_start == 0)
-						// The default translation table is enabled
-						for (var k in default_unicode_translation_table)
-						{
-							if(default_unicode_translation_table[k] == cc)
-							{
-								cc = k;
-								break;
-							}
-						}
-					else
-						// The game provides its own set of extra ZSCII characters
-						for (var k = 0; k < this.m_custom_unicode_charcount; k++)
-						{
-							if (this.getUnsignedWord(this.m_unicode_start + (k*2)) == cc)
-							{
-								cc = k + 155;
-								break;
-							}
-						}
-				}
-				this.setByte(cc, address++);
-			}
+					// Argument "text" is in Unicode. For storage in Z-machine memory, we
+					// need to convert it to ZSCII
+					for (var i = 0; i < text.length; i++)
+						this.setByte(this._ascii_code_to_zscii_code(text.charCodeAt(i)), address++);
 
 					this.m_streamthrees[0][1] = address;
 			} else {
