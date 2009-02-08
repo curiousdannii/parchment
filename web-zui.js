@@ -740,11 +740,15 @@ function WebZui(logfunc) {
 	            // TODO: This isn't an ideal solution for having breaking
 	            // whitespace while preserving its structure, but it
 	            // deals with the most common case.
-	            var singleSpace = / /g, singleSpaceBetweenWords = /(\S)&nbsp;(\S)/g;
-	            chunk = chunk.replace(singleSpace, '&nbsp;');
+	            var singleSpace = / /g, singleSpaceBetweenWords = /\b \b/g, backToSpace = /<&>/g;
 	            chunk = chunk.replace(
 	              singleSpaceBetweenWords,
-	              "$1<span class=\"z-breaking-whitespace\"> </span>$2"
+	              "<&>"
+	            );
+	            chunk = chunk.replace(singleSpace, '&nbsp;');
+	            chunk = chunk.replace(
+	              backToSpace,
+	              "<span class=\"z-breaking-whitespace\"> </span>"
 	            );
 
 	            chunk = '<span class="' + styles + '">' + chunk + '</span>';
@@ -907,7 +911,7 @@ function getFilenameFromUrl(url) {
 
 $(document).ready(function() {
   var qs = new Querystring();
-  var story = qs.get("story", "stories/troll.z5.js");
+  var story = qs.get("story", "stories/drakmagi.z5.js");
   var storyName = getFilenameFromUrl(story);
 
   storyName = storyName ? storyName + " - Parchment" : "Parchment";
