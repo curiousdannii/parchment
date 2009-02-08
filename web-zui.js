@@ -733,7 +733,6 @@ function WebZui(logfunc) {
 	      if (self._activeWindow == 0) {
 	        var lines = output.split("\n");
 	        for (var i = 0; i < lines.length; i++) {
-	          var addNewline = false;
 
 	          if (lines[i]) {
 	            var chunk = lines[i].entityify();
@@ -741,7 +740,8 @@ function WebZui(logfunc) {
 	            // TODO: This isn't an ideal solution for having breaking
 	            // whitespace while preserving its structure, but it
 	            // deals with the most common case.
-	            var singleSpaceBetweenWords = /(\S) (\S)/g;
+	            var singleSpace = / /g, singleSpaceBetweenWords = /(\S)&nbsp;(\S)/g;
+	            chunk = chunk.replace(singleSpace, '&nbsp;');
 	            chunk = chunk.replace(
 	              singleSpaceBetweenWords,
 	              "$1<span class=\"z-breaking-whitespace\"> </span>$2"
@@ -749,12 +749,9 @@ function WebZui(logfunc) {
 
 	            chunk = '<span class="' + styles + '">' + chunk + '</span>';
 	            $("#content").append(chunk);
-	            if (i < lines.length - 1)
-	              addNewline = true;
-	          } else
-	            addNewline = true;
+	          }
 
-	          if (addNewline)
+	          if (i < lines.length - 1)
 	            $("#content").append("<br/>");
 	        }
 
