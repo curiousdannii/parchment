@@ -739,7 +739,7 @@ function handleZ_scan_table(engine, a) {
   }
 
 function handleZ_not(engine, a) {
-    return engine._storer('~'+a[1]+'&0xffff');
+    return engine._storer('~'+a[0]+'&0xffff');
 }
 
 function handleZ_tokenise(engine, a) {
