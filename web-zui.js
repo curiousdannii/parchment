@@ -846,7 +846,7 @@ function _webZuiStartup() {
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
 
-	window.story = new base2.file.story(gZcode.slice());
+	window.story = new base2.file.story(gZcode.slice(), storyName);
 	story.load(engine);
 	logfunc("Story type: " + story.filetype);
 
@@ -900,6 +900,7 @@ var gBaseUrl = gThisUrl.slice(0, gThisUrl.lastIndexOf("/"));
 var gStory = "";
 var gZcode = null;
 var gIsIphone = navigator.userAgent.match(/iPhone/i);
+var storyName = '';
 
 var IF_ARCHIVE_PREFIX = "if-archive/";
 var ZCODE_APPSPOT_URL = "http://zcode.appspot.com/";
@@ -911,8 +912,8 @@ function getFilenameFromUrl(url) {
 
 $(document).ready(function() {
   var qs = new Querystring();
-  var story = qs.get("story", "stories/drakmagi.z5.js");
-  var storyName = getFilenameFromUrl(story);
+  var story = qs.get("story", "stories/troll.zblorb.js");
+  storyName = getFilenameFromUrl(story);
 
   storyName = storyName ? storyName + " - Parchment" : "Parchment";
   window.document.title = storyName;

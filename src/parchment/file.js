@@ -160,7 +160,7 @@ new function(_)
 		{
 			if (this.zcode)
 				engine.loadStory(this.zcode);
-			if(this.title) window.document.title = this.title + ' - Parchment';
+			window.document.title = this.title + ' - Parchment';
 		}
 	});
 
