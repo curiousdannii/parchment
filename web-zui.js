@@ -785,6 +785,19 @@ function WebZui(logfunc) {
 
 	      $("#buffered-windows").append(row);
 	      self._pixelWidth = $(row).width();
+	      if(jQuery.browser.msie && 
+	         (jQuery.browser.version.length == 1 || jQuery.browser.version.charAt(1)=='.') &&
+	         jQuery.browser.version < '7') {
+	      	// For MSIE versions < 7, the pixelwidth is set to the entire window width.
+	      	// Instead, we estimate the needed width using the font size
+	        var fwidth = -1, fsize = document.getElementById('top-window').currentStyle['fontSize'].toLowerCase();
+	        if(fsize.substring(fsize.length - 2)=='px') 
+	          fwidth = 0.6 * parseInt(fsize);
+	        else if(fsize.substring(fsize.length - 2)=='pt') 
+	          fwidth = 0.8 * parseInt(fsize);
+	        if(fwidth > 0)
+	          self._pixelWidth = self._size[0] * fwidth;
+	      }
 	      self._pixelLineHeight = $(row.firstChild).height();
 	      $("#buffered-windows").empty();
 	    }
