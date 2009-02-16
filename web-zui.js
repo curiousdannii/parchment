@@ -740,10 +740,10 @@ function WebZui(logfunc) {
 	            // TODO: This isn't an ideal solution for having breaking
 	            // whitespace while preserving its structure, but it
 	            // deals with the most common case.
-	            var singleSpace = / /g, singleSpaceBetweenWords = /\b \b/g, backToSpace = /<&>/g;
+	            var singleSpace = / /g, singleSpaceBetweenWords = /(\S) (\S)/g, backToSpace = /<&>/g;
 	            chunk = chunk.replace(
 	              singleSpaceBetweenWords,
-	              "<&>"
+	              "$1<&>$2"
 	            );
 	            chunk = chunk.replace(singleSpace, '&nbsp;');
 	            chunk = chunk.replace(
