@@ -1990,6 +1990,8 @@ GnustoEngine.prototype = {
       this.m_leftovers = '';
   },
 
+// Inlined some of these functions...
+
   getByte: function ge_getbyte(address) {
     if (address<0) { address &= 0xFFFF; }
     return this.m_memory[address];
@@ -2002,8 +2004,10 @@ GnustoEngine.prototype = {
 
   getWord: function ge_getWord(address) {
     if (address<0) { address &= 0xFFFF; }
-    return this._unsigned2signed((this.m_memory[address]<<8)|
-																 this.m_memory[address+1]);
+//    return this._unsigned2signed((this.m_memory[address]<<8)|
+//																 this.m_memory[address+1]);
+		var value = (this.m_memory[address] << 8) | this.m_memory[address + 1];
+		return ((value & 0x8000) ? ~0xFFFF : 0) | value;
   },
 
   _unsigned2signed: function ge_unsigned2signed(value) {
@@ -2020,9 +2024,11 @@ GnustoEngine.prototype = {
   },
 
   setWord: function ge_setWord(value, address) {
-			if (address<0) { address &= 0xFFFF; }
-			this.setByte((value>>8) & 0xFF, address);
-			this.setByte((value) & 0xFF, address+1);
+    if (address<0) { address &= 0xFFFF; }
+//			this.setByte((value>>8) & 0xFF, address);
+		this.m_memory[address] = (value >> 8) & 0xFF;
+//		this.setByte((value) & 0xFF, address+1);
+		this.m_memory[address + 1] = (value) & 0xFF;
   },
 
 	// Inelegant function to load parameters according to a VAR byte (or word).
@@ -2059,11 +2065,10 @@ GnustoEngine.prototype = {
 	_compile: function ge_compile() {
 
 			this.m_compilation_running = 1;
-			code = '';
-			var starting_pc = this.m_pc;
+			var code = '', starting_pc = this.m_pc, temp_var_counter = 0;
 
       // Counter for naming any temporary variables that we create.
-      var temp_var_counter = 0;
+//      var temp_var_counter = 0;
 
 			do {
 					// List of arguments to the opcode.
@@ -2072,7 +2077,9 @@ GnustoEngine.prototype = {
 					this_instr_pc = this.m_pc;
 
 					// Add the touch (see bug 4687). This lets us track progress simply.
-					code = code + '_touch('+this.m_pc+');';
+//				touch() has a huge overhead and without tracing there's no need for it. Whether this replacement is even useful is a good question...
+//					code = code + '_touch('+this.m_pc+');';
+					code = code + 'm_pc = ' + this.m_pc + ';';
 
 					// So here we go...
 					// what's the opcode?

@@ -227,7 +227,7 @@ function WebZui(logfunc) {
 				$(document).keyup(self._iphoneKeyup);
 			else
 			{
-				$(document).bind('keydown', {combi: 'Ctrl+v', propagate: true}, self._windowPasteHandler)
+				$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
 					.keypress(self._windowKeypress)
 					.keyup(self._windowKeyup)
 					.keydown(self._windowKeydown)
@@ -842,7 +842,7 @@ function _webZuiStartup() {
   if (window.console)
     logfunc = function(msg) { console.log(msg); };
 
-  var engine = new GnustoEngine(logfunc);
+  window.engine = new GnustoEngine(logfunc);
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
 

@@ -22,7 +22,7 @@ USAGE:
     $(document).bind('keydown', {combi:'Ctrl+x', disableInInput: true} , function() {});
     
 Note:
-    This plugin overrides jQuery.fn.find, jQuery.fn.bind and jQuery.fn.unbind
+    This plugin wraps the following jQuery methods: $.fn.find, $.fn.bind and $.fn.unbind
     
 */
 
@@ -33,48 +33,38 @@ Note:
     jQuery.fn.__unbind__ = jQuery.fn.unbind;
     jQuery.fn.__find__ = jQuery.fn.find;
     
-    // add this mac os x indicator to be used later at event.metaKey
-    // which should be supported only on mac
-    if (!jQuery.os)
-	jQuery.os = {};
-    jQuery.os.mac = /mac os/i.test(navigator.userAgent);
-    
     var hotkeys = {
         version: '0.7.8',
-        override: /keydown|keypress|keyup/g,        
+        override: /keydown|keypress|keyup/g,
         triggersMap: {},
         
-        specialKeys: {
-            27: 'esc', 9: 'tab', 32:'space', 13: 'return', 8:'backspace', 145: 'scroll', 
+        specialKeys: { 27: 'esc', 9: 'tab', 32:'space', 13: 'return', 8:'backspace', 145: 'scroll', 
             20: 'capslock', 144: 'numlock', 19:'pause', 45:'insert', 36:'home', 46:'del',
             35:'end', 33: 'pageup', 34:'pagedown', 37:'left', 38:'up', 39:'right',40:'down', 
             112:'f1',113:'f2', 114:'f3', 115:'f4', 116:'f5', 117:'f6', 118:'f7', 119:'f8', 
-            120:'f9', 121:'f10', 122:'f11', 123:'f12' 
-        },
+            120:'f9', 121:'f10', 122:'f11', 123:'f12' },
         
-        shiftNums: {
-                "`":"~", "1":"!", "2":"@", "3":"#", "4":"$", "5":"%", "6":"^", "7":"&", 
-                "8":"*", "9":"(", "0":")", "-":"_", "=":"+", ";":":", "'":"\"", ",":"<", 
-                ".":">",  "/":"?",  "\\":"|" },
+        shiftNums: { "`":"~", "1":"!", "2":"@", "3":"#", "4":"$", "5":"%", "6":"^", "7":"&", 
+            "8":"*", "9":"(", "0":")", "-":"_", "=":"+", ";":":", "'":"\"", ",":"<", 
+            ".":">",  "/":"?",  "\\":"|" },
         
         newTrigger: function (type, combi, callback) { 
-            // {'keyup': {'ctrl': {cb:, propagate, disableInInput}}}
+            // i.e. {'keyup': {'ctrl': {cb: callback, disableInInput: false}}}
             var result = {};
             result[type] = {};
-            result[type][combi] = {cb: callback, propagate: true, disableInInput: false};                
+            result[type][combi] = {cb: callback, disableInInput: false};
             return result;
         }
     };
     // add firefox num pad char codes
     if (jQuery.browser.mozilla){
-        hotkeys.specialKeys = $.extend(hotkeys.specialKeys, 
-            { 96: '0', 97:'1', 98: '2', 99: '3', 100: '4', 101: '5', 102: '6', 103: '7', 104: '8', 105: '9' });
+        hotkeys.specialKeys = jQuery.extend(hotkeys.specialKeys, { 96: '0', 97:'1', 98: '2', 99: 
+            '3', 100: '4', 101: '5', 102: '6', 103: '7', 104: '8', 105: '9' });
     }
+    
     // a wrapper around of $.fn.find 
-    // wanted to add .query property which represents the selector
     // see more at: http://groups.google.com/group/jquery-en/browse_thread/thread/18f9825e8d22f18d
     jQuery.fn.find = function( selector ) {
-        // adding this line so to retrieve this later
         this.query=selector;
         return jQuery.fn.__find__.apply(this, arguments);
 	};
@@ -86,9 +76,9 @@ Note:
         }
         if (combi && typeof combi === 'string'){
             var selectorId = ((this.prevObject && this.prevObject.query) || (this[0].id && this[0].id) || this[0]).toString();
-            type = type.split(' ');
-            for (var x=0; x<type.length; x++){
-                delete hotkeys.triggersMap[selectorId][type[x]][combi];
+            var hkTypes = type.split(' ');
+            for (var x=0; x<hkTypes.length; x++){
+                delete hotkeys.triggersMap[selectorId][hkTypes[x]][combi];
             }
         }
         // call jQuery original unbind
@@ -108,6 +98,13 @@ Note:
             var result = null,            
             // pass the rest to the original $.fn.bind
             pass2jq = jQuery.trim(type.replace(hotkeys.override, ''));
+            
+            // see if there are other types, pass them to the original $.fn.bind
+            if (pass2jq){
+                // call original jQuery.bind()
+                result = this.__bind__(pass2jq, data, fn);
+            }            
+            
             if (typeof data === "string"){
                 data = {'combi': data};
             }
@@ -118,7 +115,7 @@ Note:
                         trigger = hotkeys.newTrigger(eventType, combi, fn),
                         selectorId = ((this.prevObject && this.prevObject.query) || (this[0].id && this[0].id) || this[0]).toString();
                         
-                    trigger[eventType][combi].propagate = data.propagate;
+                    //trigger[eventType][combi].propagate = data.propagate;
                     trigger[eventType][combi].disableInInput = data.disableInInput;
                     
                     // first time selector is bounded
@@ -150,17 +147,10 @@ Note:
                         if (jqElem.attr('hkId') && jqElem.attr('hkId') !== selectorId){
                             selectorId = jqElem.attr('hkId') + ";" + selectorId;
                         }
-                        
                         jqElem.attr('hkId', selectorId);
-                        //jQuery.event.add(this, eventType, hotkeys.handler);
                     });
                     result = this.__bind__(handle.join(' '), data, hotkeys.handler)
                 }
-            }
-            // see if there are other types, pass them to the original $.fn.bind
-            if (pass2jq){
-                // call original jQuery.bind()
-                result = this.__bind__(pass2jq, data, fn);
             }
             return result;
         }
@@ -191,12 +181,12 @@ Note:
                 // prevent f5 overlapping with 't' (or f4 with 's', etc.)
                 character = !special && String.fromCharCode(code).toLowerCase(),
                 shift = event.shiftKey,
-                ctrl = event.ctrlKey,
+                ctrl = event.ctrlKey,            
                 // patch for jquery 1.2.5 && 1.2.6 see more at:  
                 // http://groups.google.com/group/jquery-en/browse_thread/thread/83e10b3bb1f1c32b
                 alt = event.altKey || event.originalEvent.altKey,
                 mapPoint = null;
-            
+
             for (var x=0; x < ids.length; x++){
                 if (hotkeys.triggersMap[ids[x]][type]){
                     mapPoint = hotkeys.triggersMap[ids[x]][type];
@@ -218,17 +208,19 @@ Note:
                     if(ctrl) modif+= 'ctrl+';
                     if(shift) modif += 'shift+';
                     
-                    // modifiers + special keys or modifiers + characters or modifiers + shift characters
+                    // modifiers + special keys or modifiers + character or modifiers + shift character or just shift character
                     trigger = mapPoint[modif+special];
                     if (!trigger){
                         if (character){
                             trigger = mapPoint[modif+character] 
-                                || mapPoint[modif+hotkeys.shiftNums[character]];
+                                || mapPoint[modif+hotkeys.shiftNums[character]]
+                                // '$' can be triggered as 'Shift+4' or 'Shift+$' or just '$'
+                                || (modif === 'shift+' && mapPoint[hotkeys.shiftNums[character]]);
                         }
                     }
                 }
                 if (trigger){
-                    var propagate = false;
+                    var result = false;
                     for (var x=0; x < trigger.length; x++){
                         if(trigger[x].disableInInput){
                             // double check event.currentTarget and event.target
@@ -239,23 +231,14 @@ Note:
                             }
                         }
                         // call the registered callback function
-                        trigger[x].cb(event);
-                        if (trigger[x].propagate){
-                            propagate = true;
-                        }
+                        result = result || trigger[x].cb.apply(this, [event]);
                     }
-                    if (!propagate){
-                        event.stopPropagation();
-                        event.preventDefault();                    
-                    }
-                    return propagate;
+                    return result;
                 }
             }
-            // no match, return true
-            return true;
         }
     };
     // place it under window so it can be extended and overridden by others
-//    window.hotkeys = hotkeys;
+    window.hotkeys = hotkeys;
     return jQuery;
 })(jQuery);
