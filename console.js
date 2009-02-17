@@ -69,6 +69,8 @@ Console.prototype = {
       } else
         character = string.charAt(i).entityify();
 
+      if(y > this.height - 1)
+        this.resize(y + 1);
       if (character != null) {
         this._characters[y][x] = character;
         this._styles[y][x] = style;
