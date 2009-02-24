@@ -249,13 +249,55 @@ function handleZ_jl(engine, a) {
 
 function handleZ_jg(engine, a) {
     return engine._brancher(a[0]+'>'+a[1]); }
-
+/***
 function handleZ_dec_chk(engine, a) {
     return 't='+a[0]+';t2=_varcode_get(t)-1;_varcode_set(t2,t);'+engine._brancher('t2<'+a[1]);
   }
 function handleZ_inc_chk(engine, a) {
     return 't='+a[0]+';t2=_varcode_get(t)+1;_varcode_set(t2,t);'+engine._brancher('t2>'+a[1]);
   }
+***/
+
+// Increment/decrement a variable and branch
+// Rather than calling _varcode_set() and _varcode_get() these functions now access the variables directly
+// a[0] is interpreted as in ZSD 4.2.2:
+//	0     = top of game stack
+//	1-15  = local variables
+//	16 up = global variables
+
+function handleZ_inc_chk(engine, a)
+{
+	if (a[0] == 0)
+		var code = 'var value = ++m_gamestack[m_gamestack.length];';
+	else if (a[0] < 16)
+		var code = 'var value = ++m_locals[' + (a[0] - 1) + '];';
+	else
+	{
+		var high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+		var code = 'var value = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+			'value = ((value & 0x8000 ? ~0xFFFF : 0) | value) + 1;' +
+			'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
+			'm_memory[' + low + '] = value & 0xFF;';
+	}
+	return code + engine._brancher('value > ' + a[1]);
+}
+
+function handleZ_dec_chk(engine, a)
+{
+	if (a[0] == 0)
+		var code = 'var value = --m_gamestack[m_gamestack.length];';
+	else if (a[0] < 16)
+		var code = 'var value = --m_locals[' + (a[0] - 1) + '];';
+	else
+	{
+		var high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+		var code = 'var value = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+			'value = ((value & 0x8000 ? ~0xFFFF : 0) | value) - 1;' +
+			'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
+			'm_memory[' + low + '] = value & 0xFF;';
+	}
+	return code + engine._brancher('value < ' + a[1]);
+}
 
 function handleZ_jin(engine, a) {
     return engine._brancher("_obj_in("+a[0]+','+a[1]+')');
@@ -278,9 +320,43 @@ function handleZ_set_attr(engine, a) {
 function handleZ_clear_attr(engine, a) {
     return '_clear_attr('+a[0]+','+a[1]+')';
   }
+/***
 function handleZ_store(engine, a) {
     return "_varcode_set("+a[1]+","+a[0]+")";
   }
+***/
+
+// Store a variable
+// Rather than calling _varcode_set() this function now access the variables directly
+// a[0] is interpreted as in ZSD 4.2.2:
+//	0     = top of game stack
+//	1-15  = local variables
+//	16 up = global variables
+
+function handleZ_store(engine, a)
+{
+	if (a[0] == 0)
+		return 'm_gamestack.push(' + a[1] + ')';
+	else if (a[0] < 16)
+		return 'm_locals[' + (a[0] - 1) + '] = ' + a[1];
+	else
+	{
+		var high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+		// If we are setting a constant get the high and low bytes at compile time
+		if (!/[^0-9]/.test(a[1]))
+		{
+			var value = (a[1] & 0x8000 ? ~0xFFFF : 0) | a[1];
+			return 'm_memory[' + high + '] = ' + ((value >> 8) & 0xFF) + ';' +
+				'm_memory[' + low + '] = ' + (value & 0xFF);
+		}
+		else
+			return 'var value = ' + a[1] + ';' +
+				'value = (value & 0x8000 ? ~0xFFFF : 0) | value;' +
+				'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
+				'm_memory[' + low + '] = value & 0xFF;';
+	}
+}
+
 function handleZ_insert_obj(engine, a) {
     return "_insert_obj("+a[0]+','+a[1]+")";
   }
@@ -335,12 +411,54 @@ function handleZ_get_parent(engine, a) {
 function handleZ_get_prop_len(engine, a) {
     return engine._storer("_get_prop_len("+a[0]+')');
   }
+/***
 function handleZ_inc(engine, a) {
     return "t="+a[0]+';_varcode_set(_varcode_get(t)+1, t)';
   }
 function handleZ_dec(engine, a) {
     return "t="+a[0]+';_varcode_set(_varcode_get(t)-1, t)';
   }
+***/
+
+// Increment and decrement variables
+// Rather than calling _varcode_set() and _varcode_get() these functions now access the variables directly
+// a[0] is interpreted as in ZSD 4.2.2:
+//	0     = top of game stack
+//	1-15  = local variables
+//	16 up = global variables
+
+function handleZ_inc(engine, a)
+{
+	if (a[0] == 0)
+		return 'm_gamestack[m_gamestack.length]++';
+	else if (a[0] < 16)
+		return 'm_locals[' + (a[0] - 1) + ']++';
+	else
+	{
+		var high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+		return 'var value = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+			'value = ((value & 0x8000 ? ~0xFFFF : 0) | value) + 1;' +
+			'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
+			'm_memory[' + low + '] = value & 0xFF;';
+	}
+}
+
+function handleZ_dec(engine, a)
+{
+	if (a[0] == 0)
+		return 'm_gamestack[m_gamestack.length]--';
+	else if (a[0] < 0x10)
+		return 'm_locals[' + (a[0] - 1) + ']--';
+	else
+	{
+		var high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+		return 'var value = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+			'value = ((value & 0x8000 ? ~0xFFFF : 0) | value) - 1;' +
+			'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
+			'm_memory[' + low + '] = value & 0xFF;';
+	}
+}
+
 function handleZ_print_addr(engine, a) {
     return engine._handler_zOut('_zscii_from('+a[0]+')',0);
   }
@@ -607,9 +725,11 @@ function handleZ_random(engine, a) {
 function handleZ_push(engine, a) {
     return 'm_gamestack.push('+a[0]+')';
   }
-function handleZ_pull(engine, a) {
-    return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
-  }
+function handleZ_pull(engine, a)
+{
+//	return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
+	return handleZ_store(engine, [a[0], 'm_gamestack.pop()']);
+}
 
 function handleZ_split_window(engine, a) {
     engine.m_compilation_running=0;

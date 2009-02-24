@@ -190,6 +190,9 @@ function WebZui(logfunc) {
 	  this._isFixedWidth = false;
 	  this._bufferMode = 0;
 
+	this.bottom = $("#bottom");
+	this.current_input = $("#current-input");
+
 	  if (logfunc) {
 	    this._log = logfunc;
 	  } else {
@@ -348,11 +351,12 @@ function WebZui(logfunc) {
 	        return false;
 
 	      self._removeBufferedWindows();
-	      self._lastSeenY = $("#bottom").offset().top;
+//		$("#buffered-windows").empty();
+	      self._lastSeenY = self.bottom.offset().top;
 
 	      self._scrollBottomWindow();
 
-	      if ($("#current-input").length == 0) {
+	      if (self.current_input.length == 0) {
 	        // We're not waiting for a line of input, but we may
 	        // be waiting for a character of input.
 
@@ -385,12 +389,13 @@ function WebZui(logfunc) {
 	        var callback = self._currentCallback;
 
 	        self._currentCallback = null;
-	        self._lastSeenY = $("#current-input").offset().top;
-	        var styles = $("#current-input").attr("class");
-	        $("#current-input").replaceWith(
+	        self._lastSeenY = self.current_input.offset().top;
+	        var styles = self.current_input.attr("class");
+	        self.current_input.replaceWith(
 	          ('<span class="finished-input ' + styles + '">' +
 	           finalInputString.entityify() + '</span><br/>')
 	        );
+			self.current_input = $("#current-input");
 	        callback(finalInputString);
 	      } else if (event.keyCode in keyCodeHandlerMap) {
 	          self._lineEditor[keyCodeHandlerMap[event.keyCode]]();
@@ -398,7 +403,7 @@ function WebZui(logfunc) {
 			self._lineEditor.selfInsert(event.charCode);
 		}
 
-	      if ($("#current-input") &&
+	      if (self.current_input &&
 	          (oldInputString != self._lineEditor.line ||
 	           oldPos != self._lineEditor.pos)) {
 	        var prefix = self._lineEditor.line.slice(0, self._lineEditor.pos);
@@ -419,7 +424,7 @@ function WebZui(logfunc) {
 	            point = point.entityify();
 	          }
 	        }
-	        $("#current-input").html(prefix.entityify() + '<span id="' +
+	        self.current_input.html(prefix.entityify() + '<span id="' +
 	                                 cursorId + '">' + point + '</span>' +
 	                                 suffix.entityify());
 	      }
@@ -429,7 +434,7 @@ function WebZui(logfunc) {
 		// Pass focus to the textbox to accept the pasted text
 		_windowPasteHandler: function(event)
 		{
-			if ($("#current-input").length != 0)
+			if (self.current_input.length != 0)
 			{
 				$("#pasteinput").focus();
 				window.setTimeout(self._inputPasteHandler, 10);
@@ -491,7 +496,8 @@ function WebZui(logfunc) {
 	      $("#content").append(
 	        '<span id="current-input"><span id="cursor">_</span></span>'
 	      );
-	      $("#current-input").attr("class", self._calcFinalStyles());
+	      self.current_input = $("#current-input");
+	      self.current_input.attr("class", self._calcFinalStyles());
 	    },
 
 	    onCharacterInput: function(callback) {
