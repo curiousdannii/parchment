@@ -266,12 +266,12 @@ function handleZ_inc_chk(engine, a) {
 
 function handleZ_inc_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '+') + engine._brancher('value > ' + a[1]);
+	return handleZ_incdec(engine, a[0], '+') + engine._brancher('tmp_' + temp_var + ' > ' + a[1]);
 }
 
 function handleZ_dec_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '-') + engine._brancher('value < ' + a[1]);
+	return handleZ_incdec(engine, a[0], '-') + engine._brancher('tmp_' + temp_var + ' < ' + a[1]);
 }
 
 function handleZ_jin(engine, a) {
@@ -312,6 +312,7 @@ function handleZ_store(engine, a)
 {
 	if (isNotConst.test(a[0]))
 		engine.logger('Z_store', a[0]);
+
 	if (a[0] == 0)
 		return 'm_gamestack.push(' + a[1] + ')';
 	else if (a[0] < 16)
@@ -332,10 +333,13 @@ function handleZ_store(engine, a)
 				'm_memory[' + low + '] = ' + (value & 0xFF);
 		}
 		else
-			return code + 'var value = ' + a[1] + ';' +
-				'value = (value & 0x8000 ? ~0xFFFF : 0) | value;' +
-				'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
-				'm_memory[' + low + '] = value & 0xFF;';
+		{
+			var tmp = 'tmp_' + (++temp_var);
+			return code + 'var ' + tmp + ' = ' + a[1] + ';' +
+				tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
+				'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
+				'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
+		}
 	}
 }
 
@@ -427,10 +431,12 @@ function handleZ_incdec(engine, variable, sign)
 {
 	if (isNotConst.test(variable))
 		engine.logger('Z_incdec', variable);
+
+	var tmp = 'tmp_' + (++temp_var);
 	if (variable == 0)
-		return 'var value = ' + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
+		return 'var ' + tmp + ' = ' + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
 	else if (variable < 0x10)
-		return 'var value = ' + sign + sign + 'm_locals[' + variable + ' - 1];';
+		return 'var ' + tmp + ' = ' + sign + sign + 'm_locals[' + variable + ' - 1];';
 	else
 	{
 		// If the variable is a function rather than a constant it will have to be determined at run time
@@ -440,10 +446,10 @@ function handleZ_incdec(engine, variable, sign)
 			var code = '', high = engine.m_vars_start + (variable - 16) * 2, low = high + 1;
 
 		// Get the value from memory and inc/dec it!
-		return code + 'var value = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
-			'value = ((value & 0x8000 ? ~0xFFFF : 0) | value) ' + sign + ' 1;' +
-			'm_memory[' + high + '] = (value >> 8) & 0xFF;' +
-			'm_memory[' + low + '] = value & 0xFF;';
+		return code + 'var ' + tmp + ' = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+			'' + tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ') ' + sign + ' 1;' +
+			'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
 	}
 }
 
@@ -586,10 +592,37 @@ function handleZ_call_vs(engine, a) {
 }
 
 ////////////////////////////////////////////////////////////////
-
+/***
 function handleZ_store_w(engine, a) {
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
+***/
+
+// Store a value in an array
+function handleZ_store_w(engine, a)
+{
+	// Calculate the address
+	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
+		var code = 'var tmp_' + (++temp_var) + ' = ' + a[0] + ' + 2 * ' + a[1] + ';', add = 'tmp_' + temp_var;
+	else
+		var code = '', add = a[0] + 2 * a[1];
+
+	// If we are setting a constant get the high and low bytes at compile time
+	if (!isNotConst.test(a[2]))
+	{
+		var value = (a[2] & 0x8000 ? ~0xFFFF : 0) | a[2];
+		return code + 'm_memory[' + add + '] = ' + ((value >> 8) & 0xFF) + ';' +
+			'm_memory[' + add + ' + 1] = ' + (value & 0xFF);
+	}
+	else
+	{
+		var tmp = 'tmp_' + (++temp_var);
+		return code + 'var ' + tmp + ' = ' + a[2] + ';' +
+			tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
+			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
+	}
+}
 
 function handleZ_storeb(engine, a) {
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
@@ -1618,10 +1651,10 @@ GnustoEngine.prototype = {
       }
 
 				// Some useful debugging code:
-				if (this.m_copperTrail) {
-          this.logger('pc', start_pc.toString(16));
-          this.logger('jit', jscode);
-				}
+//				if (this.m_copperTrail) {
+//          this.logger('pc', start_pc.toString(16));
+//          this.logger('jit', jscode);
+//				}
 
       jscode();
 
@@ -2322,10 +2355,9 @@ GnustoEngine.prototype = {
 					code = code + 'm_pc='+this.m_pc;
 			}
 
-			// Name the function after the starting position, to make life
-			// easier for Venkman.
-		// Anyone actually use the hex value? The decimal seems far more helpful when debugging and following jumps etc
-			return 'function JIT_' + starting_pc.toString(16) + '_' + starting_pc + '(){' + code + '}';
+		// Name the function after the starting position, to make life
+		// easier for Venkman.
+		return 'function JIT_' + starting_pc.toString(16) + '_' + starting_pc + '(){' + code + '}';
 	},
 
 	_param_count: function ge_param_count() {
@@ -3807,17 +3839,14 @@ GnustoEngine.prototype = {
 ***/
 
 	_code_for_varcode: function ge_code_for_varcode(variable) {
-		var code, arg;
+		var code = '', arg;
 		if (variable == 0)
 		{
 			code = 'var tmp_' + (++temp_var) + ' = m_gamestack.pop();';
 			arg = 'tmp_' + temp_var;
 		}
 		else if (variable < 0x10)
-		{
-			code = 'var tmp_' + (++temp_var) + ' = m_locals[' + (variable - 1) + '];';
-			arg = 'tmp_' + temp_var;
-		}
+			arg = 'm_locals[' + (variable - 1) + ']';
 		else
 		{
 			var high = this.m_vars_start + (variable - 16) * 2, low = high + 1;
