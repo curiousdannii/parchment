@@ -427,29 +427,29 @@ function handleZ_dec(engine, a)
 //	1-15  = local variables
 //	16 up = global variables
 
-function handleZ_incdec(engine, variable, sign)
+function handleZ_incdec(engine, variable, sign, varRequired)
 {
 	if (isNotConst.test(variable))
 		engine.logger('Z_incdec', variable);
 
 	var tmp = 'tmp_' + (++temp_var);
 	if (variable == 0)
-		return 'var ' + tmp + ' = ' + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
 	else if (variable < 0x10)
-		return 'var ' + tmp + ' = ' + sign + sign + 'm_locals[' + variable + ' - 1];';
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_locals[' + variable + ' - 1];';
 	else
 	{
 		// If the variable is a function rather than a constant it will have to be determined at run time
 		if (isNotConst.test(variable))
-			var code = 'var high = m_vars_start + (' + variable + ' - 16) * 2, low = high + 1;', high = 'high', low = 'low';
+			var code = 'var add = m_vars_start + (' + variable + ' - 16) * 2, ', add = 'add';
 		else
-			var code = '', high = engine.m_vars_start + (variable - 16) * 2, low = high + 1;
+			var code = 'var ', add = engine.m_vars_start + (variable - 16) * 2;
 
 		// Get the value from memory and inc/dec it!
-		return code + 'var ' + tmp + ' = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
-			'' + tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ') ' + sign + ' 1;' +
-			'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
-			'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
+		return code + tmp + ' = (m_memory[' + add + '] << 8) | m_memory[' + add + ' + 1];' +
+			tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ') ' + sign + ' 1;' +
+			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
 }
 
@@ -2354,6 +2354,10 @@ GnustoEngine.prototype = {
 			if (this.m_single_step||this.m_debug_mode) {
 					code = code + 'm_pc='+this.m_pc;
 			}
+
+		// Code optimisations
+		// Don't push() and pop(), just set variables directly
+		code = code.replace(/m_gamestack\.push\(([^;]+)\);var tmp_(\d+) = m_gamestack\.pop\(\);/, 'var tmp_$2 = $1;');
 
 		// Name the function after the starting position, to make life
 		// easier for Venkman.
