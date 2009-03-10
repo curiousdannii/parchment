@@ -266,12 +266,12 @@ function handleZ_inc_chk(engine, a) {
 
 function handleZ_inc_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '+') + engine._brancher('tmp_' + temp_var + ' > ' + a[1]);
+	return handleZ_incdec(engine, a[0], '+', 1) + engine._brancher('tmp_' + temp_var + ' > ' + a[1]);
 }
 
 function handleZ_dec_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '-') + engine._brancher('tmp_' + temp_var + ' < ' + a[1]);
+	return handleZ_incdec(engine, a[0], '-', 1) + engine._brancher('tmp_' + temp_var + ' < ' + a[1]);
 }
 
 function handleZ_jin(engine, a) {
