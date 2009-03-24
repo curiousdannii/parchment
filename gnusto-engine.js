@@ -592,12 +592,12 @@ function handleZ_call_vs(engine, a) {
 }
 
 ////////////////////////////////////////////////////////////////
-/***
+
 function handleZ_store_w(engine, a) {
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
-***/
 
+/***
 // Store a value in an array
 function handleZ_store_w(engine, a)
 {
@@ -623,7 +623,7 @@ function handleZ_store_w(engine, a)
 			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
 }
-
+***/
 function handleZ_storeb(engine, a) {
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
   }
