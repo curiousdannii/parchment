@@ -190,6 +190,9 @@ function WebZui(logfunc) {
 	  this._isFixedWidth = false;
 	  this._bufferMode = 0;
 
+	this.bottom = $("#bottom");
+	this.current_input = $("#current-input");
+
 	  if (logfunc) {
 	    this._log = logfunc;
 	  } else {
@@ -227,7 +230,7 @@ function WebZui(logfunc) {
 				$(document).keyup(self._iphoneKeyup);
 			else
 			{
-				$(document).bind('keydown', {combi: 'Ctrl+v', propagate: true}, self._windowPasteHandler)
+				$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
 					.keypress(self._windowKeypress)
 					.keyup(self._windowKeyup)
 					.keydown(self._windowKeydown)
@@ -348,11 +351,12 @@ function WebZui(logfunc) {
 	        return false;
 
 	      self._removeBufferedWindows();
-	      self._lastSeenY = $("#bottom").offset().top;
+//		$("#buffered-windows").empty();
+	      self._lastSeenY = self.bottom.offset().top;
 
 	      self._scrollBottomWindow();
 
-	      if ($("#current-input").length == 0) {
+	      if (self.current_input.length == 0) {
 	        // We're not waiting for a line of input, but we may
 	        // be waiting for a character of input.
 
@@ -385,12 +389,13 @@ function WebZui(logfunc) {
 	        var callback = self._currentCallback;
 
 	        self._currentCallback = null;
-	        self._lastSeenY = $("#current-input").offset().top;
-	        var styles = $("#current-input").attr("class");
-	        $("#current-input").replaceWith(
+	        self._lastSeenY = self.current_input.offset().top;
+	        var styles = self.current_input.attr("class");
+	        self.current_input.replaceWith(
 	          ('<span class="finished-input ' + styles + '">' +
 	           finalInputString.entityify() + '</span><br/>')
 	        );
+			self.current_input = $("#current-input");
 	        callback(finalInputString);
 	      } else if (event.keyCode in keyCodeHandlerMap) {
 	          self._lineEditor[keyCodeHandlerMap[event.keyCode]]();
@@ -398,7 +403,7 @@ function WebZui(logfunc) {
 			self._lineEditor.selfInsert(event.charCode);
 		}
 
-	      if ($("#current-input") &&
+	      if (self.current_input &&
 	          (oldInputString != self._lineEditor.line ||
 	           oldPos != self._lineEditor.pos)) {
 	        var prefix = self._lineEditor.line.slice(0, self._lineEditor.pos);
@@ -419,7 +424,7 @@ function WebZui(logfunc) {
 	            point = point.entityify();
 	          }
 	        }
-	        $("#current-input").html(prefix.entityify() + '<span id="' +
+	        self.current_input.html(prefix.entityify() + '<span id="' +
 	                                 cursorId + '">' + point + '</span>' +
 	                                 suffix.entityify());
 	      }
@@ -429,7 +434,7 @@ function WebZui(logfunc) {
 		// Pass focus to the textbox to accept the pasted text
 		_windowPasteHandler: function(event)
 		{
-			if ($("#current-input").length != 0)
+			if (self.current_input.length != 0)
 			{
 				$("#pasteinput").focus();
 				window.setTimeout(self._inputPasteHandler, 10);
@@ -491,7 +496,8 @@ function WebZui(logfunc) {
 	      $("#content").append(
 	        '<span id="current-input"><span id="cursor">_</span></span>'
 	      );
-	      $("#current-input").attr("class", self._calcFinalStyles());
+	      self.current_input = $("#current-input");
+	      self.current_input.attr("class", self._calcFinalStyles());
 	    },
 
 	    onCharacterInput: function(callback) {
@@ -733,7 +739,6 @@ function WebZui(logfunc) {
 	      if (self._activeWindow == 0) {
 	        var lines = output.split("\n");
 	        for (var i = 0; i < lines.length; i++) {
-	          var addNewline = false;
 
 	          if (lines[i]) {
 	            var chunk = lines[i].entityify();
@@ -741,20 +746,22 @@ function WebZui(logfunc) {
 	            // TODO: This isn't an ideal solution for having breaking
 	            // whitespace while preserving its structure, but it
 	            // deals with the most common case.
-	            var singleSpaceBetweenWords = /(\S) (\S)/g;
+	            var singleSpace = / /g, singleSpaceBetweenWords = /(\S) (\S)/g, backToSpace = /<&>/g;
 	            chunk = chunk.replace(
 	              singleSpaceBetweenWords,
-	              "$1<span class=\"z-breaking-whitespace\"> </span>$2"
+	              "$1<&>$2"
+	            );
+	            chunk = chunk.replace(singleSpace, '&nbsp;');
+	            chunk = chunk.replace(
+	              backToSpace,
+	              "<span class=\"z-breaking-whitespace\"> </span>"
 	            );
 
 	            chunk = '<span class="' + styles + '">' + chunk + '</span>';
 	            $("#content").append(chunk);
-	            if (i < lines.length - 1)
-	              addNewline = true;
-	          } else
-	            addNewline = true;
+	          }
 
-	          if (addNewline)
+	          if (i < lines.length - 1)
 	            $("#content").append("<br/>");
 	        }
 
@@ -784,6 +791,19 @@ function WebZui(logfunc) {
 
 	      $("#buffered-windows").append(row);
 	      self._pixelWidth = $(row).width();
+	      if(jQuery.browser.msie && 
+	         (jQuery.browser.version.length == 1 || jQuery.browser.version.charAt(1)=='.') &&
+	         jQuery.browser.version < '7') {
+	      	// For MSIE versions < 7, the pixelwidth is set to the entire window width.
+	      	// Instead, we estimate the needed width using the font size
+	        var fwidth = -1, fsize = document.getElementById('top-window').currentStyle['fontSize'].toLowerCase();
+	        if(fsize.substring(fsize.length - 2)=='px') 
+	          fwidth = 0.6 * parseInt(fsize);
+	        else if(fsize.substring(fsize.length - 2)=='pt') 
+	          fwidth = 0.8 * parseInt(fsize);
+	        if(fwidth > 0)
+	          self._pixelWidth = self._size[0] * fwidth;
+	      }
 	      self._pixelLineHeight = $(row.firstChild).height();
 	      $("#buffered-windows").empty();
 	    }
@@ -835,14 +855,17 @@ FatalError.prototype.onError = function(e) {
 function _webZuiStartup() {
   var logfunc = function() {};
 
+	if (window.loadFirebugConsole)
+		window.loadFirebugConsole();
+
   if (window.console)
     logfunc = function(msg) { console.log(msg); };
 
-  var engine = new GnustoEngine(logfunc);
+  window.engine = new GnustoEngine(logfunc);
   var zui = new WebZui(logfunc);
   var runner = new EngineRunner(engine, zui, logfunc);
 
-	window.story = new base2.file.story(gZcode.slice());
+	window.story = new base2.file.story(gZcode.slice(), storyName);
 	story.load(engine);
 	logfunc("Story type: " + story.filetype);
 
@@ -896,6 +919,7 @@ var gBaseUrl = gThisUrl.slice(0, gThisUrl.lastIndexOf("/"));
 var gStory = "";
 var gZcode = null;
 var gIsIphone = navigator.userAgent.match(/iPhone/i);
+var storyName = '';
 
 var IF_ARCHIVE_PREFIX = "if-archive/";
 var ZCODE_APPSPOT_URL = "http://zcode.appspot.com/";
@@ -907,8 +931,8 @@ function getFilenameFromUrl(url) {
 
 $(document).ready(function() {
   var qs = new Querystring();
-  var story = qs.get("story", "stories/troll.z5.js");
-  var storyName = getFilenameFromUrl(story);
+  var story = qs.get("story", "stories/troll.zblorb.js");
+  storyName = getFilenameFromUrl(story);
 
   storyName = storyName ? storyName + " - Parchment" : "Parchment";
   window.document.title = storyName;
@@ -921,4 +945,22 @@ $(document).ready(function() {
   else
     jQuery.getScript(ZCODE_APPSPOT_URL + "?url=" + escape(story) +
                      "&jsonp=processZcodeAppspotResponse");
+});
+
+var topwin_element;
+var topwin_dist = '0';
+
+// Make the statusline always move to the top of the screen in MSIE < 7
+$(document).ready(function() {
+    topwin_element = document.getElementById('top-window');
+    topwin_dist = '0';
+    var ieMatch = navigator.appVersion.match(/MSIE (\d+)\./);
+    if(ieMatch && +ieMatch[1]<7) {
+        topwin_element.style.position = 'absolute';
+        var move_element=function() {
+            topwin_element.style.top = 1 * (document.documentElement.scrollTop + 1 * topwin_dist) + 'px';
+        };
+        window.onscroll = move_element;
+        window.onresize = move_element;
+    }
 });

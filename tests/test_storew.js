@@ -27,7 +27,7 @@ function step() {
 
 var engine = new GnustoEngine();
 
-var f = new java.io.File("stories/test_storew.z5");
+var f = new java.io.File("tests/test_storew.z5");
 var fis = new java.io.FileInputStream(f);
 var dis = new java.io.DataInputStream(fis);
 

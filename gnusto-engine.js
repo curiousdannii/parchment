@@ -100,6 +100,10 @@ var default_unicode_translation_table = {
   222:0xa1, // inverted pling
   223:0xbf // inverted query
 };
+var reverse_unicode_table = {};
+
+var isNotConst = /\D/;
+var temp_var = 0;
 
 var PARENT_REC = 0;
 var SIBLING_REC = 1;
@@ -109,7 +113,7 @@ var CALLED_FROM_INTERRUPT = 0;
 
 // Placeholder when decoding arguments for opcodes to indicate that
 // an argument needs to be popped from the stack.
-var ARG_STACK_POP = "SP";
+//var ARG_STACK_POP = "SP";
 
 ////////////////////////////////////////////////////////////////
 // Effect codes, returned from run(). See the explanation below
@@ -248,13 +252,27 @@ function handleZ_jl(engine, a) {
 
 function handleZ_jg(engine, a) {
     return engine._brancher(a[0]+'>'+a[1]); }
-
+/***
 function handleZ_dec_chk(engine, a) {
     return 't='+a[0]+';t2=_varcode_get(t)-1;_varcode_set(t2,t);'+engine._brancher('t2<'+a[1]);
   }
 function handleZ_inc_chk(engine, a) {
     return 't='+a[0]+';t2=_varcode_get(t)+1;_varcode_set(t2,t);'+engine._brancher('t2>'+a[1]);
   }
+***/
+
+// Increment/decrement a variable and branch
+// Calls the generic function and adds a brancher to the end
+
+function handleZ_inc_chk(engine, a)
+{
+	return handleZ_incdec(engine, a[0], '+', 1) + engine._brancher('tmp_' + temp_var + ' > ' + a[1]);
+}
+
+function handleZ_dec_chk(engine, a)
+{
+	return handleZ_incdec(engine, a[0], '-', 1) + engine._brancher('tmp_' + temp_var + ' < ' + a[1]);
+}
 
 function handleZ_jin(engine, a) {
     return engine._brancher("_obj_in("+a[0]+','+a[1]+')');
@@ -277,9 +295,54 @@ function handleZ_set_attr(engine, a) {
 function handleZ_clear_attr(engine, a) {
     return '_clear_attr('+a[0]+','+a[1]+')';
   }
+/***
 function handleZ_store(engine, a) {
     return "_varcode_set("+a[1]+","+a[0]+")";
   }
+***/
+
+// Store a variable
+// Rather than calling _varcode_set() this function now access the variables directly
+// a[0] is interpreted as in ZSD 4.2.2:
+//	0     = top of game stack
+//	1-15  = local variables
+//	16 up = global variables
+
+function handleZ_store(engine, a)
+{
+	if (isNotConst.test(a[0]))
+		engine.logger('Z_store', a[0]);
+
+	if (a[0] == 0)
+		return 'm_gamestack.push(' + a[1] + ')';
+	else if (a[0] < 16)
+		return 'm_locals[' + a[0] + ' - 1] = ' + a[1];
+	else
+	{
+		// If the variable is a function rather than a constant it will have to be determined at run time
+		if (isNotConst.test(a[0]))
+			var code = 'var high = m_vars_start + (' + a[0] + ' - 16) * 2, low = high + 1;', high = 'high', low = 'low';
+		else
+			var code = '', high = engine.m_vars_start + (a[0] - 16) * 2, low = high + 1;
+
+		// If we are setting a constant get the high and low bytes at compile time
+		if (!isNotConst.test(a[1]))
+		{
+			var value = (a[1] & 0x8000 ? ~0xFFFF : 0) | a[1];
+			return code + 'm_memory[' + high + '] = ' + ((value >> 8) & 0xFF) + ';' +
+				'm_memory[' + low + '] = ' + (value & 0xFF);
+		}
+		else
+		{
+			var tmp = 'tmp_' + (++temp_var);
+			return code + 'var ' + tmp + ' = ' + a[1] + ';' +
+				tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
+				'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
+				'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
+		}
+	}
+}
+
 function handleZ_insert_obj(engine, a) {
     return "_insert_obj("+a[0]+','+a[1]+")";
   }
@@ -334,12 +397,62 @@ function handleZ_get_parent(engine, a) {
 function handleZ_get_prop_len(engine, a) {
     return engine._storer("_get_prop_len("+a[0]+')');
   }
+/***
 function handleZ_inc(engine, a) {
     return "t="+a[0]+';_varcode_set(_varcode_get(t)+1, t)';
   }
 function handleZ_dec(engine, a) {
     return "t="+a[0]+';_varcode_set(_varcode_get(t)-1, t)';
   }
+***/
+
+// Increment and decrement opcodes
+// Calls the following generic function
+
+function handleZ_inc(engine, a)
+{
+	return handleZ_incdec(engine, a[0], '+');
+}
+
+function handleZ_dec(engine, a)
+{
+	return handleZ_incdec(engine, a[0], '-');
+}
+
+// Increment and decrement variables
+// A generic function used by dec, dec_chk, inc and inc_chk
+// Rather than calling _varcode_set() and _varcode_get() this function now accesses the variables directly
+// variable is interpreted as in ZSD 4.2.2:
+//	0     = top of game stack
+//	1-15  = local variables
+//	16 up = global variables
+
+function handleZ_incdec(engine, variable, sign, varRequired)
+{
+	if (isNotConst.test(variable))
+		engine.logger('Z_incdec', variable);
+
+	var tmp = 'tmp_' + (++temp_var);
+	if (variable == 0)
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
+	else if (variable < 0x10)
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_locals[' + variable + ' - 1];';
+	else
+	{
+		// If the variable is a function rather than a constant it will have to be determined at run time
+		if (isNotConst.test(variable))
+			var code = 'var add = m_vars_start + (' + variable + ' - 16) * 2, ', add = 'add';
+		else
+			var code = 'var ', add = engine.m_vars_start + (variable - 16) * 2;
+
+		// Get the value from memory and inc/dec it!
+		return code + tmp + ' = (m_memory[' + add + '] << 8) | m_memory[' + add + ' + 1];' +
+			tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ') ' + sign + ' 1;' +
+			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
+	}
+}
+
 function handleZ_print_addr(engine, a) {
     return engine._handler_zOut('_zscii_from('+a[0]+')',0);
   }
@@ -484,6 +597,33 @@ function handleZ_store_w(engine, a) {
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
 
+/***
+// Store a value in an array
+function handleZ_store_w(engine, a)
+{
+	// Calculate the address
+	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
+		var code = 'var tmp_' + (++temp_var) + ' = ' + a[0] + ' + 2 * ' + a[1] + ';', add = 'tmp_' + temp_var;
+	else
+		var code = '', add = a[0] + 2 * a[1];
+
+	// If we are setting a constant get the high and low bytes at compile time
+	if (!isNotConst.test(a[2]))
+	{
+		var value = (a[2] & 0x8000 ? ~0xFFFF : 0) | a[2];
+		return code + 'm_memory[' + add + '] = ' + ((value >> 8) & 0xFF) + ';' +
+			'm_memory[' + add + ' + 1] = ' + (value & 0xFF);
+	}
+	else
+	{
+		var tmp = 'tmp_' + (++temp_var);
+		return code + 'var ' + tmp + ' = ' + a[2] + ';' +
+			tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
+			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
+	}
+}
+***/
 function handleZ_storeb(engine, a) {
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
   }
@@ -606,9 +746,11 @@ function handleZ_random(engine, a) {
 function handleZ_push(engine, a) {
     return 'm_gamestack.push('+a[0]+')';
   }
-function handleZ_pull(engine, a) {
-    return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
-  }
+function handleZ_pull(engine, a)
+{
+//	return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
+	return handleZ_store(engine, [a[0], 'm_gamestack.pop()']);
+}
 
 function handleZ_split_window(engine, a) {
     engine.m_compilation_running=0;
@@ -738,7 +880,7 @@ function handleZ_scan_table(engine, a) {
   }
 
 function handleZ_not(engine, a) {
-    return engine._storer('~'+a[1]+'&0xffff');
+    return engine._storer('~'+a[0]+'&0xffff');
 }
 
 function handleZ_tokenise(engine, a) {
@@ -1509,10 +1651,10 @@ GnustoEngine.prototype = {
       }
 
 				// Some useful debugging code:
-				if (this.m_copperTrail) {
-          this.logger('pc', start_pc.toString(16));
-          this.logger('jit', jscode);
-				}
+//				if (this.m_copperTrail) {
+//          this.logger('pc', start_pc.toString(16));
+//          this.logger('jit', jscode);
+//				}
 
       jscode();
 
@@ -1916,7 +2058,18 @@ GnustoEngine.prototype = {
 	  if (this.m_unicode_start > 0) { // if there is one, get the char count-- characters beyond that point are undefined.
 	      this.m_custom_unicode_charcount = this.m_memory[this.m_unicode_start];
 	      this.m_unicode_start += 1;
+	      // Populate reverse lookup table
+	      for(var i=0; i<this.m_custom_unicode_charcount; i++)
+		  reverse_unicode_table[this.getUnsignedWord(this.m_unicode_start + (i*2))] = i + 155;
 	  }
+      }
+
+      if(!(this.m_unicode_start>0)) {
+	  // The game doesn't provide its own set of unicode characters, so
+	  // now is the time to populate the reverse_unicode_table with the 
+	  // default unicode characters
+	  for(var i in default_unicode_translation_table)
+	      reverse_unicode_table[default_unicode_translation_table[i]] = i;
       }
 
       this.m_rebound = 0;
@@ -1978,6 +2131,8 @@ GnustoEngine.prototype = {
       this.m_leftovers = '';
   },
 
+// Inlined some of these functions...
+
   getByte: function ge_getbyte(address) {
     if (address<0) { address &= 0xFFFF; }
     return this.m_memory[address];
@@ -1990,8 +2145,10 @@ GnustoEngine.prototype = {
 
   getWord: function ge_getWord(address) {
     if (address<0) { address &= 0xFFFF; }
-    return this._unsigned2signed((this.m_memory[address]<<8)|
-																 this.m_memory[address+1]);
+//    return this._unsigned2signed((this.m_memory[address]<<8)|
+//																 this.m_memory[address+1]);
+		var value = (this.m_memory[address] << 8) | this.m_memory[address + 1];
+		return ((value & 0x8000) ? ~0xFFFF : 0) | value;
   },
 
   _unsigned2signed: function ge_unsigned2signed(value) {
@@ -2008,14 +2165,16 @@ GnustoEngine.prototype = {
   },
 
   setWord: function ge_setWord(value, address) {
-			if (address<0) { address &= 0xFFFF; }
-			this.setByte((value>>8) & 0xFF, address);
-			this.setByte((value) & 0xFF, address+1);
+    if (address<0) { address &= 0xFFFF; }
+//			this.setByte((value>>8) & 0xFF, address);
+		this.m_memory[address] = (value >> 8) & 0xFF;
+//		this.setByte((value) & 0xFF, address+1);
+		this.m_memory[address + 1] = (value) & 0xFF;
   },
 
 	// Inelegant function to load parameters according to a VAR byte (or word).
 	_handle_variable_parameters: function ge_handle_var_parameters(args, types, bytecount) {
-			var argcursor = 0;
+			var argcursor = 0, code = '', varcode;
 
 			if (bytecount==1) {
 					types = (types<<8) | 0xFF;
@@ -2024,16 +2183,19 @@ GnustoEngine.prototype = {
 			while (1) {
 					var current = types & 0xC000;
 					if (current==0xC000) {
-							return;
+							return code;
 					} else if (current==0x0000) {
 							args[argcursor++] = this.getWord(this.m_pc);
 							this.m_pc+=2;
 					} else if (current==0x4000) {
 							args[argcursor++] = this.m_memory[this.m_pc++];
 					} else if (current==0x8000) {
-							args[argcursor++] = this._code_for_varcode(this.m_memory[this.m_pc++]);
-					} else {
-							gnusto_error(171); // impossible
+//							args[argcursor++] = this._code_for_varcode(this.m_memory[this.m_pc++]);
+							varcode = this._code_for_varcode(this.m_memory[this.m_pc++]);
+							code += varcode[0];
+							args[argcursor++] = varcode[1];
+//					} else {
+//							gnusto_error(171); // impossible
 					}
 
 					types = (types << 2) | 0x3;
@@ -2047,11 +2209,11 @@ GnustoEngine.prototype = {
 	_compile: function ge_compile() {
 
 			this.m_compilation_running = 1;
-			code = '';
-			var starting_pc = this.m_pc;
+			var code = '', starting_pc = this.m_pc, varcode;
 
       // Counter for naming any temporary variables that we create.
-      var temp_var_counter = 0;
+//      var temp_var_counter = 0;
+			temp_var = 0;
 
 			do {
 					// List of arguments to the opcode.
@@ -2060,7 +2222,9 @@ GnustoEngine.prototype = {
 					this_instr_pc = this.m_pc;
 
 					// Add the touch (see bug 4687). This lets us track progress simply.
-					code = code + '_touch('+this.m_pc+');';
+//				touch() has a huge overhead and without tracing there's no need for it. Whether this replacement is even useful is a good question...
+//					code = code + '_touch('+this.m_pc+');';
+//					code = code + 'm_pc = ' + this.m_pc + ';';
 
 					// So here we go...
 					// what's the opcode?
@@ -2074,9 +2238,7 @@ GnustoEngine.prototype = {
 					} else if (instr==190) { // Extended opcode.
 
 							instr = 1000+this.m_memory[this.m_pc++];
-							this._handle_variable_parameters(args,
-																							 this.m_memory[this.m_pc++],
-																							 1);
+							code += this._handle_variable_parameters(args, this.m_memory[this.m_pc++], 1);
 
 					} else if (instr & 0x80) {
 							if (instr & 0x40) { // Variable params
@@ -2090,56 +2252,64 @@ GnustoEngine.prototype = {
 											// We get more of them!
 											var types = this.getUnsignedWord(this.m_pc);
 											this.m_pc += 2;
-											this._handle_variable_parameters(args, types, 2);
+											code += this._handle_variable_parameters(args, types, 2);
 									} else
-											this._handle_variable_parameters(args,
-																											 this.m_memory[this.m_pc++],
-																											 1);
+											code += this._handle_variable_parameters(args, this.m_memory[this.m_pc++], 1);
 
 							} else { // Short. All 1-OPs except for one 0-OP.
 
-									switch(instr & 0x30) {
-									case 0x00:
-											args[0] = this.getWord(this.m_pc);
-											this.m_pc+=2;
-											instr = (instr & 0x0F) | 0x80;
-											break;
+					switch(instr & 0x30) {
+						case 0x00:
+							args[0] = this.getWord(this.m_pc);
+							this.m_pc+=2;
+							instr = (instr & 0x0F) | 0x80;
+							break;
 
-									case 0x10:
-											args[0] = this.m_memory[this.m_pc++];
-											instr = (instr & 0x0F) | 0x80;
-											break;
+						case 0x10:
+							args[0] = this.m_memory[this.m_pc++];
+							instr = (instr & 0x0F) | 0x80;
+							break;
 
-									case 0x20:
-											args[0] =
-													this._code_for_varcode(this.m_memory[this.m_pc++]);
-											instr = (instr & 0x0F) | 0x80;
-											break;
+						case 0x20:
+//							args[0] =	this._code_for_varcode(this.m_memory[this.m_pc++]);
+							varcode = this._code_for_varcode(this.m_memory[this.m_pc++]);
+							code += varcode[0];
+							args[0] = varcode[1];
+							instr = (instr & 0x0F) | 0x80;
+							break;
 
-									case 0x30:
-											// 0-OP. We don't need to get parameters, but we
-											// *do* need to translate the opcode.
-											instr = (instr & 0x0F) | 0xB0;
-											break;
-									}
+						case 0x30:
+							// 0-OP. We don't need to get parameters, but we
+							// *do* need to translate the opcode.
+							instr = (instr & 0x0F) | 0xB0;
+							break;
+						}
 							}
 					} else { // Long
 
 							if (instr & 0x40)
-									args[0] =
-											this._code_for_varcode(this.m_memory[this.m_pc++]);
+							{
+//								args[0] = this._code_for_varcode(this.m_memory[this.m_pc++]);
+								varcode = this._code_for_varcode(this.m_memory[this.m_pc++]);
+								code += varcode[0];
+								args[0] = varcode[1];
+							}
 							else
 									args[0] = this.m_memory[this.m_pc++];
 
 							if (instr & 0x20)
-									args[1] =
-											this._code_for_varcode(this.m_memory[this.m_pc++]);
+							{
+//								args[1] = this._code_for_varcode(this.m_memory[this.m_pc++]);
+								varcode = this._code_for_varcode(this.m_memory[this.m_pc++]);
+								code += varcode[0];
+								args[1] = varcode[1];
+							}
 							else
 									args[1] = this.m_memory[this.m_pc++];
 
 							instr &= 0x1F;
 					}
-
+/***
           // We need to ensure that arguments are popped from the
           // stack in the right order, regardless of the order in
           // which code in JITspace uses them; so here we figure out
@@ -2154,7 +2324,7 @@ GnustoEngine.prototype = {
                   code += "var " + temp_var_name + " = m_gamestack.pop();";
                   args[i] = temp_var_name;
               }
-
+***/
 					if (this.m_handlers[instr]) {
 
 							code = code + this.m_handlers[instr](this, args)+';';
@@ -2185,9 +2355,13 @@ GnustoEngine.prototype = {
 					code = code + 'm_pc='+this.m_pc;
 			}
 
-			// Name the function after the starting position, to make life
-			// easier for Venkman.
-			return 'function J'+starting_pc.toString(16)+'(){'+code+'}';
+		// Code optimisations
+		// Don't push() and pop(), just set variables directly
+		code = code.replace(/m_gamestack\.push\(([^;]+)\);var tmp_(\d+) = m_gamestack\.pop\(\);/, 'var tmp_$2 = $1;');
+
+		// Name the function after the starting position, to make life
+		// easier for Venkman.
+		return 'function JIT_' + starting_pc.toString(16) + '_' + starting_pc + '(){' + code + '}';
 	},
 
 	_param_count: function ge_param_count() {
@@ -2251,7 +2425,7 @@ GnustoEngine.prototype = {
 	},
 
 	_zscii_char_to_ascii: function ge_zscii_char_to_ascii(zscii_code) {
-			if (zscii_code<0 || zscii_code>1023) {
+			if (zscii_code < 0) {
 					gnusto_error(702, zscii_code); // illegal zscii code
 			}
 
@@ -2285,6 +2459,33 @@ GnustoEngine.prototype = {
 			}
 
 			return String.fromCharCode(result);
+	},
+
+	_ascii_code_to_zscii_code: function ge_ascii_char_to_zscii(ascii_code) {
+		if ((ascii_code>=32 && ascii_code<=126) || ascii_code==0) {
+			// Most common case - keep it as fast as possible
+			return ascii_code;
+		}
+		
+		var result;
+		
+		if (ascii_code < 0) {
+			gnusto_error(702, 'Illegal unicode character:' + ascii_code); // illegal ascii code
+		} else if (ascii_code==13 || ascii_code==10) {
+			result = 10;
+		} else if ((ascii_code>=32 && ascii_code<=126) || ascii_code==0) {
+			result = ascii_code;
+		} else {
+			// Must be among extra characters.
+			result = reverse_unicode_table[ascii_code];
+			if(!result) {
+				// gnusto_error(703, 'No ZSCII equivalent found for this unicode character code: ' + ascii_code); // unknown ascii code
+				// Let's translate it into '*' for now. Should we raise an error instead?
+				result = '*'.charCodeAt(0);
+			}
+		}
+		
+		return result;
 	},
 
 	_random_number: function ge_random_number(arg) {
@@ -2665,32 +2866,31 @@ GnustoEngine.prototype = {
 
 			var max_chars;
 			var result;
+			var storage;
 
 			if (this.m_version <= 4) {
 
-					// In z1-z4, the array is null-terminated.
+				// In z1-z4, the array is null-terminated.
 
-					max_chars = this.m_memory[text_buffer]+1;
-					result = entered.substring(0,max_chars).toLowerCase();
-
-					for (var i=0;i<result.length;i++) {
-							this.setByte(result.charCodeAt(i), text_buffer + 1 + i);
-					}
-
-					this.setByte(0, text_buffer + 1 + result.length);
+				max_chars = this.m_memory[text_buffer]+1;
+				result = entered.substring(0,max_chars).toLowerCase();
+				storage = text_buffer + 1;
+				this.setByte(0, text_buffer + 1 + result.length);
 
 			} else {
 
-					// In z5-z8, the array starts with a size byte.
+				// In z5-z8, the array starts with a size byte.
 
-					max_chars = this.m_memory[text_buffer];
-					result = entered.substring(0,max_chars);
+				max_chars = this.m_memory[text_buffer];
+				result = entered.substring(0,max_chars).toLowerCase();
+				storage = text_buffer + 2;
+				this.setByte(result.length, text_buffer + 1);
 
-					this.setByte(result.length, text_buffer + 1);
+			}
 
-					for (var i=0;i<result.length;i++) {
-							this.setByte(result.charCodeAt(i), text_buffer + 2 + i);
-					}
+			// Turn into ZSCII and store in text buffer
+			for (var i=0;i<result.length;i++) {
+				this.setByte(this._ascii_code_to_zscii_code(result.charCodeAt(i)), storage + i);
 			}
 
 			if (parse_buffer!=0 || this.m_version<5) {
@@ -3380,7 +3580,7 @@ GnustoEngine.prototype = {
 
 					if (b==0) break;
 
-					source = source + this._zscii_char_to_ascii(b);
+					source = source + String.fromCharCode(b);
 					zscii_text++;
 					length--;
 			}
@@ -3428,42 +3628,84 @@ GnustoEngine.prototype = {
 					}
 			}
 
-			// Need to handle other alphabets. At present we only
-			// handle alphabetic characters (A0).
-			// Also need to handle ten-bit characters.
-			// FIXME: Are the above still true?
+		// Huge thanks to fredrik.ramsberg for fixing the following section!
 
-			var cursor = 0;
+		var ch, cursor = 0, z2;
 
-			while (cursor<str.length && result.length<6) {
-					var ch = str.charCodeAt(cursor++);
+		while (cursor < str.length && result.length < dictionary_entry_length)
+		{
+			ch = str.charCodeAt(cursor++);
 
-					if (ch>=65 && ch<=90) { // A to Z
-							// These are NOT mapped to A1. ZSD3.7
-							// explicitly forbids use of upper case
-							// during encoding.
-							emit(ch-59);
-					} else if (ch>=97 && ch<=122) { // a to z
-							emit(ch-91);
-					} else {
-							var z2 = this.m_zalphabet[2].indexOf(String.fromCharCode(ch));
-
-							if (z2!=-1) {
-								        if (this.getByte(0)>2) {
-									  emit(5); // shift to weird stuff
-									} else { emit(3);} //use a shift as 5 is shift_lock in z1-2
-
-									emit(z2+6);
-							} else {
-								        if (this.getByte(0)>2) {
-									  emit(5);
-									} else { emit(3);} //use a shift as 5 is shift_lock in z1-2
-									emit(6);
-									emit(ch >> 5);
-									emit(ch &  0x1F);
-							}
-					}
+			// Downcase any uppercase characters 
+			if (ch >= 65 && ch <= 90)
+				ch += 32;
+			else if (ch > 154) 
+			{
+				if(this.m_unicode_start == 0)
+				{
+					// It's an extended character AND the game uses the regular 
+					// unicode translation table, so we know how to downcase. 
+					if ((ch >= 158 && ch <= 160) || (ch >= 167 && ch <= 168) || (ch >= 208 && ch <= 210))
+						ch -= 3;
+					else if (ch >= 175 && ch <= 180)
+						ch -= 6;
+					else if ((ch >= 186 && ch <= 190) || (ch >= 196 && ch <= 200))
+						ch -= 5;
+					else if (ch == 217 || ch == 218)
+						ch -= 2;
+					else if (ch == 202 || ch == 204 || ch == 212 || ch == 214 || ch == 221)
+						ch -= 1;
+				}
+				else
+				{
+					// For extended characters using custom unicode translation table,
+					// rely on JavaScripts downcasing function
+					var cnew = this._ascii_code_to_zscii_code(this._zscii_char_to_ascii(ch).toLowerCase().charCodeAt(0));
+					if(cnew > 0 && cnew <= 251 && cnew != '*'.charCodeAt(0))
+						ch = cnew;
+				}
 			}
+
+			// Convert ch to unicode, since alphabet tables are in unicode.
+			var ch_uni = String.fromCharCode(this._zscii_char_to_ascii(ch).charCodeAt(0));
+
+			z2 = this.m_zalphabet[0].indexOf(ch_uni);
+			if (z2 != -1)
+				// ch was found in alphabet A0: Just output position + 6
+				emit(z2 + 6);
+			else
+			{
+				z2=this.m_zalphabet[1].indexOf(ch_uni);
+				if (z2 != -1)
+				{
+					// ch was found in alphabet A1. Output a shift character and ch + 6
+					if (this.getByte(0) > 2)
+						emit(4); // shift to A1
+    			else
+						emit(2); // shift is positioned differently in z1-2
+    			emit(z2 + 6);
+				} else {
+					z2 = this.m_zalphabet[2].indexOf(ch_uni);
+					if (z2 != -1)
+					{
+						// ch was found in alphabet A2. Output a shift character and ch + 6
+						if (this.getByte(0) > 2)
+							emit(5); // shift to A2
+						else
+							emit(3); // shift is positioned differently in in z1-2
+						emit(z2 + 6);
+					} else {
+						if (this.getByte(0) > 2)
+							emit(5); 
+						else
+							emit(3); //shift is positioned differently in z1-2 
+						emit(6); 
+						emit(ch >> 5); 
+						emit(ch & 0x1F);
+					}
+				}
+			}
+		}
 
 			while (result.length<dictionary_entry_length) {
 					emit(5);
@@ -3517,9 +3759,10 @@ GnustoEngine.prototype = {
 					var current = this.m_streamthrees[0];
 					var address = this.m_streamthrees[0][1];
 
-					for (var i=0; i<text.length; i++) {
-							this.setByte(text.charCodeAt(i), address++);
-					}
+					// Argument "text" is in Unicode. For storage in Z-machine memory, we
+					// need to convert it to ZSCII
+					for (var i = 0; i < text.length; i++)
+						this.setByte(this._ascii_code_to_zscii_code(text.charCodeAt(i)), address++);
 
 					this.m_streamthrees[0][1] = address;
 			} else {
@@ -3579,9 +3822,13 @@ GnustoEngine.prototype = {
 	////////////////////////////////////////////////////////////////
 	//
 	// code_for_varcode
-	//
-	// should one day be replaced by varcode_[sg]et, probably.
-	//
+	// Generates code to access variable operands
+	// variable is interpreted as in ZSD 4.2.2:
+	//	0     = top of game stack
+	//	1-15  = local variables
+	//	16 up = global variables
+
+/***
 	_code_for_varcode: function ge_code_for_varcode(varcode) {
 			if (varcode==0) {
           return ARG_STACK_POP;
@@ -3592,6 +3839,27 @@ GnustoEngine.prototype = {
 			}
 
 			gnusto_error(170, 'code_for_varcode'); // impossible
+	},
+***/
+
+	_code_for_varcode: function ge_code_for_varcode(variable) {
+		var code = '', arg;
+		if (variable == 0)
+		{
+			code = 'var tmp_' + (++temp_var) + ' = m_gamestack.pop();';
+			arg = 'tmp_' + temp_var;
+		}
+		else if (variable < 0x10)
+			arg = 'm_locals[' + (variable - 1) + ']';
+		else
+		{
+			var high = this.m_vars_start + (variable - 16) * 2, low = high + 1;
+			var tmp = 'tmp_' + (++temp_var);
+			code = 'var ' + tmp + ' = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
+				tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';';
+			arg = tmp;
+		}
+		return [code, arg];
 	},
 
 	////////////////////////////////////////////////////////////////
