@@ -1,7 +1,7 @@
 import os
 
 compress = (
-	('gnusto-engine.js', 'lib/gnusto-engine.min.js'),
+	('src/gnusto/gnusto-engine.js', 'lib/gnusto-engine.min.js'),
 )
 
 for file in compress:
