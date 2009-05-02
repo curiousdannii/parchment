@@ -2,9 +2,8 @@
 // The Gnusto JavaScript Z-machine library.
 // $Header: /cvs/gnusto/src/xpcom/engine/gnusto-engine.js,v 1.116 2005/04/26 01:50:32 naltrexone42 Exp $
 //
-// Copyright (c) 2003-2009 The Gnusto Contributors
-//
-// The latest code is available at http://github.com/curiousdannii/gnusto/
+// Copyright (c) 2003 Thomas Thurman
+// thomas@thurman.org.uk
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of version 2 of the GNU General Public License
@@ -2575,42 +2574,36 @@ GnustoEngine.prototype = {
 			this.m_call_stack.push(from_address);
 			this.m_pc = to_address;
 
-			// Load the function parameters
 			var count = this.m_memory[this.m_pc++];
-			var actualslength = actuals.length;
 
 			// Before version 5, Z-code put initial values for formal parameters
 			// into the code itself. If we're running a version earlier than z5,
 			// we have to interpret these.
-			if (this.m_version < 5)
-			{
-				var templocals = [];
 
-				for (var i = 0; i < count; i++)
-				{
-					if (i < actualslength)
-						templocals.push(actuals[i]);
-					else
-						templocals.push(this.getWord(this.m_pc));
-
-					this.m_pc += 2;
-				}
+			if (this.m_version<5) {
+					var templocals = [];
+					for (var i3=0; i3<count; i3++) {
+							if (i3<actuals.length) {
+									templocals.push(actuals[i3]);
+							} else {
+									templocals.push(this.getWord(this.m_pc));
+							}
+							this.m_pc += 2;
+					}
+					this.m_locals = templocals.concat(this.m_locals);
+			} else {
+					for (var i5=count; i5>0; i5--) {
+							if (i5<=actuals.length) {
+									this.m_locals.unshift(actuals[i5-1]);
+							} else {
+									this.m_locals.unshift(0);
+							}
+					}
 			}
-
-			// Optimise for Z5: copy the actual parameters and push on zeroes
-			else
-			{
-				var templocals = actuals;
-
-				for (var i = count - actualslength; i > 0; i--)
-					templocals.push(0);
-			}
-
-			this.m_locals = templocals.concat(this.m_locals);
 
 			this.m_locals_stack.unshift(count);
 
-			this.m_param_counts.unshift(actualslength);
+			this.m_param_counts.unshift(actuals.length);
 			this.m_result_targets.push(result_target);
 
 			this.m_gamestack_callbreaks.push(this.m_gamestack.length);
@@ -2949,9 +2942,9 @@ GnustoEngine.prototype = {
 	//
 	_func_return: function ge_func_return(value) {
 
-			// Remove this function's locals
-			this.m_locals = this.m_locals.slice(this.m_locals_stack.shift());
-
+			for (var i=this.m_locals_stack.shift(); i>0; i--) {
+					this.m_locals.shift();
+			}
 			this.m_param_counts.shift();
 			this.m_pc = this.m_call_stack.pop();
 
