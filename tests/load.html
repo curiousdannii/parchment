@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Parchment load tests</title>
+	<link rel="stylesheet" type="text/css" href="http://view.jquery.com/trunk/qunit/testsuite.css">
+	<script src="../lib/jquery.min.js"></script>
+	<script src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
+	<script src="../src/parchment/base64.js"></script>
+	<script>
+loadtests = {};
+
+function processZcodeAppspotResponse(content)
+{
+	loadtests.jsonp = content.data;
+	ok(loadtests.jsonp, 'JSONP data loaded');
+	start();
+}
+
+// Fletcher's checksum, from wikipedia
+function checksum(data)
+{
+	var sum1 = 0xff, sum2 = 0xff, len = data.length, tlen, i = 0;
+
+	while (len)
+	{
+		tlen = len > 21 ? 21 : len;
+		len -= tlen;
+		do
+		{
+			sum1 += data[i++];
+			sum2 += sum1;
+		} while (--tlen);
+		sum1 = (sum1 & 0xff) + (sum1 >> 8);
+		sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	}
+	/* Second reduction step to reduce sums to 8 bits */
+	sum1 = (sum1 & 0xff) + (sum1 >> 8);
+	sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	return sum2 << 8 | sum1;
+}
+
+
+$(document).ready(function(){
+
+	test('Loading data', function()
+	{
+		expect(1);
+		stop(10000);
+		jQuery.getScript('http://zcode.appspot.com/?url=http%3A//inform-fiction.org/I7Downloads/Examples/bronze/Bronze.zblorb&jsonp=processZcodeAppspotResponse&_=1242271489595');
+//		jQuery.getScript('http://zcode.appspot.com/?url=http%3A//www.daedalic.de/tww/april/twwonline.z5&jsonp=processZcodeAppspotResponse&_=1242271489595');
+//		jQuery.getScript('http://zcode.appspot.com/?url=http://mirror.ifarchive.org/if-archive/games/zcode/Galatea.zblorb&jsonp=processZcodeAppspotResponse&_=1242271489595');
+	});
+
+	test('Pure JS base64 implementation', function()
+	{
+		var start = Date.now();
+		var pureJS = decode_base64(loadtests.jsonp, []);
+		loadtests.pureJSelapsed = Date.now() - start;
+		ok(pureJS, 'base64 data decoded');
+		loadtests.pureJSchecksum = checksum(pureJS);
+		equals(loadtests.pureJSchecksum, 33938, 'Correct checksum');
+		ok(true, 'Decoding time: ' + loadtests.pureJSelapsed + 'ms');
+	});
+
+	if (atob)
+	{
+		test('Native base64 implementation', function()
+		{
+			var start = Date.now();
+			var nativetext = atob(loadtests.jsonp);
+			ok(true, 'Decoding time: ' + (Date.now() - start) + 'ms');
+			var nativedata = Array.prototype.map.call(nativetext, function(x) {return x.charCodeAt(0);});
+			loadtests.nativeelapsed = Date.now() - start;
+			ok(nativetext, 'base64 data decoded');
+			ok(nativedata, 'Data converted to a bytearray');
+			loadtests.nativechecksum = checksum(nativedata);
+			equals(loadtests.nativechecksum, 33938, 'Correct checksum');
+			ok(true, 'Decoding time: ' + loadtests.nativeelapsed + 'ms');
+		});
+
+		test('Superior native base64 implementation', function()
+		{
+			equals(loadtests.nativechecksum, loadtests.pureJSchecksum, 'Identical checksums');
+//			same(loadtests.nativedata, loadtests.pureJS, 'Same bytearrays');
+			ok(loadtests.nativeelapsed < loadtests.pureJSelapsed, 'Faster decoding time');
+		});
+	}
+
+});
+	</script>
+</head>
+<body>
+	<h1>Parchment load tests</h1>
+	<h2 id="banner"></h2>
+	<h2 id="userAgent"></h2>
+	<ol id="tests"></ol>
+	<div id="main"></div>
+</body>
+</html>
