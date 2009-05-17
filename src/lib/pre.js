@@ -490,16 +490,10 @@ Beret.prototype = {
     m_filetype: 'error none unseen',
     m_engine: null
 };
-new function(_)
-{
+(function(){
 	// File functions and classes
 	// Based largely on code by Thomas Thurman
-	var file = new base2.Package(this, {
-		name: 'file',
-		exports: 'iff, image, story'
-	});
-
-	eval(this.imports);
+	window.file = {};
 
 	// Get a 32 bit number from a byte array
 	function num_from(s, offset)
@@ -517,9 +511,9 @@ new function(_)
 	}
 
 	// IFF file class
-	var iff = base2.Base.extend({
+	file.iff = Class.extend({
 		// Parse a byte array or construct an empty IFF file
-		constructor: function parse_iff(data)
+		init: function parse_iff(data)
 		{
 			this.type = '';
 			this.chunks = [];
@@ -555,9 +549,9 @@ new function(_)
 	});
 
 	// A story file
-	var story = iff.extend({
+	file.story = file.iff.extend({
 		// Parse a zblorb or naked zcode story file
-		constructor: function parse_zblorb(data, story_name)
+		init: function parse_zblorb(data, story_name)
 		{
 			this.title = story_name;
 
@@ -567,7 +561,7 @@ new function(_)
 			if (data[0] < 9)
 			{
 				this.filetype = 'ok story naked zcode';
-				this.base();
+				this._super();
 				this.chunks.push({
 					type: 'ZCOD',
 					data: data
@@ -577,7 +571,7 @@ new function(_)
 			// Check for potential zblorb
 			else if (string_from(data, 0) == 'FORM')
 			{
-				this.base(data);
+				this._super(data);
 				if (this.type == 'IFRS')
 				{
 					// We have Blorb!
@@ -618,7 +612,7 @@ new function(_)
 									this.ifid = $('ifid', metadataDOM).text();
 							}
 						}
-
+/*
 						else if (type == 'PNG ' || type == 'JPEG')
 							for (var j = 0, c = this.resources.length; j < c; j++)
 							{
@@ -626,7 +620,7 @@ new function(_)
 									// A numbered image!
 									this.images[this.resources[j].number] = new image(this.chunks[i]);
 							}
-
+*/
 						else if (type == 'Fspc')
 							this.frontispiece = num_from(this.chunks[i].data, 0);
 					}
@@ -655,9 +649,9 @@ new function(_)
 			window.document.title = this.title + ' - Parchment';
 		}
 	});
-
+/*
 	// Images made from byte arrays
-	var image = base2.Base.extend({
+	file.image = base2.Base.extend({
 		// Initialise the image with a byte array
 		constructor: function init_image(chunk)
 		{
@@ -677,6 +671,5 @@ new function(_)
 			};
 		}
 	});
-
-	eval(this.exports);
-};
+*/
+})();

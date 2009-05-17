@@ -1,11 +1,10 @@
 CACHE MANIFEST
 
 # Parchment offline cache manifest
-# r143
+# r149
 
 parchment.html
 parchment.css
-lib/base2.min.js
 lib/jquery.min.js
 lib/plugins.min.js
 lib/pre.min.js

@@ -2,6 +2,7 @@ import os
 
 includes = (
 	('src/lib/plugins.js', (
+		'src/plugins/class.js',
 		'src/plugins/jquery.mousewheel.js',
 		'src/plugins/jquery.hotkeys.js',
 	)),

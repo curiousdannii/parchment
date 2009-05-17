@@ -58,9 +58,10 @@ $(document).ready(function(){
 		var pureJS = decode_base64(loadtests.jsonp, []);
 		loadtests.pureJSelapsed = Date.now() - start;
 		ok(pureJS, 'base64 data decoded');
+		ok(true, 'Decoding time: ' + loadtests.pureJSelapsed + 'ms');
+
 		loadtests.pureJSchecksum = checksum(pureJS);
 		equals(loadtests.pureJSchecksum, 33938, 'Correct checksum');
-		ok(true, 'Decoding time: ' + loadtests.pureJSelapsed + 'ms');
 	});
 
 	if (atob)
@@ -69,14 +70,20 @@ $(document).ready(function(){
 		{
 			var start = Date.now();
 			var nativetext = atob(loadtests.jsonp);
-			ok(true, 'Decoding time: ' + (Date.now() - start) + 'ms');
+			var decodetime = Date.now() - start;
+			ok(nativetext, 'base64 data decoded to string');
+			ok(true, 'Decoding time: ' + decodetime + 'ms');
+
+			var start = Date.now();
 			var nativedata = Array.prototype.map.call(nativetext, function(x) {return x.charCodeAt(0);});
-			loadtests.nativeelapsed = Date.now() - start;
-			ok(nativetext, 'base64 data decoded');
-			ok(nativedata, 'Data converted to a bytearray');
+			var converttime = Date.now() - start;
+			ok(nativedata, 'String converted to a bytearray');
+			ok(true, 'Conversion time: ' + converttime + 'ms');
+
 			loadtests.nativechecksum = checksum(nativedata);
 			equals(loadtests.nativechecksum, 33938, 'Correct checksum');
-			ok(true, 'Decoding time: ' + loadtests.nativeelapsed + 'ms');
+			loadtests.nativeelapsed = decodetime + converttime;
+			ok(true, 'Total time: ' + loadtests.nativeelapsed + 'ms');
 		});
 
 		test('Superior native base64 implementation', function()
