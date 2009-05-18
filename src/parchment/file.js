@@ -3,61 +3,8 @@
 	// Based largely on code by Thomas Thurman
 	window.file = {};
 
-	// Get a 32 bit number from a byte array
-	function num_from(s, offset)
-	{
-		return s[offset] << 24 | s[offset + 1] << 16 | s[offset + 2] << 8 | s[offset + 3];
-	}
-
-	// Get a 4 byte string from a byte array
-	function string_from(s, offset)
-	{
-		return String.fromCharCode(s[offset]) +
-			String.fromCharCode(s[offset+1]) +
-			String.fromCharCode(s[offset+2]) +
-			String.fromCharCode(s[offset+3]);
-	}
-
-	// IFF file class
-	file.iff = Class.extend({
-		// Parse a byte array or construct an empty IFF file
-		init: function parse_iff(data)
-		{
-			this.type = '';
-			this.chunks = [];
-			if (data)
-			{
-				// Check this is an IFF file
-				if (string_from(data, 0) != 'FORM')
-					throw new FatalError('Not an IFF file!');
-
-				// Parse the file
-				this.type = string_from(data, 8);
-
-				var i = 12, l = data.length;
-				while (i < l)
-				{
-					var type = string_from(data, i);
-					var chunk_length = num_from(data, i + 4);
-					if (chunk_length < 0 || (chunk_length + i) > data.length)
-						// FIXME: do something sensible here
-						throw new FatalError('WEEBLE, panic\n');
-
-					this.chunks.push({
-						type: type,
-						offset: i,
-						data: data.slice(i + 8, i + 8 + chunk_length)
-					});
-
-					i += 8 + chunk_length;
-					if (chunk_length % 2) i++;
-				}
-			}
-		}
-	});
-
 	// A story file
-	file.story = file.iff.extend({
+	file.story = IFF.extend({
 		// Parse a zblorb or naked zcode story file
 		init: function parse_zblorb(data, story_name)
 		{
@@ -77,7 +24,7 @@
 				this.zcode = data;
 			}
 			// Check for potential zblorb
-			else if (string_from(data, 0) == 'FORM')
+			else if (IFF.string_from(data, 0) == 'FORM')
 			{
 				this._super(data);
 				if (this.type == 'IFRS')
@@ -92,11 +39,11 @@
 						var type = this.chunks[i].type;
 						if (type == 'RIdx')
 							// The Resource Index Chunk, used by parchment for numbering images correctly
-							for (var j = 0, c = num_from(this.chunks[i].data, 0); j < c; j++)
+							for (var j = 0, c = IFF.num_from(this.chunks[i].data, 0); j < c; j++)
 								this.resources.push({
-									usage: string_from(this.chunks[i].data, 4 + j * 12),
-									number: num_from(this.chunks[i].data, 8 + j * 12),
-									start: num_from(this.chunks[i].data, 12 + j * 12)
+									usage: IFF.string_from(this.chunks[i].data, 4 + j * 12),
+									number: IFF.num_from(this.chunks[i].data, 8 + j * 12),
+									start: IFF.num_from(this.chunks[i].data, 12 + j * 12)
 								});
 
 						else if (type == 'ZCOD' && !this.zcode)
@@ -130,7 +77,7 @@
 							}
 */
 						else if (type == 'Fspc')
-							this.frontispiece = num_from(this.chunks[i].data, 0);
+							this.frontispiece = IFF.num_from(this.chunks[i].data, 0);
 					}
 
 					if (this.zcode)
