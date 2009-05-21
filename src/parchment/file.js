@@ -1,6 +1,8 @@
+/*!
+ * File functions and classes
+ * Based largely on code by Thomas Thurman
+ */
 (function(){
-	// File functions and classes
-	// Based largely on code by Thomas Thurman
 	window.file = {};
 
 	// A story file
@@ -24,7 +26,7 @@
 				this.zcode = data;
 			}
 			// Check for potential zblorb
-			else if (IFF.string_from(data, 0) == 'FORM')
+			else if (IFF.text_from(data, 0) == 'FORM')
 			{
 				this._super(data);
 				if (this.type == 'IFRS')
@@ -41,7 +43,7 @@
 							// The Resource Index Chunk, used by parchment for numbering images correctly
 							for (var j = 0, c = IFF.num_from(this.chunks[i].data, 0); j < c; j++)
 								this.resources.push({
-									usage: IFF.string_from(this.chunks[i].data, 4 + j * 12),
+									usage: IFF.text_from(this.chunks[i].data, 4 + j * 12),
 									number: IFF.num_from(this.chunks[i].data, 8 + j * 12),
 									start: IFF.num_from(this.chunks[i].data, 12 + j * 12)
 								});

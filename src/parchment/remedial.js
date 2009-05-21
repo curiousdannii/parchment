@@ -1,5 +1,7 @@
-// Taken from "Remedial Javascript" by Douglas Crockford:
-// http://javascript.crockford.com/remedial.html
+/*!
+ * Taken from "Remedial Javascript" by Douglas Crockford:
+ * http://javascript.crockford.com/remedial.html
+ */
 
 function typeOf(value) {
     var s = typeof value;

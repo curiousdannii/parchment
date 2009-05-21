@@ -1,13 +1,11 @@
 import os
 
 includes = (
-	('src/lib/plugins.js', (
+	('src/lib/extras.js', (
 		'src/plugins/class.js',
 		'src/plugins/iff.js',
 		'src/plugins/jquery.mousewheel.js',
 		'src/plugins/jquery.hotkeys.js',
-	)),
-	('src/lib/pre.js', (
 		'src/parchment/querystring.js',
 		'src/parchment/remedial.js',
 		'src/parchment/base64.js',
@@ -15,7 +13,7 @@ includes = (
 		'src/parchment/beret.js',
 		'src/parchment/file.js',
 	)),
-	('src/lib/post.js', (
+	('src/lib/parchment.js', (
 		'src/parchment/engine-runner.js',
 		'src/parchment/console.js',
 		'src/parchment/web-zui.js',
@@ -23,10 +21,9 @@ includes = (
 )
 
 compress = (
-	('src/gnusto/gnusto-engine.js', 'lib/gnusto-engine.min.js'),
-	('src/lib/plugins.js', 'lib/plugins.min.js'),
-	('src/lib/post.js', 'lib/post.min.js'),
-	('src/lib/pre.js', 'lib/pre.min.js'),
+	('src/gnusto/gnusto-engine.js', 'lib/gnusto.min.js'),
+	('src/lib/extras.js', 'lib/extras.min.js'),
+	('src/lib/parchment.js', 'lib/parchment.min.js'),
 )
 
 # Combine source files together to make 'packages'

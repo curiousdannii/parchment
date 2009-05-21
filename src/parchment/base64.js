@@ -1,11 +1,13 @@
-/* Taken from:
+/*!
+ * Taken from:
  *
  * http://ecmanaut.blogspot.com/2007/11/javascript-base64-singleton.html
  *
  * With minor modifications to decode a b64 string to a byte array instead
- * of a string. */
-// Actually with some fairly major modifications to INCREASE SPEED!!
-// There's rather little that resembles the original code now... is the reference still warranted?
+ * of a string.
+ * Actually with some fairly major modifications to INCREASE SPEED!!
+ * There's rather little that resembles the original code now... is the reference still warranted?
+ */
 
 var base64_tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 var base64_tab2 = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
