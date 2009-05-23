@@ -893,7 +893,20 @@ function WebZui(logfunc) {
 	    },
 
 	    onLineInput: function(callback) {
-	      self._currentCallback = callback;
+    	  if(window.engine.m_version <= 3) { // Redraw status line automatically in V1-V3
+    	    var oldwin = self._activeWindow;
+	        var oldrev = this._reverseVideo;
+	        if (!self._console)
+	          self.onSplitWindow(1);
+	        self._console.moveTo(0,0);
+	        self._activeWindow = 1;
+	        this._reverseVideo = true;
+	        self.onPrint(window.engine.getStatusLine(self._console.width));
+	        this._reverseVideo = oldrev;
+	        self._activeWindow = oldwin;
+          }
+
+   	      self._currentCallback = callback;
 	      $("#content").append(
 	        '<span id="current-input"><span id="cursor">_</span></span>'
 	      );
@@ -1192,15 +1205,15 @@ function WebZui(logfunc) {
 
 	      $("#buffered-windows").append(row);
 	      self._pixelWidth = $(row).width();
-	      if(jQuery.browser.msie && 
+	      if(jQuery.browser.msie &&
 	         (jQuery.browser.version.length == 1 || jQuery.browser.version.charAt(1)=='.') &&
 	         jQuery.browser.version < '7') {
 	      	// For MSIE versions < 7, the pixelwidth is set to the entire window width.
 	      	// Instead, we estimate the needed width using the font size
 	        var fwidth = -1, fsize = document.getElementById('top-window').currentStyle['fontSize'].toLowerCase();
-	        if(fsize.substring(fsize.length - 2)=='px') 
+	        if(fsize.substring(fsize.length - 2)=='px')
 	          fwidth = 0.6 * parseInt(fsize);
-	        else if(fsize.substring(fsize.length - 2)=='pt') 
+	        else if(fsize.substring(fsize.length - 2)=='pt')
 	          fwidth = 0.8 * parseInt(fsize);
 	        if(fwidth > 0)
 	          self._pixelWidth = self._size[0] * fwidth;
