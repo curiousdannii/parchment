@@ -363,8 +363,17 @@ function handleZ_get_next_prop(engine, a) {
   }
 function handleZ_add(engine, a) {
     return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
+/***
 function handleZ_sub(engine, a) {
     return engine._storer(a[0]+'-'+a[1]); }
+***/
+
+// Subtract and store
+function handleZ_sub(engine, a)
+{
+	return engine._storer(a[0] + ' - 1 * ' + a[1]);
+}
+
 function handleZ_mul(engine, a) {
     return engine._storer(a[0]+'*'+a[1]); }
 function handleZ_div(engine, a) {
@@ -2325,8 +2334,11 @@ GnustoEngine.prototype = {
                   args[i] = temp_var_name;
               }
 ***/
-					if (this.m_handlers[instr]) {
 
+					// Output the instruction number
+					//code = code + '/*' + instr + '*/';
+
+					if (this.m_handlers[instr]) {
 							code = code + this.m_handlers[instr](this, args)+';';
 					} else if (instr>=1128 && instr<=1255 &&
 										 "special_instruction_EXT"+(instr-1000) in this) {
