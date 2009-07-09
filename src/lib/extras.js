@@ -85,7 +85,7 @@ var num_from = function(s, offset)
 text_from = function(s, offset)
 {
 	var fromCharCode = String.fromCharCode;
-	return fromCharCode(s[offset]) + fromCharCode(s[offset+1]) + fromCharCode(s[offset+2]) + fromCharCode(s[offset+3]);
+	return fromCharCode(s[offset]) + fromCharCode(s[offset + 1]) + fromCharCode(s[offset + 2]) + fromCharCode(s[offset + 3]);
 },
 
 // IFF file class
@@ -108,14 +108,13 @@ IFF = Class.extend({
 			var i = 12, l = data.length;
 			while (i < l)
 			{
-				var type = text_from(data, i);
 				var chunk_length = num_from(data, i + 4);
-				if (chunk_length < 0 || (chunk_length + i) > data.length)
+				if (chunk_length < 0 || (chunk_length + i) > l)
 					// FIXME: do something sensible here
 					throw new Error("IFF: Chunk out of range");
 
 				this.chunks.push({
-					type: type,
+					type: text_from(data, i),
 					offset: i,
 					data: data.slice(i + 8, i + 8 + chunk_length)
 				});

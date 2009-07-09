@@ -2138,6 +2138,12 @@ GnustoEngine.prototype = {
       this.m_printing_header_bits = 0;
 
       this.m_leftovers = '';
+
+		// Set some header variables
+
+		// Z Machine Spec version
+		this.m_memory[0x32] = 1;
+		this.m_memory[0x33] = 0;
   },
 
 // Inlined some of these functions...
@@ -2952,9 +2958,9 @@ GnustoEngine.prototype = {
 	//
 	_func_return: function ge_func_return(value) {
 
-			for (var i=this.m_locals_stack.shift(); i>0; i--) {
-					this.m_locals.shift();
-			}
+			// Remove this function's locals
+			this.m_locals = this.m_locals.slice(this.m_locals_stack.shift());
+
 			this.m_param_counts.shift();
 			this.m_pc = this.m_call_stack.pop();
 
