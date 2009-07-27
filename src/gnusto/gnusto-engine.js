@@ -2,8 +2,9 @@
 // The Gnusto JavaScript Z-machine library.
 // $Header: /cvs/gnusto/src/xpcom/engine/gnusto-engine.js,v 1.116 2005/04/26 01:50:32 naltrexone42 Exp $
 //
-// Copyright (c) 2003 Thomas Thurman
-// thomas@thurman.org.uk
+// Copyright (c) 2003-2009 The Gnusto Contributors
+//
+// The latest code is available at http://github.com/curiousdannii/gnusto/
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of version 2 of the GNU General Public License
@@ -601,38 +602,38 @@ function handleZ_call_vs(engine, a) {
 }
 
 ////////////////////////////////////////////////////////////////
-
+/***
 function handleZ_store_w(engine, a) {
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
+***/
 
-/***
 // Store a value in an array
 function handleZ_store_w(engine, a)
 {
 	// Calculate the address
 	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
-		var code = 'var tmp_' + (++temp_var) + ' = ' + a[0] + ' + 2 * ' + a[1] + ';', add = 'tmp_' + temp_var;
+		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF;', addr = 'tmp_' + temp_var;
 	else
-		var code = '', add = a[0] + 2 * a[1];
+		var code = '', addr = (a[0] + 2 * a[1]) & 0xFFFF;
 
 	// If we are setting a constant get the high and low bytes at compile time
 	if (!isNotConst.test(a[2]))
 	{
 		var value = (a[2] & 0x8000 ? ~0xFFFF : 0) | a[2];
-		return code + 'm_memory[' + add + '] = ' + ((value >> 8) & 0xFF) + ';' +
-			'm_memory[' + add + ' + 1] = ' + (value & 0xFF);
+		return code + 'm_memory[' + addr + '] = ' + ((value >> 8) & 0xFF) + ';' +
+			'm_memory[' + addr + ' + 1] = ' + (value & 0xFF);
 	}
 	else
 	{
 		var tmp = 'tmp_' + (++temp_var);
 		return code + 'var ' + tmp + ' = ' + a[2] + ';' +
 			tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
-			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
-			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
+			'm_memory[' + addr + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + addr + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
 }
-***/
+
 function handleZ_storeb(engine, a) {
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
   }
@@ -2484,9 +2485,9 @@ GnustoEngine.prototype = {
 			// Most common case - keep it as fast as possible
 			return ascii_code;
 		}
-
+		
 		var result;
-
+		
 		if (ascii_code < 0) {
 			gnusto_error(702, 'Illegal unicode character:' + ascii_code); // illegal ascii code
 		} else if (ascii_code==13 || ascii_code==10) {
@@ -2500,7 +2501,7 @@ GnustoEngine.prototype = {
 				result = '*'.charCodeAt(0);
 			}
 		}
-
+		
 		return result;
 	},
 

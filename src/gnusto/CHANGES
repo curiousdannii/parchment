@@ -1,0 +1,6 @@
+Change log started July 2009.
+
+July 2009
+================================================================================
+ + Set the Z Machine Spec version header
+ + The optimised storew opcode would not correctly account for negative addresses.
