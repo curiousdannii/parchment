@@ -66,31 +66,58 @@ $(document).ready(function(){
 
 	if (atob)
 	{
-		test('Native base64 implementation', function()
+		loadtests.mintime = 100000;
+
+		test('Native base64 decoding', function()
 		{
 			var start = Date.now();
-			var nativetext = atob(loadtests.jsonp);
-			var decodetime = Date.now() - start;
-			ok(nativetext, 'base64 data decoded to string');
-			ok(true, 'Decoding time: ' + decodetime + 'ms');
+			loadtests.nativetext = atob(loadtests.jsonp);
+			loadtests.decodetime = Date.now() - start;
+			ok(loadtests.nativetext, 'base64 data decoded to string');
+			ok(true, 'Decoding time: ' + loadtests.decodetime + 'ms');
+		});
 
-			var start = Date.now();
-			var nativedata = Array.prototype.map.call(nativetext, function(x) {return x.charCodeAt(0);});
-			var converttime = Date.now() - start;
-			ok(nativedata, 'String converted to a bytearray');
-			ok(true, 'Conversion time: ' + converttime + 'ms');
+		function testconversion(title, method)
+		{
+			test('Bytearray conversion (' + title + ')', function()
+			{
+				var start = Date.now();
+				var data = method(loadtests.nativetext);
+				var converttime = Date.now() - start;
+				if (loadtests.mintime > converttime)
+				{
+					loadtests.mintime = converttime;
+					loadtests.minmethod = title;
+				}
+				ok(data, 'String converted to a bytearray');
+				ok(true, 'Conversion time: ' + converttime + 'ms');
+				var sum = checksum(data);
+				equals(sum, loadtests.pureJSchecksum, 'Identical checksums');
+			});
+		}
 
-			loadtests.nativechecksum = checksum(nativedata);
-			equals(loadtests.nativechecksum, 33938, 'Correct checksum');
-			loadtests.nativeelapsed = decodetime + converttime;
-			ok(true, 'Total time: ' + loadtests.nativeelapsed + 'ms');
+		testconversion('Array.prototype.map', function(text) {
+			return Array.prototype.map.call(loadtests.nativetext, function(x) {return x.charCodeAt(0);});
+		});
+
+		testconversion('charCodeAt loop', function(text) {
+			var data = [];
+			for (var i = 0, l = text.length; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);
+			return data;
+		});
+
+		testconversion('backwards charCodeAt loop', function(text) {
+			var data = [];
+			for (var i = text.length - 1; i >= 0; --i)
+	 			data[i] = text.charCodeAt(i);
+			return data;
 		});
 
 		test('Superior native base64 implementation', function()
 		{
-			equals(loadtests.nativechecksum, loadtests.pureJSchecksum, 'Identical checksums');
-//			same(loadtests.nativedata, loadtests.pureJS, 'Same bytearrays');
-			ok(loadtests.nativeelapsed < loadtests.pureJSelapsed, 'Faster decoding time');
+			//same(loadtests.nativedata, loadtests.pureJS, 'Same bytearrays');
+			ok((loadtests.mintime + loadtests.decodetime) < loadtests.pureJSelapsed, 'Faster decoding time (' + loadtests.minmethod + ')');
 		});
 	}
 
