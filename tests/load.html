@@ -107,17 +107,58 @@ $(document).ready(function(){
 			return data;
 		});
 
-		testconversion('backwards charCodeAt loop', function(text) {
+		testconversion('Backwards charCodeAt loop', function(text) {
 			var data = [];
 			for (var i = text.length - 1; i >= 0; --i)
 	 			data[i] = text.charCodeAt(i);
 			return data;
 		});
 
+		testconversion('Unrolled loop', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+			{
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+			}
+			return data;
+		});
+
+		testconversion('Unrolled pushing loop', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+
+		testconversion('Unrolled pushing 16 loop (Ultimate)', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 16; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+
 		test('Superior native base64 implementation', function()
 		{
 			//same(loadtests.nativedata, loadtests.pureJS, 'Same bytearrays');
-			ok((loadtests.mintime + loadtests.decodetime) < loadtests.pureJSelapsed, 'Faster decoding time (' + loadtests.minmethod + ')');
+			var total = loadtests.mintime + loadtests.decodetime;
+			ok(total < loadtests.pureJSelapsed, 'Faster decoding time (' + loadtests.minmethod + ', ' + total + 'ms)');
 		});
 	}
 
