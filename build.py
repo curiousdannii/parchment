@@ -8,7 +8,7 @@ includes = (
 		'src/plugins/jquery.hotkeys.js',
 		'src/parchment/querystring.js',
 		'src/parchment/remedial.js',
-		'src/parchment/base64.js',
+		#'src/parchment/base64.js',
 		'src/parchment/error-handling.js',
 		'src/parchment/beret.js',
 		'src/parchment/file.js',

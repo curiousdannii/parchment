@@ -924,7 +924,7 @@ function WebZui(logfunc) {
       // available; if none are available, we should return false.
 
       var saveKey = gStory + '_saveData';
-      var b64data = encode_base64(data);
+      var b64data = file.base64_encode(data);
 
       if (window.globalStorage)
         window.globalStorage[location.hostname][saveKey] = b64data;
@@ -954,7 +954,7 @@ function WebZui(logfunc) {
       if (b64data) {
         window.location.hash = "#" + b64data;
         self._expectedHash = window.location.hash;
-        return decode_base64(b64data);
+        return file.base64_decode(b64data);
       } else
         return null;
 	    },
@@ -1286,7 +1286,7 @@ function _webZuiStartup() {
   if (window.location.hash) {
 	var beret = new Beret(engine);
     var b64data = window.location.hash.slice(1);
-    beret.load(decode_base64(b64data));
+    beret.load(file.base64_decode(b64data));
     logfunc("Load game story type: " + beret.m_filetype);
   }
 
@@ -1310,7 +1310,7 @@ function processBase64Zcode(data, decodedSoFar) {
 
   $("#progress-text").html("Decoding " + data.length +
                            " more bytes...");
-  decode_base64(firstChunk, decodedSoFar);
+  file.base64_decode(firstChunk, decodedSoFar);
 
   var next_func;
 

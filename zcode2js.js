@@ -5,7 +5,7 @@ function _onFileUpload() {
     for (var i = 0; i < data.length; i++)
       storyBytes.push(String.charCodeAt(data[i]));
     var storyString = ("data:text/javascript,processBase64Zcode('" +
-                       encode_base64(storyBytes) +
+                       file.base64_encode(storyBytes) +
                        "');");
     $("#js-file-download").attr("href", storyString);
     $("#post-file-upload").fadeIn();
