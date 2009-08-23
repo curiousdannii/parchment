@@ -8,7 +8,6 @@ includes = (
 		'src/plugins/jquery.hotkeys.js',
 		'src/parchment/querystring.js',
 		'src/parchment/remedial.js',
-		#'src/parchment/base64.js',
 		'src/parchment/error-handling.js',
 		'src/parchment/beret.js',
 		'src/parchment/file.js',
@@ -35,5 +34,5 @@ for package in includes:
 		
 # Compress these files, requires the YUI Compressor. Icky Java
 for file in compress:
-	command = 'java -jar yuicompressor-2.4.2.jar %s -o %s' % (file[0], file[1])
+	command = 'java -jar tools/yuicompressor-2.4.2.jar %s -o %s' % (file[0], file[1])
 	os.system(command)
