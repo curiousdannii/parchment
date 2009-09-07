@@ -5,7 +5,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(){
+(function(window){
 
 // Text to byte array and vice versa
 var text_to_array = function(text, array)
@@ -36,7 +36,7 @@ array_to_text = function(array, text)
 
 // Base64 encoding and decoding
 // Use the native base64 functions if available
-if (atob)
+if (window.atob)
 {
 	var base64_decode = function(data, out)
 	{
@@ -240,4 +240,4 @@ window.file = {
 	base64_encode: base64_encode,
 	story: story
 };
-})();
+})(window);

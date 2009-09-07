@@ -901,7 +901,7 @@ Beret.prototype = {
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(){
+(function(window){
 
 // Text to byte array and vice versa
 var text_to_array = function(text, array)
@@ -932,7 +932,7 @@ array_to_text = function(array, text)
 
 // Base64 encoding and decoding
 // Use the native base64 functions if available
-if (atob)
+if (window.atob)
 {
 	var base64_decode = function(data, out)
 	{
@@ -948,8 +948,7 @@ if (atob)
 }
 
 // Unfortunately we will have to use pure Javascript functions
-// Originally taken from:
-// http://ecmanaut.blogspot.com/2007/11/javascript-base64-singleton.html
+// Originally taken from: http://ecmanaut.blogspot.com/2007/11/javascript-base64-singleton.html
 // But so much has changed the reference the reference is hardly warranted now...
 // TODO: Consider combining the eNs together first, then shifting to get the cNs (for the decoder)
 else
@@ -1137,4 +1136,4 @@ window.file = {
 	base64_encode: base64_encode,
 	story: story
 };
-})();
+})(window);
