@@ -1,9 +1,10 @@
-// gnusto-lib.js || -*- Mode: Java; tab-width: 2; -*-
+// gnusto-lib.js || -*- Mode: Javascript; tab-width: 2; -*-
 // The Gnusto JavaScript Z-machine library.
 // $Header: /cvs/gnusto/src/xpcom/engine/gnusto-engine.js,v 1.116 2005/04/26 01:50:32 naltrexone42 Exp $
 //
-// Copyright (c) 2003 Thomas Thurman
-// thomas@thurman.org.uk
+// Copyright (c) 2003-2009 The Gnusto Contributors
+//
+// The latest code is available at http://github.com/curiousdannii/gnusto/
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of version 2 of the GNU General Public License
@@ -346,9 +347,28 @@ function handleZ_store(engine, a)
 function handleZ_insert_obj(engine, a) {
     return "_insert_obj("+a[0]+','+a[1]+")";
   }
-function handleZ_loadw(engine, a) {
-    return engine._storer("getWord((1*"+a[0]+"+2*"+a[1]+")&0xFFFF)");
-  }
+
+// Load an array word
+function handleZ_loadw(engine, a)
+{
+	// Inline this getWord call
+	//return engine._storer("getWord((1*"+a[0]+"+2*"+a[1]+")&0xFFFF)");
+
+	// Calculate the address
+	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
+		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF, ',
+			addr = 'tmp_' + temp_var;
+	else
+		var code = 'var ',
+			addr = (a[0] + 2 * a[1]) & 0xFFFF;
+
+	// Get the value and store it
+	var tmp = 'tmp_' + (++temp_var);
+	return code + tmp + ' = (m_memory[' + addr + '] << 8) | m_memory[' + addr + ' + 1];' +
+		tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ');' +
+		engine._storer(tmp);
+}
+
 function handleZ_loadb(engine, a) {
     return engine._storer("m_memory[0xFFFF&(1*"+a[0]+"+1*"+a[1]+")]");
   }
@@ -363,8 +383,17 @@ function handleZ_get_next_prop(engine, a) {
   }
 function handleZ_add(engine, a) {
     return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
+/***
 function handleZ_sub(engine, a) {
     return engine._storer(a[0]+'-'+a[1]); }
+***/
+
+// Subtract and store
+function handleZ_sub(engine, a)
+{
+	return engine._storer(a[0] + ' - 1 * ' + a[1]);
+}
+
 function handleZ_mul(engine, a) {
     return engine._storer(a[0]+'*'+a[1]); }
 function handleZ_div(engine, a) {
@@ -592,38 +621,38 @@ function handleZ_call_vs(engine, a) {
 }
 
 ////////////////////////////////////////////////////////////////
-
+/***
 function handleZ_store_w(engine, a) {
     return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
   }
+***/
 
-/***
 // Store a value in an array
 function handleZ_store_w(engine, a)
 {
 	// Calculate the address
 	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
-		var code = 'var tmp_' + (++temp_var) + ' = ' + a[0] + ' + 2 * ' + a[1] + ';', add = 'tmp_' + temp_var;
+		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF;', addr = 'tmp_' + temp_var;
 	else
-		var code = '', add = a[0] + 2 * a[1];
+		var code = '', addr = (a[0] + 2 * a[1]) & 0xFFFF;
 
 	// If we are setting a constant get the high and low bytes at compile time
 	if (!isNotConst.test(a[2]))
 	{
 		var value = (a[2] & 0x8000 ? ~0xFFFF : 0) | a[2];
-		return code + 'm_memory[' + add + '] = ' + ((value >> 8) & 0xFF) + ';' +
-			'm_memory[' + add + ' + 1] = ' + (value & 0xFF);
+		return code + 'm_memory[' + addr + '] = ' + ((value >> 8) & 0xFF) + ';' +
+			'm_memory[' + addr + ' + 1] = ' + (value & 0xFF);
 	}
 	else
 	{
 		var tmp = 'tmp_' + (++temp_var);
 		return code + 'var ' + tmp + ' = ' + a[2] + ';' +
 			tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
-			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
-			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
+			'm_memory[' + addr + '] = (' + tmp + ' >> 8) & 0xFF;' +
+			'm_memory[' + addr + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
 }
-***/
+
 function handleZ_storeb(engine, a) {
     return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
   }
@@ -842,7 +871,7 @@ function handleZ_read_char(engine, a) {
 						"if(t<0){"+
 						"_func_interrupt(m_rebound_args[0],onISRReturn_for_read_char);"+ // -ve: timeout
 						"}else{"+
-						engine._storer("t") + // otherwise, a result to store.
+						engine._storer("_ascii_code_to_zscii_code(t)") + // otherwise, a result to store.
 						"}"+
 						"};";
 
@@ -857,7 +886,7 @@ function handleZ_read_char(engine, a) {
 				// A much simpler rebound function, since zero isn't
 				// a magic answer.
 				rebound_setter = "m_rebound=function(){"+
-						engine._storer("1*m_answers[0]") +
+						engine._storer("_ascii_code_to_zscii_code(1*m_answers[0])") +
 						"};";
 		}
 
@@ -2066,7 +2095,7 @@ GnustoEngine.prototype = {
 
       if(!(this.m_unicode_start>0)) {
 	  // The game doesn't provide its own set of unicode characters, so
-	  // now is the time to populate the reverse_unicode_table with the 
+	  // now is the time to populate the reverse_unicode_table with the
 	  // default unicode characters
 	  for(var i in default_unicode_translation_table)
 	      reverse_unicode_table[default_unicode_translation_table[i]] = i;
@@ -2129,6 +2158,12 @@ GnustoEngine.prototype = {
       this.m_printing_header_bits = 0;
 
       this.m_leftovers = '';
+
+		// Set some header variables
+
+		// Z Machine Spec version
+		this.m_memory[0x32] = 1;
+		this.m_memory[0x33] = 0;
   },
 
 // Inlined some of these functions...
@@ -2325,8 +2360,11 @@ GnustoEngine.prototype = {
                   args[i] = temp_var_name;
               }
 ***/
-					if (this.m_handlers[instr]) {
 
+					// Output the instruction number
+					//code = code + '/*' + instr + '*/';
+
+					if (this.m_handlers[instr]) {
 							code = code + this.m_handlers[instr](this, args)+';';
 					} else if (instr>=1128 && instr<=1255 &&
 										 "special_instruction_EXT"+(instr-1000) in this) {
@@ -2473,8 +2511,6 @@ GnustoEngine.prototype = {
 			gnusto_error(702, 'Illegal unicode character:' + ascii_code); // illegal ascii code
 		} else if (ascii_code==13 || ascii_code==10) {
 			result = 10;
-		} else if ((ascii_code>=32 && ascii_code<=126) || ascii_code==0) {
-			result = ascii_code;
 		} else {
 			// Must be among extra characters.
 			result = reverse_unicode_table[ascii_code];
@@ -2942,9 +2978,9 @@ GnustoEngine.prototype = {
 	//
 	_func_return: function ge_func_return(value) {
 
-			for (var i=this.m_locals_stack.shift(); i>0; i--) {
-					this.m_locals.shift();
-			}
+			// Remove this function's locals
+			this.m_locals = this.m_locals.slice(this.m_locals_stack.shift());
+
 			this.m_param_counts.shift();
 			this.m_pc = this.m_call_stack.pop();
 
@@ -2953,8 +2989,22 @@ GnustoEngine.prototype = {
 			this.m_gamestack.length = this.m_gamestack_callbreaks.pop();
 
 			var target = this.m_result_targets.pop();
-			if (target!=-1 && value!=null) {
-					this._varcode_set(value, target);
+
+			if (target != -1 && value != null)
+			{
+				//this._varcode_set(value, target);
+
+				// Rather than calling _varcode_set() this function now accesses the variables directly
+				// target is interpreted as in ZSD 4.2.2:
+				//	0     = top of game stack
+				//	1-15  = local variables
+				//	16 up = global variables
+				if (target == 0)
+					this.m_gamestack.push(value);
+				else if (target < 0x10)
+					this.m_locals[target - 1] = value;
+				else
+					this.setWord(value, this.m_vars_start + (target - 16) * 2);
 			}
 
 			if (this.m_pc == CALLED_FROM_INTERRUPT) {
@@ -3056,11 +3106,21 @@ GnustoEngine.prototype = {
 
 			var temp = this._property_search(object, property, -1);
 
-			if (temp[1]==2) {
-					return this.getWord(temp[0]);
-			} else if (temp[1]==1) {
-					return this.m_memory[temp[0]]; // should this be treated as signed?
-			} else {
+			// Correct negative addresses
+			if (temp[0] < 0)
+				temp[0] &= 0xFFFF;
+
+			if (temp[1] == 1)
+				return this.m_memory[temp[0]];
+			else if (temp[1] == 2)
+			{
+				// Inline this call to getWord()
+				//return this.getWord(temp[0]);
+				var value = (this.m_memory[temp[0]] << 8) | this.m_memory[temp[0] + 1];
+				return ((value & 0x8000) ? ~0xFFFF : 0) | value;
+			}
+			else
+			{
 					// get_prop used on a property of the wrong length
 					// Christminster (and perhaps others) use this vaguely
 					// illegal hack to just check to see if a property exists
@@ -3636,15 +3696,15 @@ GnustoEngine.prototype = {
 		{
 			ch = str.charCodeAt(cursor++);
 
-			// Downcase any uppercase characters 
+			// Downcase any uppercase characters
 			if (ch >= 65 && ch <= 90)
 				ch += 32;
-			else if (ch > 154) 
+			else if (ch > 154)
 			{
 				if(this.m_unicode_start == 0)
 				{
-					// It's an extended character AND the game uses the regular 
-					// unicode translation table, so we know how to downcase. 
+					// It's an extended character AND the game uses the regular
+					// unicode translation table, so we know how to downcase.
 					if ((ch >= 158 && ch <= 160) || (ch >= 167 && ch <= 168) || (ch >= 208 && ch <= 210))
 						ch -= 3;
 					else if (ch >= 175 && ch <= 180)
@@ -3696,11 +3756,11 @@ GnustoEngine.prototype = {
 						emit(z2 + 6);
 					} else {
 						if (this.getByte(0) > 2)
-							emit(5); 
+							emit(5);
 						else
-							emit(3); //shift is positioned differently in z1-2 
-						emit(6); 
-						emit(ch >> 5); 
+							emit(3); //shift is positioned differently in z1-2
+						emit(6);
+						emit(ch >> 5);
 						emit(ch & 0x1F);
 					}
 				}

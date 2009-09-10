@@ -1,0 +1,9 @@
+Change log started August 2009.
+
+September 2009
+================================================================================
+ + Began working on the Library. Moved code from web-zui.js to library.js, and added intro.js and outro.js.
+
+August 2009
+================================================================================
+ + Added base64 functions that use native functions if available. (file.js, base64.js obsoleted)

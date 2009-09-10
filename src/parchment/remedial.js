@@ -1,6 +1,8 @@
-// Taken from "Remedial Javascript" by Douglas Crockford:
-// http://javascript.crockford.com/remedial.html
-
+/*!
+ * Taken from "Remedial Javascript" by Douglas Crockford:
+ * http://javascript.crockford.com/remedial.html
+ */
+/*
 function typeOf(value) {
     var s = typeof value;
     if (s === 'object') {
@@ -17,7 +19,6 @@ function typeOf(value) {
     return s;
 }
 
-
 function isEmpty(o) {
     var i, v;
     if (typeOf(o) === 'object') {
@@ -30,6 +31,7 @@ function isEmpty(o) {
     }
     return true;
 }
+*/
 
 String.prototype.entityify = function () {
     return this.replace(/&/g, "&amp;").replace(/</g,
@@ -72,6 +74,7 @@ String.prototype.quote = function () {
     return o + '"';
 };
 
+/*
 String.prototype.supplant = function (o) {
     return this.replace(/{([^{}]*)}/g,
         function (a, b) {
@@ -84,3 +87,4 @@ String.prototype.supplant = function (o) {
 String.prototype.trim = function () {
     return this.replace(/^\s+|\s+$/g, "");
 };
+*/

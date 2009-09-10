@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Parchment load tests</title>
+	<link rel="stylesheet" type="text/css" href="testsuite.css">
+	<script src="../lib/jquery.min.js"></script>
+	<script src="testrunner.js"></script>
+	<script src="base64.js"></script>
+	<script>
+loadtests = {};
+
+function processZcodeAppspotResponse(content)
+{
+	loadtests.jsonp = content.data;
+	ok(loadtests.jsonp, 'JSONP data loaded');
+	start();
+}
+
+// Fletcher's checksum, from wikipedia
+function checksum(data)
+{
+	var sum1 = 0xff, sum2 = 0xff, len = data.length, tlen, i = 0;
+
+	while (len)
+	{
+		tlen = len > 21 ? 21 : len;
+		len -= tlen;
+		do
+		{
+			sum1 += data[i++];
+			sum2 += sum1;
+		} while (--tlen);
+		sum1 = (sum1 & 0xff) + (sum1 >> 8);
+		sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	}
+	/* Second reduction step to reduce sums to 8 bits */
+	sum1 = (sum1 & 0xff) + (sum1 >> 8);
+	sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	return sum2 << 8 | sum1;
+}
+
+
+$(document).ready(function(){
+
+	test('Loading data', function()
+	{
+		expect(1);
+		stop(10000);
+		jQuery.getScript('http://zcode.appspot.com/?url=http%3A//inform-fiction.org/I7Downloads/Examples/bronze/Bronze.zblorb&jsonp=processZcodeAppspotResponse&_=1242271489595');
+//		jQuery.getScript('http://zcode.appspot.com/?url=http%3A//www.daedalic.de/tww/april/twwonline.z5&jsonp=processZcodeAppspotResponse&_=1242271489595');
+//		jQuery.getScript('http://zcode.appspot.com/?url=http://mirror.ifarchive.org/if-archive/games/zcode/Galatea.zblorb&jsonp=processZcodeAppspotResponse&_=1242271489595');
+	});
+
+	test('Pure JS base64 implementation', function()
+	{
+		var start = Date.now();
+		var pureJS = decode_base64(loadtests.jsonp, []);
+		loadtests.pureJSelapsed = Date.now() - start;
+		ok(pureJS, 'base64 data decoded');
+		ok(true, 'Decoding time: ' + loadtests.pureJSelapsed + 'ms');
+
+		loadtests.pureJSchecksum = checksum(pureJS);
+		equals(loadtests.pureJSchecksum, 33938, 'Correct checksum');
+	});
+
+	if (atob)
+	{
+		loadtests.mintime = 100000;
+
+		test('Native base64 decoding', function()
+		{
+			var start = Date.now();
+			loadtests.nativetext = atob(loadtests.jsonp);
+			loadtests.decodetime = Date.now() - start;
+			ok(loadtests.nativetext, 'base64 data decoded to string');
+			ok(true, 'Decoding time: ' + loadtests.decodetime + 'ms');
+		});
+
+		function testconversion(title, method)
+		{
+			test('Bytearray conversion (' + title + ')', function()
+			{
+				var start = Date.now();
+				var data = method(loadtests.nativetext);
+				var converttime = Date.now() - start;
+				if (loadtests.mintime > converttime)
+				{
+					loadtests.mintime = converttime;
+					loadtests.minmethod = title;
+				}
+				ok(data, 'String converted to a bytearray');
+				ok(true, 'Conversion time: ' + converttime + 'ms');
+				var sum = checksum(data);
+				equals(sum, loadtests.pureJSchecksum, 'Identical checksums');
+			});
+		}
+
+		testconversion('Array.prototype.map', function(text) {
+			return Array.prototype.map.call(loadtests.nativetext, function(x) {return x.charCodeAt(0);});
+		});
+
+		testconversion('charCodeAt loop', function(text) {
+			var data = [];
+			for (var i = 0, l = text.length; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);
+			return data;
+		});
+
+		testconversion('Backwards charCodeAt loop', function(text) {
+			var data = [];
+			for (var i = text.length - 1; i >= 0; --i)
+	 			data[i] = text.charCodeAt(i);
+			return data;
+		});
+
+		testconversion('Unrolled loop', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+			{
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+	 			data[i] = text.charCodeAt(i++);
+			}
+			return data;
+		});
+
+		testconversion('Unrolled pushing loop', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+
+		testconversion('Unrolled pushing 16 loop (Ultimate)', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 16; i < l; ++i)
+	 			data[i] = text.charCodeAt(i);	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+
+		test('Superior native base64 implementation', function()
+		{
+			//same(loadtests.nativedata, loadtests.pureJS, 'Same bytearrays');
+			var total = loadtests.mintime + loadtests.decodetime;
+			ok(total < loadtests.pureJSelapsed, 'Faster decoding time (' + loadtests.minmethod + ', ' + total + 'ms)');
+		});
+	}
+
+});
+	</script>
+</head>
+<body>
+	<h1>Parchment load tests</h1>
+	<h2 id="banner"></h2>
+	<h2 id="userAgent"></h2>
+	<ol id="tests"></ol>
+	<div id="main"></div>
+</body>
+</html>

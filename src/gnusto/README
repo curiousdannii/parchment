@@ -1,0 +1,33 @@
+Gnusto is a JIT compiler and virtual machine for the Z-Machine, originally written by Thomas Thurman.
+
+* History *
+Thomas Thurman originally designed Gnusto as a Mozilla/Firefox extension for a full Z-Machine interpreter. He and a few others worked on it for several years, but stopped in 2005. Their website was http://gnusto.org/
+
+In 2008 Atul Varma used the VM engine code and built a new interpreter interface around it. Parchment, as it was named, was no longer a extension, but now a webpage that could run in any (modern) browser. Dannii Willis started working on Parchment in late 2008.
+
+In early 2009 Dannii decided to again separate Gnusto from Parchment, and moved it's development to GitHub. Hopefully Atul and the others will again contribute to its development :)
+
+* Roadmap *
+As Dannii posted at http://groups.google.com/group/parchment/browse_thread/thread/af775dd7f4f11b8e
+
+Now, what am I planning to do with it in the future?
+- Consider making parts of the engine more generic to have compatibility with Quixe (http://github.com/erkyrath/quixe/)
+- Hopefully make Gnusto independant of any libraries
+- Stop it polluting the window namespace
+- Add a unit test suite (planning to write a new inform assembler first though, see http://github.com/curiousdannii/infasm/)
+- Lots more optimisations
+- Lots more fun!
+
+These changes will be put back into Parchment, although Gnusto could also be used by any another interpreter too, web or extension.
+
+* Licencing *
+Thomas released Gnusto under the GPL v2, and this is how it remains. See LICENCE for the details.
+
+* The source code *
+The latest Gnusto sources will be available at http://github.com/curiousdannii/gnusto/
+It is quite likely that Gnusto will be added to the IF Archive too, when something approaching a "release" is achieved.
+
+Prior to GitHub, Gnusto has been developed at:
+http://www.mozdev.org/source/browse/gnusto/
+http://hg.toolness.com/web-gnusto
+http://code.google.com/p/parchment/source/browse/trunk

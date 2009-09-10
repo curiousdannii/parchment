@@ -1,4 +1,4 @@
-/*
+/*!
 (c) Copyrights 2007 - 2008
 
 Original idea by by Binny V A, http://www.openjs.com/scripts/events/keyboard_shortcuts/
@@ -13,7 +13,8 @@ http://code.google.com/p/js-hotkeys/
 http://github.com/tzuryby/hotkeys/tree/master
 
 License: same as jQuery license. 
-
+*/
+/*
 USAGE:
     // simple usage
     $(document).bind('keydown', 'Ctrl+c', function(){ alert('copy anyone?');});

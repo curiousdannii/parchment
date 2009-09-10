@@ -1,3 +1,4 @@
+/*
 function Zui() {
 }
 
@@ -88,6 +89,7 @@ Zui.prototype = {
   onPrintTable: function(lines) {
   }
 };
+*/
 
 function EngineRunner(engine, zui, logfunc) {
   this._engine = engine;

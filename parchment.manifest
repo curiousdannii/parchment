@@ -1,0 +1,15 @@
+CACHE MANIFEST
+
+# Parchment offline cache manifest
+# r157
+
+#parchment.html
+#parchment.css
+#lib/jquery.min.js
+#lib/extras.min.js
+#lib/gnusto.min.js
+#lib/parchment.min.js
+
+NETWORK:
+# Don't cache the games themselves... though I would't have thought this would be required?
+http://parchment.toolness.com

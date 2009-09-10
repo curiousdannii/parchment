@@ -1,34 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" type="text/css" media="all" href="zcode2js.css" />
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="tools/zcode2js.css">
 	<title>zcode</title>
-	<script type="text/javascript" src="jquery.js"></script>
-	<script type="text/javascript" src="base64.js"></script>
-	<script type="text/javascript" src="zcode2js.js"></script>
+	<script src="lib/jquery.min.js"></script>
+	<script src="src/plugins/class.js"></script>
+	<script src="src/plugins/iff.js"></script>
+	<script src="src/parchment/file.js"></script>
+	<script src="tools/zcode2js.js"></script>
 </head>
 <body>
 <h1>zcode</h1>
 <div id="content">
-  <p>Playing any Z-machine story on <a
-  href="http://code.google.com/p/parchment">Parchment</a> is pretty
-  easy, thanks to a simple web service located at
-  <tt>zcode.appspot.com</tt> that converts a Z-code file located
-  anywhere on the internet to a <a
-  href="http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/">JSONP</a>
-  representation that Parchment can understand.</p>
-  <p>Simply upload the Z-code file to a server and enter the URL
-  to the story in the field below.</p>
-  <div class="input"><input id="url-entry" type="text" size="60" /></div>
-  <div id="post-url-entry">
-    <p>The link for playing your story is:</p>
-    <p><a id="play-url"></a></p>
-  </div>
-  <p>Alternatively, you can also convert the Z-code to JavaScript
-  yourself instead of relying on <tt>zcode.appspot.com</tt> by using
-  <a href="zcode2js.html">zcode2js</a>.</p>
+	<p>Playing any Z-machine story on <a href="http://code.google.com/p/parchment">Parchment</a> is pretty easy, thanks to a simple web service located at <tt>zcode.appspot.com</tt> that converts a Z-code file located anywhere on the internet to a <a href="http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/">JSONP</a> representation that Parchment can understand.</p>
+	<p>Simply upload the Z-code file to a server and enter the URL to the story in the field below.</p>
+	<div class="input"><input id="url-entry" type="text" size="60"></div>
+	<div id="post-url-entry">
+		<p>The link for playing your story is:</p>
+		<p><a id="play-url"></a></p>
+	</div>
+	<p>Alternatively, you can also convert the Z-code to JavaScript yourself instead of relying on <tt>zcode.appspot.com</tt> by using <a href="zcode2js.html">zcode2js</a>.</p>
 </div>
 </body>
 </html>
