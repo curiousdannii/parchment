@@ -1,5 +1,12 @@
 Change log started July 2009.
 
+September 2009
+================================================================================
+ + Added IFF.write()
+ + Added a Quetzal class.
+ + ge_saveGame() now uses the Quetzal class.
+ + ge_loadSavedGame() uses the Quetzal class too.
+
 July 2009
 ================================================================================
  + Set the Z Machine Spec version header

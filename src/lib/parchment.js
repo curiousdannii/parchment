@@ -200,8 +200,7 @@ function EngineRunner(engine, zui, logfunc) {
       case GNUSTO_EFFECT_RESTORE:
         var saveGameData = self._zui.onRestore();
         if (saveGameData) {
-          var beret = new Beret(engine);
-          beret.load(saveGameData);
+          engine.loadSavedGame(saveGameData);
         } else {
           engine.answer(0, 0);
         }
@@ -926,7 +925,7 @@ function WebZui(logfunc) {
       var saveKey = gStory + '_saveData';
       var b64data = file.base64_encode(data);
 
-      if (window.globalStorage)
+      if (window.globalStorage && location.href.slice(0, 5) != 'file:')
         window.globalStorage[location.hostname][saveKey] = b64data;
       window.location.hash = "#" + b64data;
       self._expectedHash = window.location.hash;
@@ -1284,10 +1283,9 @@ function _webZuiStartup() {
 	logfunc("Story type: " + story.filetype);
 
   if (window.location.hash) {
-	var beret = new Beret(engine);
     var b64data = window.location.hash.slice(1);
-    beret.load(file.base64_decode(b64data));
-    logfunc("Load game story type: " + beret.m_filetype);
+    engine.loadSavedGame(file.base64_decode(b64data));
+    logfunc('Loading savefile');
   }
 
   runner.run();

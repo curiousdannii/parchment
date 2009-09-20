@@ -1428,9 +1428,14 @@ GnustoEngine.prototype = {
 			this._initial_setup();
   },
 
-  loadSavedGame: function ge_loadSavedGame(memLen, mem, mem_is_compressed,
-																					 stacksLen, stacks, pc)
+	loadSavedGame: function ge_loadSavedGame(savefile)
 	{
+		// Load the Quetzal savefile
+		var quetzal = new Quetzal(savefile);
+		var mem = quetzal.memory;
+		var stacks = quetzal.stacks;
+		var pc = quetzal.pc;
+
 
 			// FIXME: Still to do here:
 			//  There's a bit which should survive restore.
@@ -1446,7 +1451,7 @@ GnustoEngine.prototype = {
 					return result;
 			}
 
-			if (mem_is_compressed) {
+			if (quetzal.compressed) {
 
 					// Welcome to the decompression chamber.
 
@@ -1510,7 +1515,7 @@ GnustoEngine.prototype = {
 					cursor+=2;
 			}
 
-			while (cursor<stacksLen) {
+			while (cursor < stacks.length) {
 
 					this.m_call_stack.push(decodeStackInt(cursor, 3));
 					cursor+=3;
@@ -1715,184 +1720,151 @@ GnustoEngine.prototype = {
 	//
 	// Saves a game out to a file.
 	//
-  saveGame: function ge_saveGame() {
+	saveGame: function ge_saveGame()
+	{
+		// Returns an array of |bytecount| integers, each
+		// representing a byte of |number| in network byte order.
+		function int_to_bytes(number, bytecount)
+		{
+			var result = [];
+			for (var i = 0; i < bytecount; i++)
+			{
+				result[(bytecount - i) - 1] = number & 0xFF;
+				number >>= 8;
+			}
+			return result;
+		}
 
-			// Returns an array of |bytecount| integers, each
-			// representing a byte of |number| in network byte order.
-			function int_to_bytes(number, bytecount) {
-					var result = [];
+		// The state we are saving
+		var state = this.m_state_to_save,
 
-					result.length = bytecount;
+		// Locals for compressing the memory
+		compressed = [], same_count = 0,
 
-					for (var i=0; i<bytecount; i++) {
-							result[(bytecount-i)-1] = number & 0xFF;
-							number >>= 8;
-					}
+		// Locals for the stack
+		locals_cursor = this.m_locals.length - 16, gamestack_cursor = 0,
+		stacks = [ // Firstly, the dummy first record
+			0x00, 0x00, 0x00, // PC
+			0x00, // flags
+			0x00, // varcode
+			0x00 // args
+		],
 
-					return result;
+		// Make a Quetzal instance
+		quetzal = new Quetzal();
+
+		quetzal.release = state.m_memory.slice(0x02, 0x04);
+		quetzal.serial = state.m_memory.slice(0x12, 0x18);
+		quetzal.checksum = state.m_memory.slice(0x1C, 0x1E);
+		quetzal.pc = state.m_pc;
+		quetzal.compressed = 1;
+
+		//if (this.m_compress_save_files) {
+
+		// Compress the memory
+		for (var i = 0, s = this.m_stat_start; i < s; i++)
+		{
+			if (state.m_memory[i] == this.m_original_memory[i])
+			{
+				same_count++;
+
+				if (same_count == 256)
+				{
+					compressed.push(0);
+					compressed.push(255);
+					same_count = 0;
+				}
+			}
+			else
+			{
+				if (same_count != 0)
+				{
+					compressed.push(0);
+					compressed.push(same_count - 1);
+					same_count = 0;
+				}
+
+				compressed.push(state.m_memory[i] ^ this.m_original_memory[i]);
+			}
+		}
+
+		if (same_count != 0)
+		{
+			// write out remaining same count
+			compressed.push(0);
+			compressed.push(same_count - 1);
+		}
+
+		// Add it to the Quetzal instance
+		quetzal.memory = compressed;
+
+		/*
+		}
+		else
+		{
+			// Not using compressed memory.
+			quetzal.memory = this.m_memory.slice(0, this.m_stat_start);
+		}
+		*/
+
+		////////////////////////////////////////////////////////////////
+
+		// Write out the stacks.
+
+		// And top it off with the amount of eval stack used.
+		stacks = stacks.concat(int_to_bytes(this.m_gamestack_callbreaks[0], 2));
+
+		for (var m = 0; m < this.m_gamestack_callbreaks[0]; m++)
+			stacks = stacks.concat(int_to_bytes(this.m_gamestack[gamestack_cursor++], 2));
+
+		for (var j = 0; j < this.m_call_stack.length; j++)
+		{
+			stacks = stacks.concat(int_to_bytes(this.m_call_stack[j], 3));
+
+			// m_locals_stack is back to front so that we can always
+			// refer to the current frame as m_l_s[x].
+			var local_count = this.m_locals_stack[this.m_locals_stack.length - (j + 1)],
+			flags = local_count,
+			target = this.m_result_targets[j],
+			// FIXME: This is ugly too. Why is m_p_c back to front?
+			args_supplied = this.m_param_counts[this.m_param_counts.length - (j + 1)],
+			eval_taken = this.m_gamestack_callbreaks[j] - gamestack_cursor;
+
+			if (target == -1)
+			{
+				// This is a call-and-throw-away rather than a
+				// call-and-store. We represent that with a magic
+				// varcode of -1, but Quetzal sets a flag instead.
+
+				target = 0;
+				flags |= 0x10;
 			}
 
-			var state = this.m_state_to_save;
+			stacks = stacks.concat([
+				flags,
+				target,
+				// I'm assuming that once a bit is set here,
+				// all bits to its right are set too.
+				// So we raise 2 to the power of the number
+				// and subtract one.
+				(1 << args_supplied) - 1,
+				(eval_taken >> 8) & 0xFF,
+				eval_taken & 0xFF
+			]);
 
-			var tag_FORM = [0x46, 0x4f, 0x52, 0x4d];
-			var tag_CMem = [0x43, 0x4d, 0x65, 0x6d];
-			var tag_UMem = [0x55, 0x4d, 0x65, 0x6d];
-			var tag_Stks = [0x53, 0x74, 0x6b, 0x73];
+			locals_cursor -= local_count;
 
-			var content = [0x49, 0x46, 0x5a, 0x53,  // IFZS
-										 0x49, 0x46, 0x68, 0x64,  // IFhd
-										 0x00, 0x00, 0x00, 0x0d,  // fixed length of 13 bytes
-										 state.m_memory[0x02],    // Release number
-										 state.m_memory[0x03],
-										 state.m_memory[0x12],    // Serial
-										 state.m_memory[0x13],
-										 state.m_memory[0x14],
-										 state.m_memory[0x15],
-										 state.m_memory[0x16],
-										 state.m_memory[0x17],
-										 state.m_memory[0x1C],    // Checksum
-										 state.m_memory[0x1D],
-										 (state.m_pc>>16) & 0xFF, // PC
-										 (state.m_pc>> 8) & 0xFF,
-										 (state.m_pc    ) & 0xFF,
-										 0];                      // pad
+			for (var k = 0; k < local_count; k++)
+				stacks = stacks.concat(int_to_bytes(this.m_locals[locals_cursor + k], 2));
 
-			if (this.m_compress_save_files) {
+			for (var m = 0; m < eval_taken; m++)
+				stacks = stacks.concat(int_to_bytes(this.m_gamestack[gamestack_cursor++], 2));
+		}
 
-					var compressed = [];
-					var same_count = 0;
-
-					for (var i=0; i<this.m_stat_start; i++) {
-							if (state.m_memory[i] == this.m_original_memory[i]) {
-
-									same_count++;
-
-									if (same_count == 256) {
-											compressed.push(0);
-											compressed.push(255);
-											same_count = 0;
-									}
-
-							} else {
-
-									if (same_count!=0) {
-											compressed.push(0);
-											compressed.push(same_count-1);
-											same_count = 0;
-									}
-
-									compressed.push(state.m_memory[i]^this.m_original_memory[i]);
-							}
-					}
-
-					if (same_count != 0) {
-							// write out remaining same count
-							compressed.push(0);
-							compressed.push(same_count-1);
-					}
-
-					content = content.concat(tag_CMem);
-					content = content.concat(int_to_bytes(compressed.length, 4));
-					content = content.concat(compressed);
-
-					if ((compressed.length % 2) != 0) {
-							// Odd number of bytes in the memory. Add one more.
-							content.push(0);
-					}
-
-			} else {
-
-					// Not using compressed memory.
-
-					content = content.concat(tag_UMem);
-					content = content.concat(int_to_bytes(this.m_stat_start, 4));
-					content = content.concat(this.m_memory.slice(0, this.m_stat_start));
-
-					if ((this.m_stat_start % 2) != 0) {
-							// Odd number of bytes in the memory. Add one more.
-							content.push(0);
-					}
-			}
-			////////////////////////////////////////////////////////////////
-
-			// Write out the stacks.
-
-			var stacks = [
-										// Firstly, the dummy first record
-										0x00, 0x00, 0x00, // PC
-										0x00, // flags
-										0x00, // varcode
-										0x00]; // args
-
-			// And top it off with the amount of eval stack used.
-			stacks = stacks.concat(int_to_bytes(this.m_gamestack_callbreaks[0],
-																					2));
-
-			var locals_cursor = this.m_locals.length - 16;
-			var gamestack_cursor = 0;
-
-			for (var m=0; m<this.m_gamestack_callbreaks[0]; m++) {
-					stacks = stacks.concat(int_to_bytes(this.m_gamestack[gamestack_cursor++],
-																							2));
-			}
-
-			for (var j=0; j<this.m_call_stack.length; j++) {
-
-					stacks = stacks.concat(int_to_bytes(this.m_call_stack[j],
-																							3));
-
-					// m_locals_stack is back to front so that we can always
-					// refer to the current frame as m_l_s[x].
-					var local_count = this.m_locals_stack[this.m_locals_stack.length - (j+1)];
-					var flags = local_count;
-					var target = this.m_result_targets[j];
-					// FIXME: This is ugly too. Why is m_p_c back to front?
-					var args_supplied = this.m_param_counts[this.m_param_counts.length - (j+1)];
-					var eval_taken = this.m_gamestack_callbreaks[j] - gamestack_cursor;
-
-					if (target==-1) {
-
-							// This is a call-and-throw-away rather than a
-							// call-and-store. We represent that with a magic
-							// varcode of -1, but Quetzal sets a flag instead.
-
-							target = 0;
-							flags |= 0x10;
-					}
-
-					stacks = stacks.concat([flags,
-																	target,
-																	// I'm assuming that once a bit is set here,
-																	// all bits to its right are set too.
-																	// So we raise 2 to the power of the number
-																	// and subtract one.
-																	(1<<args_supplied)-1,
-																	(eval_taken>>8) & 0xFF,
-																	(eval_taken   ) & 0xFF]);
-
-					locals_cursor -= local_count;
-
-					for (var k=0; k<local_count; k++) {
-							stacks = stacks.concat(int_to_bytes(this.m_locals[locals_cursor+k],
-																									2));
-					}
-
-					for (var m=0; m<eval_taken; m++) {
-							stacks = stacks.concat(int_to_bytes(this.m_gamestack[gamestack_cursor++],
-																									2));
-					}
-			}
-
-			content = content.concat(tag_Stks);
-			content = content.concat(int_to_bytes(stacks.length, 4));
-			content = content.concat(stacks);
-
-			var quetzal = tag_FORM;
-			quetzal = quetzal.concat(int_to_bytes(content.length, 4));
-			quetzal = quetzal.concat(content);
-
-			this.m_quetzal_image = quetzal;
-			return this.m_quetzal_image.length;
+		// Write out the Quetzal
+		quetzal.stacks = stacks;
+		this.m_quetzal_image = quetzal.write();
+		return this.m_quetzal_image.length;
 	},
 
   saveGameData: function ge_saveGameData(len, result) {
@@ -4536,7 +4508,7 @@ GnustoEngine.prototype = {
 	// Whether to save compressed or uncompressed games. This trades
 	// having small files for saving slightly faster, and isn't
 	// really worth it. We may hardwire it on permanently.
-	m_compress_save_files: 1,
+	//m_compress_save_files: 1,
 
 	// Offset of the (notional) 0th entry in the object tree from the
 	// start of the object block, in bytes. (This is the size of the

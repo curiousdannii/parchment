@@ -9,8 +9,8 @@ includes = (
 		'src/parchment/querystring.js',
 		'src/parchment/remedial.js',
 		'src/parchment/error-handling.js',
-		'src/parchment/beret.js',
 		'src/parchment/file.js',
+		'src/plugins/quetzal.js',
 	)),
 	('src/lib/parchment.js', (
 		'src/parchment/engine-runner.js',

@@ -75,21 +75,33 @@
  */
 (function(){
 
-// Get a 32 bit number from a byte array
-var num_from = function(s, offset)
+// Get a 32 bit number from a byte array, and vice versa
+function num_from(s, offset)
 {
 	return s[offset] << 24 | s[offset + 1] << 16 | s[offset + 2] << 8 | s[offset + 3];
-},
+}
 
-// Get a 4 byte string from a byte array
-text_from = function(s, offset)
+function num_to_word(n)
+{
+	return [(n >> 24) & 0xFF, (n >> 16) & 0xFF, (n >> 8) & 0xFF, n & 0xFF];
+}
+
+// Get a 4 byte string ID from a byte array, and vice versa
+function text_from(s, offset)
 {
 	var fromCharCode = String.fromCharCode;
 	return fromCharCode(s[offset]) + fromCharCode(s[offset + 1]) + fromCharCode(s[offset + 2]) + fromCharCode(s[offset + 3]);
-},
+}
+
+function text_to_word(t)
+{
+	return [t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3)];
+}
+
+var FORM = 'FORM',
 
 // IFF file class
-// Parsers an IFF file stored in a byte array
+// Parses an IFF file stored in a byte array
 IFF = Class.extend({
 	// Parse a byte array or construct an empty IFF file
 	init: function parse_iff(data)
@@ -99,7 +111,7 @@ IFF = Class.extend({
 		if (data)
 		{
 			// Check this is an IFF file
-			if (text_from(data, 0) != "FORM")
+			if (text_from(data, 0) != FORM)
 				throw new Error("Not an IFF file");
 
 			// Parse the file
@@ -123,12 +135,33 @@ IFF = Class.extend({
 				if (chunk_length % 2) i++;
 			}
 		}
+	},
+
+	// Write out the IFF into a byte array
+	write: function write_iff()
+	{
+		// Start with the IFF type
+		var out = text_to_word(this.type);
+
+		// Go through the chunks and write them out
+		for (var i = 0, l = this.chunks.length; i < l; i++)
+		{
+			var chunk = this.chunks[i], data = chunk.data, len = data.length;
+			out = out.concat(text_to_word(chunk.type), num_to_word(len), data);
+			if (len % 2)
+				out.push(0);
+		}
+
+		// Add the header and return
+		return text_to_word(FORM).concat(num_to_word(out.length), out);
 	}
 });
 
 // Expose the class and helper functions
 IFF.num_from = num_from;
+IFF.num_to_word = num_to_word;
 IFF.text_from = text_from;
+IFF.text_to_word = text_to_word;
 window.IFF = IFF;
 
 })();
@@ -636,263 +669,6 @@ FatalError.prototype = {
 
     return "Traceback (most recent call last):\n" + procstring;
   }
-}
-// -*- Mode: Java; tab-width: 2; -*-
-// $Id: beret.js,v 1.22 2006/10/24 16:11:09 naltrexone42 Exp $
-//
-// Copyright (c) 2003 Thomas Thurman
-// thomas@thurman.org.uk
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of version 2 of the GNU General Public License
-// as published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have be able to view the GNU General Public License at
-// http://www.gnu.org/copyleft/gpl.html ; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-
-////////////////////////////////////////////////////////////////
-//
-// iff_parse
-//
-// Parses an IFF file entirely contained in the array |s|.
-// The return value is a list. The first element is the form type
-// of the file; subsequent elements represent chunks. Each chunk is
-// represented by a list whose first element is the chunk type,
-// whose second element is the starting offset of the data within
-// the array, and whose third element is the length.
-//
-function iff_parse(s) {
-
-    function num_from(offset) {
-        return s[offset]<<24 | s[offset+1]<<16 | s[offset+2]<<8 | s[offset+3];
-    }
-
-    function string_from(offset) {
-        return String.fromCharCode(s[offset]) +
-            String.fromCharCode(s[offset+1]) +
-            String.fromCharCode(s[offset+2]) +
-            String.fromCharCode(s[offset+3]);
-    }
-
-    var result = [string_from(8)];
-
-    var cursor = 12;
-
-    while (cursor < s.length) {
-        var chunk = [string_from(cursor)];
-        var chunk_length = num_from(cursor+4);
-
-        if (chunk_length<0 || (chunk_length+cursor)>s.length) {
-            // fixme: do something sensible here
-            throw new FatalError('WEEBLE, panic\n');
-            return [];
-        }
-
-        chunk.push(cursor+8);
-        chunk.push(chunk_length);
-
-        result.push(chunk);
-
-        cursor += 8 + chunk_length;
-        if (chunk_length % 2) cursor++;
-    }
-
-    return result;
-}
-
-function Beret(engine) {
-  this.m_engine = engine;
-}
-
-Beret.prototype = {
-
-    ////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////
-    //                                                            //
-    //   PUBLIC METHODS                                           //
-    //                                                            //
-    //   Documentation for these methods is in the IDL.           //
-    //                                                            //
-    ////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////
-
-    load: function b_load(content) {
-
-        function magic_number_is_string(str) {
-            for (var ij=0; ij<str.length; ij++) {
-                if (str.charCodeAt(ij)!=content[ij]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        if (content[0]<9) {
-  			    // Infocom file, naked.
-
-				    // FIXME: This check is way too simple. We should look at
-				    // some of the other fields as well for sanity-checking.
-            this.m_filetype = 'ok story naked zcode';
-            this.m_engine.loadStory(content);
-        } else if (magic_number_is_string('FORM')) { // An IFF file.
-
-            var iff_details = iff_parse(content);
-
-            if (iff_details.length==0) {
-
-                // Invalid IFF file.
-
-                this.m_filetype = 'invalid unknown iff';
-
-            } else if (iff_details[0]=='IFZS') {
-
-                // Quetzal saved file.
-
-                // Currently, we require that a loaded Quetzal file
-                // is from the same story that's currently loaded.
-                // One day we'll have a way of getting the right
-                // story out of the registry.
-
-                // FIXME: We also don't check this yet. We should. We will.
-
-                var memory = 0;
-                var memory_is_compressed = 0;
-                var stks = 0;
-                var pc = 0;
-
-                for (var i=1; i<iff_details.length; i++) {
-                    var tag = iff_details[i][0];
-                    if (tag=='IFhd') {
-
-                        // validate that saved game release number matches loaded game
-                        var release_num_location = iff_details[i][1];
-                        var serial_num_location = iff_details[i][1]+2;
-                        if (
-                         // if no game is loaded...
-                        (!this.m_engine) ||
-                         // or the game has a different release number...
-                        (this.m_engine.getByte(0x02) != content[release_num_location]) || (this.m_engine.getByte(0x03) != content[release_num_location+1]) ||
-                         // or the game has a different serial number...
-                        (this.m_engine.getByte(0x12) != content[serial_num_location]) || (this.m_engine.getByte(0x13) != content[serial_num_location+1]) ||
-                        (this.m_engine.getByte(0x14) != content[serial_num_location+2]) || (this.m_engine.getByte(0x15) != content[serial_num_location+3]) ||
-                        (this.m_engine.getByte(0x16) != content[serial_num_location+4]) || (this.m_engine.getByte(0x17) != content[serial_num_location+5])
-                        // w\We should also validate checksum, but I don't believe we store this if a game is too old to have one.  So let's not risk it.
-                        ){
-                            //The save game isn't for the currently loaded game.  Bail out.
-                            this.m_filetype = 'mismatch';
-                            break;
-                        }
-
-                        var pc_location = iff_details[i][1]+10;
-                        pc = content[pc_location]<<16 |
-                            content[pc_location+1]<<8 |
-                            content[pc_location+2];
-                    } else if (tag=='Stks') {
-                        if (stks!=0) {
-                            throw new FatalError('fixme: error: multiple Stks\n');
-                        }
-                        stks = content.slice(iff_details[i][1],
-                                             iff_details[i][2]+iff_details[i][1]);
-                    } else if (tag=='CMem' || tag=='UMem') {
-
-                        if (memory!=0) {
-                            throw new FatalError('fixme: error: multiple memory segments\n');
-                        }
-
-                        memory_is_compressed = (tag=='CMem');
-
-                        memory = content.slice(iff_details[i][1],
-                                               iff_details[i][2]+iff_details[i][1]);
-                    }
-                }
-
-                if (memory==0) {
-                    throw new FatalError('fixme: error: no memory in quetzal\n');
-                } else if (stks==0) {
-                    throw new FatalError('fixme: error: no stacks in quetzal\n');
-                } else if (pc==0) {
-                    throw new FatalError('fixme: error: no header in quetzal\n');
-                } else {
-                    this.m_filetype = 'ok saved quetzal zcode';
-                    this.m_engine.loadSavedGame(memory.length, memory,
-                                                memory_is_compressed,
-                                                stks.length, stks,
-                                                pc);
-                }
-            } else if (iff_details[0]=='IFRS') {
-								// Blorb resources file, possibly containing
-								// Z-code.
-
-								this.m_filetype = 'invalid story blorb';
-
-								// OK, so go digging for it.	
-								// The full list of executable formats, from
-								// <news:82283c$uab$1@nntp9.atl.mindspring.net>, is:
-
-								var blorb_formats = {
-										'ZCOD': 'zcode',
-										'GLUL': 'glulx',
-										'TADG': 'tads',
-										'ALAN': 'alan',
-										'HUGO': 'hugo',
-										'SAAI': 'scottadams', // Adventure International
-										'SAII': 'scottadams', // Possibly an old error
-										'MSRL': 'magneticscrolls'
-								};
-								
-								// FIXME: It's (obviously) technically invalid if
-								// a file's Blorb type signature doesn't match with its
-								// magic number in the code, but should we give an error?
-								// For example, what if a file marked GLUL turns out
-								// to be z-code?
-
-								for (var j=1; j<iff_details.length; j++) {
-
-										if (iff_details[j][0] in blorb_formats) {
-												var start = iff_details[j][1];
-												var length = iff_details[j][2];
-
-												this.load(content.slice(start,
-																								start+length));
-												this.m_filetype = 'ok story blorb '+
-														blorb_formats[iff_details[j][0]];
-												
-												return;
-										}
-								}
-            } else {
-					      this.m_filetype = 'error unknown iff';
-            }
-        } else {
-          // OK, just give up.
-          this.m_filetype = 'error unknown general';
-        }
-    },
-
-    filetype: function b_filetype() {
-        return this.m_filetype;
-    },
-
-    engine: function b_engine() {
-        return this.m_engine;
-    },
-
-    ////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////
-    //                                                            //
-    //   PRIVATE VARIABLES                                        //
-    //                                                            //
-    ////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////
-
-    m_filetype: 'error none unseen',
-    m_engine: null
 };
 /*!
  * File functions and classes
@@ -1137,3 +913,81 @@ window.file = {
 	story: story
 };
 })(window);
+/*
+ * Quetzal Common Save-File Format
+ *
+ * Copyright (c) 2003-2009 The Gnusto Contributors
+ * Licenced under the GPL v2
+ * http://github.com/curiousdannii/gnusto
+ */
+(function(){
+
+// Form and chunk type constants
+var IFZS = 'IFZS', IFHD = 'IFhd', CMEM = 'CMem', UMEM = 'UMem', STKS = 'Stks';
+
+// A savefile
+window.Quetzal = IFF.extend({
+	// Parse a Quetzal savefile, or make a blank one
+	init: function parse_quetzal(bytes)
+	{
+		this._super(bytes);
+		if (bytes)
+		{
+			// Check this is a Quetzal savefile
+			if (this.type != IFZS)
+				throw new Error('Not a Quetzal savefile');
+
+			// Go through the chunks and extract the useful ones
+			for (var i = 0, l = this.chunks.length; i < l; i++)
+			{
+				var type = this.chunks[i].type, data = this.chunks[i].data;
+
+				// Memory and stack chunks. Overwrites existing data if more than one of each is present!
+				if (type == CMEM || type == UMEM)
+				{
+					this.memory = data;
+					this.compressed = (type == CMEM);
+				}
+				else if (type == STKS)
+					this.stacks = data;
+
+				// Story file data
+				else if (type == IFHD)
+				{
+					this.release = data.slice(0, 2);
+					this.serial = data.slice(2, 8);
+					// The checksum isn't used, but if we throw it away we can't round-trip
+					this.checksum = data.slice(8, 10);
+					this.pc = data[10] << 16 | data[11] << 8 | data[12];
+				}
+			}
+		}
+	},
+
+	// Write out a savefile
+	write: function write_quetzal()
+	{
+		// Reset the IFF type
+		this.type = IFZS;
+
+		// Format the IFhd chunk correctly
+		var pc = this.pc,
+		ifhd = this.release.concat(
+			this.serial,
+			this.checksum,
+			(pc >> 16) & 0xFF, (pc >> 8) & 0xFF, pc & 0xFF
+		);
+
+		// Add the chunks
+		this.chunks = [
+			{type: IFHD, data: ifhd},
+			{type: (this.compressed ? CMEM : UMEM), data: this.memory},
+			{type: STKS, data: this.stacks}
+		];
+
+		// Return the byte array
+		return this._super();
+	}
+});
+
+})();

@@ -200,8 +200,7 @@ function EngineRunner(engine, zui, logfunc) {
       case GNUSTO_EFFECT_RESTORE:
         var saveGameData = self._zui.onRestore();
         if (saveGameData) {
-          var beret = new Beret(engine);
-          beret.load(saveGameData);
+          engine.loadSavedGame(saveGameData);
         } else {
           engine.answer(0, 0);
         }
