@@ -1,20 +1,24 @@
-import os
-import re
+#!/usr/bin/env python
 
+# Parchment build script
+#
+# Copyright (c) 2003-2009 The Parchment Contributors
+# Licenced under the GPL v2
+# http://code.google.com/p/parchment
+
+# Lists of files to combine together, note the combined files will have the debug lines removed
 includes = (
-	('src/lib/extras.js', (
+	('src/lib/parchment.js', (
 		'src/plugins/class.js',
 		'src/plugins/iff.js',
 		'src/plugins/jquery.mousewheel.js',
 		'src/plugins/jquery.hotkeys.js',
-		'src/parchment/querystring.js',
-		'src/parchment/remedial.js',
+		'src/plugins/querystring.js',
+		'src/plugins/remedial.js',
 		'src/parchment/error-handling.js',
-		'src/parchment/beret.js',
+		'src/plugins/quetzal.js',
 		'src/parchment/intro.js',
 		'src/parchment/file.js',
-	)),
-	('src/lib/parchment.js', (
 		'src/parchment/ui.js',
 		'src/parchment/engine-runner.js',
 		'src/parchment/console.js',
@@ -24,21 +28,25 @@ includes = (
 	)),
 )
 
+# List of files to compress
 compress = (
 	('src/gnusto/gnusto-engine.js', 'lib/gnusto.min.js'),
-	('src/lib/extras.js', 'lib/extras.min.js'),
 	('src/lib/parchment.js', 'lib/parchment.min.js'),
 )
 
-comments = re.compile(';;;.+$', re.M)
+import os
+import re
+
+# regex for debug lines
+debug = re.compile(';;;.+$', re.M)
 
 # Combine source files together to make 'packages'
 for package in includes:
 	output = open(package[0], 'w')
 	for include in package[1]:
 		data = file(include).read()
-		# Strip out lines beginning with ;;;
-		data = comments.sub('', data)
+		# Strip out debug lines beginning with ;;;
+		data = debug.sub('', data)
 		output.write(data)
 	output.close()
 		

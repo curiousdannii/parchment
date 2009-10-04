@@ -222,10 +222,9 @@ function _webZuiStartup() {
 	logfunc("Story type: " + story.filetype);
 
   if (window.location.hash) {
-	var beret = new Beret(engine);
     var b64data = window.location.hash.slice(1);
-    beret.load(file.base64_decode(b64data));
-    logfunc("Load game story type: " + beret.m_filetype);
+    engine.loadSavedGame(file.base64_decode(b64data));
+    logfunc('Loading savefile');
   }
 
   runner.run();

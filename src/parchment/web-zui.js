@@ -525,7 +525,7 @@ function WebZui(logfunc) {
       var saveKey = gStory + '_saveData';
       var b64data = file.base64_encode(data);
 
-      if (window.globalStorage)
+      if (window.globalStorage && location.href.slice(0, 5) != 'file:')
         window.globalStorage[location.hostname][saveKey] = b64data;
       window.location.hash = "#" + b64data;
       self._expectedHash = window.location.hash;

@@ -3,6 +3,8 @@ Change log started August 2009.
 September 2009
 ================================================================================
  + Began working on the Library. Moved code from web-zui.js to library.js, and added intro.js and outro.js.
+ + Gnusto now uses a Quetzal class, so changed the Parchment interfaces to it.
+ - Removed beret.js
 
 August 2009
 ================================================================================

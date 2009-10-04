@@ -46,4 +46,4 @@ FatalError.prototype = {
 
     return "Traceback (most recent call last):\n" + procstring;
   }
-}
+};
