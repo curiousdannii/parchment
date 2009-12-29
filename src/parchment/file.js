@@ -7,19 +7,20 @@
  */
 (function(window){
 
+// Saved regexps
+var base64_wrapper = /\(['"](.+)['"]\)/,
+
 // Text to byte array and vice versa
-var text_to_array = function(text, array)
+text_to_array = function(text, array)
 {
 	var array = array || [], i = 0, l;
-	for (l = text.length % 16; i < l; ++i)
-		array.push(text.charCodeAt(i));
+	for (l = text.length % 8; i < l; ++i)
+		array.push(text.charCodeAt(i) & 0xff);
 	for (l = text.length; i < l;)
 		// Unfortunately unless text is cast to a String object there is no shortcut for charCodeAt,
 		// and if text is cast to a String object, it's considerably slower.
-		array.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
-		text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
-		text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
-		text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+		array.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
+			text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff);
 	return array;
 },
 
@@ -118,6 +119,59 @@ else
 	};
 }
 
+// Download a file to a byte array
+var download_to_array = function( url, callback ) {
+	// Callback function for legacy .js storyfiles, process with base64
+	var download_base64 = function ( data ) {
+		// TODO: Investigate chunking the data
+		callback( base64_decode( base64_wrapper.exec(data)[1] ));
+	},
+	
+	// Callback function for raw binary data
+	download_raw = function ( data ) {
+		// Check to see if this could actually be base64 encoded
+	
+		callback(text_to_array(data));
+	};
+
+	// What are we trying to download here?
+
+	// Looks like a legacy .js storyfile
+	if ( url.slice(-3).toLowerCase() === '.js' ) {
+		// Make the request
+		// Only works on local files currently
+		$.ajax({
+			dataType: 'text',
+			error: download_error,
+			success: download_base64,
+			url: url
+		});
+
+	// Downloading a raw binary file
+	} else {
+		// Make the request
+		// Only works on local files currently
+		$.ajax({
+			beforeSend: binary_charset,
+			dataType: 'text',
+			error: download_error,
+			success: download_raw,
+			url: url
+		});
+	}
+
+},
+
+// Change the charset for binary data
+binary_charset = function ( XMLHttpRequest ) {
+	XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+},
+
+// Error callback
+download_error = function ( XMLHttpRequest, textStatus ) {
+	throw new FatalError('Error loading story: ' + textStatus);
+};
+
 /*
 	// Images made from byte arrays
 	file.image = base2.Base.extend({
@@ -146,6 +200,7 @@ window.file = {
 	text_to_array: text_to_array,
 	array_to_text: array_to_text,
 	base64_decode: base64_decode,
-	base64_encode: base64_encode
+	base64_encode: base64_encode,
+	download_to_array: download_to_array
 };
 })(window);

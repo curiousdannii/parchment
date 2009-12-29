@@ -134,7 +134,7 @@ window.Library = Class.extend({
 		var querystring = new Querystring(),
 		url = querystring.get('story', parchment.options.default_story);
 
-		storyName = getFilenameFromUrl(url);
+		storyName = url.slice( url.lastIndexOf("/") + 1 );
 		storyName = storyName ? storyName + " - Parchment" : "Parchment";
 		window.document.title = storyName;
 
@@ -146,11 +146,11 @@ window.Library = Class.extend({
 		else
 		{
 			$('#progress-text').html('Retrieving story file...');
-
-			if (url.slice(-3).toLowerCase() == '.js')
-				$.getScript(url);
-			else
-				$.getScript(parchment.options.zcode_appspot_url + '?url=' + escape(url) + '&jsonp=processZcodeAppspotResponse');
+			file.download_to_array( url, process_bytearray );
+			//if (url.slice(-3).toLowerCase() == '.js')
+			//	$.getScript(url);
+			//else
+			//	$.getScript(parchment.options.zcode_appspot_url + '?url=' + escape(url) + '&jsonp=processZcodeAppspotResponse');
 		}
 	},
 
@@ -159,56 +159,17 @@ window.Library = Class.extend({
 	savefiles: {}
 });
 
-function getFilenameFromUrl(url) {
-  var lastSlash = url.lastIndexOf("/");
-  return url.slice(lastSlash + 1);
-}
-
 window.gZcode = null;
 window.gStory = '';
 
-// JSONP callback
-window.processZcodeAppspotResponse = function(content)
-{
-	if (content.error)
-		throw new FatalError("Error loading story: " + content.error.entityify());
-	processBase64Zcode(content.data);
-}
-
-window.processBase64Zcode = function(data, decodedSoFar)
-{
-	var CHUNK_SIZE = 50000, next_func,
-	firstChunk = data.slice(0, CHUNK_SIZE),
-	restOfData = data.slice(CHUNK_SIZE);
-
-	if (typeof(decodedSoFar) == 'undefined')
-		decodedSoFar = [];
-
-	$('#progress-text').html('Decoding ' + data.length + ' more bytes...');
-	file.base64_decode(firstChunk, decodedSoFar);
-
-	if (restOfData)
-		next_func = function decode_rest()
-		{
-			processBase64Zcode(restOfData, decodedSoFar);
-		};
-
-	else
-		next_func = function finish()
-		{
-			gZcode = decodedSoFar;
-			$('#progress-text').html('Starting interpreter...');
-			_webZuiStartup();
-		};
-
-	window.setTimeout(next_func, 1);
+function process_bytearray( data ) {
+	gZcode = data;
+	$('#progress-text').html('Starting interpreter...');
+	_webZuiStartup();
 }
 
 function _webZuiStartup() {
   var logfunc = function() {};
-
-	if (window.loadFirebugConsole)
-		window.loadFirebugConsole();
 
   if (window.console)
     logfunc = function(msg) { console.log(msg); };

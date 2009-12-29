@@ -29,10 +29,10 @@ function load_parchment()
 
 	// As we only support Zcode at the moment, preload Gnusto and its runner
 	// Use this sneaky trick to load the original files for parchment.full.html
-	;;; $.getScript('src/gnusto/gnusto-engine.js');
-	;;; $.getScript('src/parchment/engine-runner.js');
+	//;;; $.getScript('src/gnusto/gnusto-engine.js');
+	//;;; $.getScript('src/parchment/engine-runner.js');
 	;;; /*
-	$.getScript('lib/gnusto.min.js');
+	//$.getScript('lib/gnusto.min.js');
 	;;; */
 
 	// Add the Analytics tracker, but only if we're at parchment.googlecode.com

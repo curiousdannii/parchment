@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+December 2009
+================================================================================
+ + Added file.download_to_array(), with binary support.
+
 September 2009
 ================================================================================
  + Began working on the Library. Moved code from web-zui.js to library.js, and added intro.js and outro.js.

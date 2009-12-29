@@ -131,6 +131,24 @@ $(document).ready(function(){
 			}
 			return data;
 		});
+		
+		testconversion('Unrolled loop (Binary)', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i) & 0xff;	
+			for (l = text.length; i < l;)
+			{
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+	 			data[i] = text.charCodeAt(i++) & 0xff;
+			}
+			return data;
+		});
 
 		testconversion('Unrolled pushing loop', function(text) {
 			var data = [], i = 0;
@@ -139,6 +157,16 @@ $(document).ready(function(){
 			for (l = text.length; i < l;)
 	 			data.push(text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
 					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+		
+		testconversion('Unrolled pushing loop (Binary)', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 8; i < l; ++i)
+	 			data[i] = text.charCodeAt(i) & 0xff;	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
+					text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff);
 			return data;
 		});
 
@@ -151,6 +179,18 @@ $(document).ready(function(){
 					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
 					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
 					text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++));
+			return data;
+		});
+		
+		testconversion('Unrolled pushing 16 loop (Binary)', function(text) {
+			var data = [], i = 0;
+			for (l = text.length % 16; i < l; ++i)
+	 			data[i] = text.charCodeAt(i) & 0xff;	
+			for (l = text.length; i < l;)
+	 			data.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
+					text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
+					text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
+					text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff);
 			return data;
 		});
 
