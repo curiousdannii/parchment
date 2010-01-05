@@ -1,7 +1,7 @@
 /*
  * The Parchment Library
  *
- * Copyright (c) 2003-2009 The Parchment Contributors
+ * Copyright (c) 2003-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
@@ -111,10 +111,10 @@ var Story = IFF.extend({
 			engine.loadStory(this.zcode);
 		//window.document.title = this.title + ' - Parchment';
 	}
-});
+}),
 
 // Story file cache
-var StoryCache = Class.extend({
+StoryCache = Class.extend({
 	// Add a story to the cache
 	add: function(story)
 	{
@@ -123,10 +123,52 @@ var StoryCache = Class.extend({
 			this.url[story.url] = story;
 	},
 	url: {}
-});
+}),
+
+// Z-Machine launcher
+launch_zmachine = function( url, library )
+{
+	// Store the story in this closure so we can still launch when things load out of order
+	var story,
+
+	// Callback to check if everything has loaded, and to launch the Z-Machine if so
+	callback = function( data )
+	{
+		// Are we being called with a byte array story?
+		if ( $.isArray(data) )
+			story = data;
+		
+		// Check that everything has loaded
+		if ( library.loaded_zmachine || 
+		     window.GnustoEngine && window.Quetzal && window.EngineRunner && window.Console && window.WebZui && story )
+		{
+		     library.loaded_zmachine = true;
+		     
+		     process_bytearray( story );
+		}
+	};
+
+	// Download the Z-Machine libs now so they can be parallelised
+	if ( !library.loaded_zmachine )
+	{
+		// Get the correct files for parchment.full.html/parchment.html
+		;;; var libs = ['src/gnusto/gnusto-engine.js', 'src/plugins/quetzal.js', 'src/parchment/engine-runner.js', 'src/parchment/console.js', 'src/parchment/web-zui.js'], i = 0, l = 5;
+		;;; /*
+		var libs = ['lib/gnusto.min.js', 'lib/zmachine.min.js'], i = 0, l = 2;
+		;;; */
+		while ( i < l )
+		{
+			$.getScript( libs[i], callback );
+			i++;
+		}
+	}
+		
+	// Download the story
+	file.download_to_array( url, callback );
+},
 
 // The Parchment Library class
-window.Library = Class.extend({
+Library = Class.extend({
 	// Load a story or savefile
 	load: function(id)
 	{
@@ -146,7 +188,8 @@ window.Library = Class.extend({
 		else
 		{
 			$('#progress-text').html('Retrieving story file...');
-			file.download_to_array( url, process_bytearray );
+			// When Glulx support is added we will need to sniff the filename to decide which to launch
+			launch_zmachine( url, this );
 			//if (url.slice(-3).toLowerCase() == '.js')
 			//	$.getScript(url);
 			//else
@@ -190,5 +233,7 @@ function _webZuiStartup() {
 
   runner.run();
 }
+
+window.Library = Library;
 
 })(window);

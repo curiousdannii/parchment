@@ -1,7 +1,7 @@
 /*
  * Parchment load scripts
  *
- * Copyright (c) 2003-2009 The Parchment Contributors
+ * Copyright (c) 2003-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
@@ -26,14 +26,6 @@ function load_parchment()
 	var library = new Library();
 	parchment.library = library;
 	library.load();
-
-	// As we only support Zcode at the moment, preload Gnusto and its runner
-	// Use this sneaky trick to load the original files for parchment.full.html
-	//;;; $.getScript('src/gnusto/gnusto-engine.js');
-	//;;; $.getScript('src/parchment/engine-runner.js');
-	;;; /*
-	//$.getScript('lib/gnusto.min.js');
-	;;; */
 
 	// Add the Analytics tracker, but only if we're at parchment.googlecode.com
 	if (location.href.slice(0, 31) == 'http://parchment.googlecode.com')

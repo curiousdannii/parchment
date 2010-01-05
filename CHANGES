@@ -1,5 +1,10 @@
 Change log started August 2009.
 
+January 2010
+================================================================================
+ + Added launch_zmachine() which launches the Z-Machine, late downloading the files it needs. (library.js)
+ + Rearranged the packages to create zmachine.js.
+
 December 2009
 ================================================================================
  + Added file.download_to_array(), with binary support.
