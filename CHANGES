@@ -4,6 +4,8 @@ January 2010
 ================================================================================
  + Added launch_zmachine() which launches the Z-Machine, late downloading the files it needs. (library.js)
  + Rearranged the packages to create zmachine.js.
+ + Defer initial scripts. (parchment.html)
+ + Added a site.yaml for DryDrop.
 
 December 2009
 ================================================================================

@@ -1,0 +1,11 @@
+handlers:
+- url: '/'
+  static_files: 'parchment.html'
+  upload: '.*'
+
+- url: '/parchment'
+  static_files: 'parchment.html'
+  upload: '.*'
+
+- url: '/'
+  static_dir: '/'
