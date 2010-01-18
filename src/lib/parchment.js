@@ -1053,7 +1053,7 @@ launch_zmachine = function( url, library )
 	var story,
 
 	// Callback to check if everything has loaded, and to launch the Z-Machine if so
-	launch = function( data )
+	callback = function( data )
 	{
 		// Are we being called with a byte array story?
 		if ( $.isArray(data) )
@@ -1063,9 +1063,29 @@ launch_zmachine = function( url, library )
 		if ( library.loaded_zmachine || 
 		     window.GnustoEngine && window.Quetzal && window.EngineRunner && window.Console && window.WebZui && story )
 		{
-		     library.loaded_zmachine = true;
-		     
-		     process_bytearray( story );
+			library.loaded_zmachine = true;
+			
+			// Start the VM
+			$('#progress-text').html('Starting interpreter...');
+			
+			var logfunc = ( window.console ) ? function() {} : function(msg) { console.log(msg); },
+
+			engine = new GnustoEngine( logfunc ),
+			zui = new WebZui( engine, logfunc ),
+			runner = new EngineRunner( engine, zui, logfunc ),
+
+			mystory = new Story( story.slice(), storyName );
+			logfunc( "Story type: " + mystory.filetype )
+			mystory.load( engine );
+
+			if ( window.location.hash )
+			{
+				var b64data = window.location.hash.slice(1);
+				engine.loadSavedGame( file.base64_decode(b64data) );
+				logfunc( 'Loading savefile' );
+			}
+
+			runner.run();
 		}
 	};
 
@@ -1079,13 +1099,13 @@ launch_zmachine = function( url, library )
 		
 		while ( i < l )
 		{
-			$.getScript( libs[i], launch );
+			$.getScript( libs[i], callback );
 			i++;
 		}
 	}
 		
 	// Download the story
-	file.download_to_array( url, launch );
+	file.download_to_array( url, callback );
 },
 
 // The Parchment Library class
@@ -1122,38 +1142,6 @@ Library = Class.extend({
 	stories: new StoryCache(),
 	savefiles: {}
 });
-
-window.gZcode = null;
-window.gStory = '';
-
-function process_bytearray( data ) {
-	gZcode = data;
-	$('#progress-text').html('Starting interpreter...');
-	_webZuiStartup();
-}
-
-function _webZuiStartup() {
-  var logfunc = function() {};
-
-  if (window.console)
-    logfunc = function(msg) { console.log(msg); };
-
-  window.engine = new GnustoEngine(logfunc);
-  var zui = new WebZui(logfunc);
-  var runner = new EngineRunner(engine, zui, logfunc);
-
-	window.story = new Story(gZcode.slice(), storyName);
-	story.load(engine);
-	logfunc("Story type: " + story.filetype);
-
-  if (window.location.hash) {
-    var b64data = window.location.hash.slice(1);
-    engine.loadSavedGame(file.base64_decode(b64data));
-    logfunc('Loading savefile');
-  }
-
-  runner.run();
-}
 
 window.Library = Library;
 

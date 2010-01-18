@@ -653,7 +653,7 @@ Console.prototype = {
 	}
 
 
-function WebZui(logfunc) {
+function WebZui( engine, logfunc) {
 	  var widthInChars = gIsIphone ? 38 : 80;
 
 	  this._size = [widthInChars, 25];
@@ -669,6 +669,8 @@ function WebZui(logfunc) {
 	  this._expectedHash = window.location.hash;
 	  this._isFixedWidth = false;
 	  this._bufferMode = 0;
+	  
+	  this.engine = engine;
 
 	this.bottom = $("#bottom");
 	this.current_input = $("#current-input");
@@ -972,7 +974,7 @@ function WebZui(logfunc) {
 	    },
 
 	    onLineInput: function(callback) {
-    	  if(window.engine.m_version <= 3) { // Redraw status line automatically in V1-V3
+    	  if ( self.engine.m_version <= 3 ) { // Redraw status line automatically in V1-V3
     	    var oldwin = self._activeWindow;
 	        var oldrev = this._reverseVideo;
 	        if (!self._console)
@@ -980,7 +982,7 @@ function WebZui(logfunc) {
 	        self._console.moveTo(0,0);
 	        self._activeWindow = 1;
 	        this._reverseVideo = true;
-	        self.onPrint(window.engine.getStatusLine(self._console.width));
+	        self.onPrint( self.engine.getStatusLine(self._console.width) );
 	        this._reverseVideo = oldrev;
 	        self._activeWindow = oldwin;
           }

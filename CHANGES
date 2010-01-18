@@ -6,6 +6,7 @@ January 2010
  + Rearranged the packages to create zmachine.js.
  + Defer initial scripts. (parchment.html)
  + Added a site.yaml for DryDrop.
+ + Encorporate _webZuiStartup() into launch_zmachine(). (library.js)
 
 December 2009
 ================================================================================
