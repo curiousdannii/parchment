@@ -1,13 +1,17 @@
 /*!
  * Parchment
  *
- * Copyright (c) 2003-2009 The Parchment Contributors
+ * Copyright (c) 2003-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
 
 // Don't append a timestamp to XHR requests
-$.ajaxSetup({cache: true});
+// Use the Last-Modified and E-Tag headers
+$.ajaxSetup({
+	cache: true,
+	ifModified: true
+});
 
 // The home for Parchment to live in
 var parchment = {};
