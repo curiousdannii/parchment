@@ -1068,7 +1068,9 @@ launch_zmachine = function( url, library )
 			// Start the VM
 			$('#progress-text').html('Starting interpreter...');
 			
-			var logfunc = ( window.console ) ? function() {} : function(msg) { console.log(msg); },
+			var logfunc = typeof console !== undefined ?
+				function() {} :
+				function(msg) { window.console.log(msg); },
 
 			engine = new GnustoEngine( logfunc ),
 			zui = new WebZui( engine, logfunc ),

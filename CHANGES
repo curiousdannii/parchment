@@ -7,6 +7,8 @@ January 2010
  + Defer initial scripts. (parchment.html)
  + Added a site.yaml for DryDrop.
  + Encorporate _webZuiStartup() into launch_zmachine(). (library.js)
+ + Update to jQuery 1.4!
+ + Fix the "console is not defined" error. (library.js)
 
 December 2009
 ================================================================================
