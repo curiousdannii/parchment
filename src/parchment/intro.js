@@ -7,10 +7,11 @@
  */
 
 // Don't append a timestamp to XHR requests
-// Use the Last-Modified/If-Modified-Since headers
+// Use the Last-Modified/If-Modified-Since headers, but not when loading from a file:
 $.ajaxSetup({
 	cache: true,
-	ifModified: true
+	dataType: 'text',
+	ifModified: location.protocol !== 'file:'
 });
 
 // The home for Parchment to live in

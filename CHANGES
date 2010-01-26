@@ -7,11 +7,11 @@ January 2010
  + Defer initial scripts. (parchment.html)
  + Added a site.yaml for DryDrop.
  + Encorporate _webZuiStartup() into launch_zmachine(). (library.js)
- + Update to jQuery 1.4!
+ + Update to jQuery 1.4 (and then 1.4.1)!
  + Fix the "console is not defined" error. (library.js)
- + Use the Last-Modified/If-Modified-Since headers. (intro.js)
+ + Use the Last-Modified/If-Modified-Since headers (except when loading from a file:). (intro.js)
  * Moved zcode.html and zcode2js.html to tools/.
- + Update to jQuery 1.4.1!
+ + Added file.support for XMLHttpRequest feature support.
 
 December 2009
 ================================================================================

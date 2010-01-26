@@ -119,8 +119,17 @@ else
 	};
 }
 
+// XMLHttpRequest feature support
+var support = (function(){
+	var xhr = jQuery.ajaxSettings.xhr();
+	return {
+		binary: xhr.overrideMimeType !== undefined,
+		cross_origin: xhr.withCredentials !== undefined
+	};
+})(),
+
 // Download a file to a byte array
-var download_to_array = function( url, callback ) {
+download_to_array = function( url, callback ) {
 	// Callback function for legacy .js storyfiles, process with base64
 	var download_base64 = function ( data ) {
 		// TODO: Investigate chunking the data
@@ -141,7 +150,6 @@ var download_to_array = function( url, callback ) {
 		// Make the request
 		// Only works on local files currently
 		$.ajax({
-			dataType: 'text',
 			error: download_error,
 			success: download_base64,
 			url: url
@@ -153,7 +161,6 @@ var download_to_array = function( url, callback ) {
 		// Only works on local files currently
 		$.ajax({
 			beforeSend: binary_charset,
-			dataType: 'text',
 			error: download_error,
 			success: download_raw,
 			url: url
@@ -201,6 +208,8 @@ window.file = {
 	array_to_text: array_to_text,
 	base64_decode: base64_decode,
 	base64_encode: base64_encode,
-	download_to_array: download_to_array
+	download_to_array: download_to_array,
+	support: support
 };
+
 })(window);
