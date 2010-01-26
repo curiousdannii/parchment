@@ -679,7 +679,7 @@ FatalError.prototype = {
  */
 
 // Don't append a timestamp to XHR requests
-// Use the Last-Modified and E-Tag headers
+// Use the Last-Modified/If-Modified-Since headers
 $.ajaxSetup({
 	cache: true,
 	ifModified: true

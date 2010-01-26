@@ -9,8 +9,9 @@ January 2010
  + Encorporate _webZuiStartup() into launch_zmachine(). (library.js)
  + Update to jQuery 1.4!
  + Fix the "console is not defined" error. (library.js)
- + Use the Last-Modified and E-Tag headers. (intro.js)
+ + Use the Last-Modified/If-Modified-Since headers. (intro.js)
  * Moved zcode.html and zcode2js.html to tools/.
+ + Update to jQuery 1.4.1!
 
 December 2009
 ================================================================================
