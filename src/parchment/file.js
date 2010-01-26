@@ -43,13 +43,11 @@ if (window.atob)
 {
 	var base64_decode = function(data, out)
 	{
-		var out = out || [];
 		return text_to_array(atob(data), out);
 	},
 
 	base64_encode = function(data, out)
 	{
-		var out = out || '';
 		return btoa(array_to_text(data, out));
 	};
 }
@@ -62,13 +60,13 @@ else
 {
 	var encoder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
 	// Run this little function to build the decoder array
-	decoder = (function(text)
+	decoder = (function()
 	{
 		var out = [], i = 0;
-		for (; i < text.length; i++)
-			out[text.charAt(i)] = i;
+		for (; i < encoder.length; i++)
+			out[encoder.charAt(i)] = i;
 		return out;
-	})(encoder),
+	})(),
 
 	base64_decode = function(data, out)
 	{
@@ -120,13 +118,11 @@ else
 }
 
 // XMLHttpRequest feature support
-var support = (function(){
-	var xhr = jQuery.ajaxSettings.xhr();
-	return {
-		binary: xhr.overrideMimeType !== undefined,
-		cross_origin: xhr.withCredentials !== undefined
-	};
-})(),
+var xhr = jQuery.ajaxSettings.xhr(),
+support = {
+	binary: xhr.overrideMimeType !== undefined,
+	cross_origin: xhr.withCredentials !== undefined
+},
 
 // Download a file to a byte array
 download_to_array = function( url, callback ) {
@@ -202,6 +198,9 @@ download_error = function ( XMLHttpRequest, textStatus ) {
 		}
 	});
 */
+
+// Clean-up and expose
+xhr = null;
 
 window.file = {
 	text_to_array: text_to_array,

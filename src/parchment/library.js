@@ -175,14 +175,14 @@ launch_zmachine = function( url, library )
 	{
 		// Get the correct files for parchment.full.html/parchment.html
 		;;; var libs = ['src/gnusto/gnusto-engine.js', 'src/plugins/quetzal.js', 'src/parchment/engine-runner.js', 'src/parchment/console.js', 'src/parchment/web-zui.js'], i = 0, l = 5;
+		;;; while ( i < l ) {
+		;;; 	$.getScript( libs[i], callback );
+		;;; 	i++;
+		;;; }
 		;;; /*
-		var libs = ['lib/gnusto.min.js', 'lib/zmachine.min.js'], i = 0, l = 2;
+		$.getScript( 'lib/gnusto.min.js', callback );
+		$.getScript( 'lib/zmachine.min.js', callback );
 		;;; */
-		while ( i < l )
-		{
-			$.getScript( libs[i], callback );
-			i++;
-		}
 	}
 		
 	// Download the story
