@@ -633,8 +633,7 @@ function WebZui(logfunc) {
 				$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
 					.keypress(self._windowKeypress)
 					.keyup(self._windowKeyup)
-					.keydown(self._windowKeydown)
-					.mousewheel(self._windowMousewheel);
+					.keydown(self._windowKeydown);
 			}
 			$(window).resize(self._windowResize);
 			 self._intervalId = window.setInterval(self._windowHashCheck, 1000);
@@ -648,16 +647,11 @@ function WebZui(logfunc) {
 				$(document).unbind('keydown', 'Ctrl+v', self._windowPasteHandler)
 					.unbind("keypress", self._windowKeypress)
 					.unbind("keyup", self._windowKeyup)
-					.unbind("keydown", self._windowKeydown)
-					.unbind("mousewheel", self._windowMousewheel);
+					.unbind("keydown", self._windowKeydown);
 			}
 			$(window).unbind("resize", self._windowResize);
 			window.clearInterval(self._intervalId);
 			},
-
-	    _windowMousewheel: function(event, delta) {
-	      window.scrollBy(0, -delta * 5);
-	    },
 
 	    // We want to make sure that all key events don't bubble up, so
 	    // that anything listening in--such as Firefox's "Search for text
