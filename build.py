@@ -11,7 +11,6 @@ includes = (
 	('src/lib/parchment.js', (
 		'src/plugins/class.js',
 		'src/plugins/iff.js',
-		'src/plugins/jquery.mousewheel.js',
 		'src/plugins/jquery.hotkeys.js',
 		'src/plugins/querystring.js',
 		'src/plugins/remedial.js',

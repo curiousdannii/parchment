@@ -85,7 +85,6 @@ html {
 body {
     font-family: palatino, georgia, verdana, arial, sans-serif;
     text-align: center;
-    overflow: hidden;
     margin-top: 0px;
     margin-bottom: 8px;
 }
