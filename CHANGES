@@ -3,6 +3,7 @@ Change log started August 2009.
 February 2010
 ================================================================================
  - Removed jquery.mousewheel.js and associated event handlers, and switched back to normal scrolling.
+ - The uncompressed packages shouldn't be stored in git. Moved them to .build/
  
 January 2010
 ================================================================================
