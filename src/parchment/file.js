@@ -1,7 +1,7 @@
 /*
  * File functions and classes
  *
- * Copyright (c) 2003-2009 The Parchment Contributors
+ * Copyright (c) 2003-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
@@ -9,6 +9,8 @@
 
 // Saved regexps
 var base64_wrapper = /\(['"](.+)['"]\)/,
+
+extend = $.extend,
 
 // Text to byte array and vice versa
 text_to_array = function(text, array)
@@ -127,42 +129,72 @@ support = {
 // Download a file to a byte array
 download_to_array = function( url, callback ) {
 	// Callback function for legacy .js storyfiles, process with base64
-	var download_base64 = function ( data ) {
+	var download_legacy = function ( data ) {
 		// TODO: Investigate chunking the data
 		callback( base64_decode( base64_wrapper.exec(data)[1] ));
 	},
 	
 	// Callback function for raw binary data
 	download_raw = function ( data ) {
-		// Check to see if this could actually be base64 encoded
+		// Check to see if this could actually be base64 encoded?
+		callback( text_to_array( data ));
+	},
 	
-		callback(text_to_array(data));
+	// Callback function for base64 encoded data
+	download_base64 = function ( data ) {
+		callback( base64_decode( data ));
+	},
+	
+	// Scheme regexps
+	scheme = /:\/\//,
+	filescheme = /^file:\/\//,
+	
+	// Standard ajax options
+	options = {
+		error: download_error,
+		url: url
 	};
 
 	// What are we trying to download here?
 
-	// Looks like a legacy .js storyfile
-	if ( url.slice(-3).toLowerCase() === '.js' ) {
-		// Make the request
-		// Only works on local files currently
-		$.ajax({
-			error: download_error,
-			success: download_base64,
-			url: url
-		});
+	// file:// but no binary support: Fail.
+	if ( !support.binary && ( filescheme.test( url ) || filescheme.test( location ) && !scheme.test( url ) ) ) {
+		throw new FatalError("Can't load local files with this browser, sorry!");
+	}
 
-	// Downloading a raw binary file
-	} else {
-		// Make the request
-		// Only works on local files currently
-		$.ajax({
-			beforeSend: binary_charset,
-			error: download_error,
-			success: download_raw,
-			url: url
+	// We need to use a proxy server if we can't directly load the file :(
+	if ( !support.binary || ( !support.cross_origin && scheme.test( url ) ) )) {
+		extend( options, {
+			data: {
+				encode: 'base64',
+				url: url
+			},
+			success: download_base64,
+			url: parchment.options.proxy_url
 		});
 	}
 
+	// Binary support :)!
+	if ( support.binary ) {
+		extend( options, {
+			beforeSend: binary_charset,
+			success: download_base64
+		});
+		
+		// Turn off base64 encoding if we're using a proxy
+		if ( options['data'] ) {
+			options['data']['encode'] = 'raw';
+		}
+	}
+	
+	// Looks like a legacy .js storyfile
+	if ( url.slice(-3).toLowerCase() === '.js' ) {
+		// Only works on local files currently
+		options['success'] = download_legacy;
+	}
+	
+	// Get the file
+	$.ajax(options);
 },
 
 // Change the charset for binary data
