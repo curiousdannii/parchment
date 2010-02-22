@@ -851,12 +851,3 @@ function WebZui( engine, logfunc) {
 	    $("#iphone-text-field").click(onClick);
 	  }
 	}
-
-FatalError.prototype.onError = function(e) {
-  var message = e.message;
-  if (typeof e.message == "string")
-    message = message.entityify();
-  $("#content").append('<div class="error">An error occurred:<br/>' +
-                       '<pre>' + message + '\n\n' + e.traceback +
-                       '</pre></div>');
-};

@@ -124,25 +124,15 @@ var xhr = jQuery.ajaxSettings.xhr(),
 support = {
 	binary: xhr.overrideMimeType !== undefined,
 	cross_origin: xhr.withCredentials !== undefined
+//	cross_origin: 0
 },
 
 // Download a file to a byte array
-download_to_array = function( url, callback ) {
+download_to_array = function( url, callback, force_proxy ) {
 	// Callback function for legacy .js storyfiles, process with base64
 	var download_legacy = function ( data ) {
 		// TODO: Investigate chunking the data
 		callback( base64_decode( base64_wrapper.exec(data)[1] ));
-	},
-	
-	// Callback function for raw binary data
-	download_raw = function ( data ) {
-		// Check to see if this could actually be base64 encoded?
-		callback( text_to_array( data ));
-	},
-	
-	// Callback function for base64 encoded data
-	download_base64 = function ( data ) {
-		callback( base64_decode( data ));
 	},
 	
 	// Scheme regexps
@@ -163,22 +153,36 @@ download_to_array = function( url, callback ) {
 	}
 
 	// We need to use a proxy server if we can't directly load the file :(
-	if ( !support.binary || ( !support.cross_origin && scheme.test( url ) ) )) {
+	if ( force_proxy || !support.binary || ( !support.cross_origin && scheme.test( url ) ) ) {
 		extend( options, {
 			data: {
 				encode: 'base64',
 				url: url
 			},
-			success: download_base64,
+			success: function ( data ) {
+				callback( base64_decode( data ));
+			},
 			url: parchment.options.proxy_url
 		});
 	}
 
 	// Binary support :)!
+	// TODO: consider doing a proper OPTIONS request?
 	if ( support.binary ) {
 		extend( options, {
 			beforeSend: binary_charset,
-			success: download_base64
+			success: function ( data, status, xhr ) {
+				// If We're not allowed to do cross-origin requests it will still be successful :|
+				if ( data == '' )
+				{
+					// Try again, but force the use of a proxy server
+					download_to_array( url, callback, true );
+					return;
+				}
+
+				// Check to see if this could actually be base64 encoded?
+				callback( text_to_array( data ));
+			}
 		});
 		
 		// Turn off base64 encoding if we're using a proxy

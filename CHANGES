@@ -4,6 +4,9 @@ February 2010
 ================================================================================
  - Removed jquery.mousewheel.js and associated event handlers, and switched back to normal scrolling.
  - The uncompressed packages shouldn't be stored in git. Moved them to .build/
+ + Move FatalError.prototype.onError from web-zui.js to error-handling.js so we can display errors before web-zui.js is loaded.
+ + file.download_to_array() now uses a proxy server if it needs to.
+ + Update to jQuery 1.4.2.
  
 January 2010
 ================================================================================
