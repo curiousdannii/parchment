@@ -381,6 +381,9 @@ function handleZ_get_prop_addr(engine, a) {
 function handleZ_get_next_prop(engine, a) {
     return engine._storer("_get_next_prop("+a[0]+','+a[1]+')');
   }
+  
+// Should add/mul/div also check for overflows?
+
 function handleZ_add(engine, a) {
     return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
 /***
@@ -391,7 +394,7 @@ function handleZ_sub(engine, a) {
 // Subtract and store
 function handleZ_sub(engine, a)
 {
-	return engine._storer(a[0] + ' - 1 * ' + a[1]);
+	return engine._storer( '(' + a[0] + ' - 1 * ' + a[1] + ') & 0xFFFF' );
 }
 
 function handleZ_mul(engine, a) {
