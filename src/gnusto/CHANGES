@@ -1,5 +1,9 @@
 Change log started July 2009.
 
+February 2010
+================================================================================
+ + Fixed an overflow bug in handleZ_sub() which had been causing the illegal object number bug.
+ 
 September 2009
 ================================================================================
  + Added IFF.write()
