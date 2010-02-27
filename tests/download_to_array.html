@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>download_to_array() tests</title>
+	<script src='qunit/qunit.js'></script>
+	<script src='../lib/jquery.min.js'></script>
+	<script src='../src/parchment/file.js'></script>
+	<link rel='stylesheet' href='qunit/qunit.css'>
+	<script>
+	
+// The default parchment options
+var parchment = {
+	options: {
+		proxy_url: 'http://2.latest.zcode.appspot.com/proxy/'
+	}
+},
+
+local_file = './unicode.z5',
+http_file = 'http://parchment.googlecode.com/svn/trunk/tests/unicode.z5';
+
+// Fletcher's checksum, from wikipedia
+function checksum(data)
+{
+	var sum1 = 0xff, sum2 = 0xff, len = data.length, tlen, i = 0;
+
+	while (len)
+	{
+		tlen = len > 21 ? 21 : len;
+		len -= tlen;
+		do
+		{
+			sum1 += data[i++];
+			sum2 += sum1;
+		} while (--tlen);
+		sum1 = (sum1 & 0xff) + (sum1 >> 8);
+		sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	}
+	/* Second reduction step to reduce sums to 8 bits */
+	sum1 = (sum1 & 0xff) + (sum1 >> 8);
+	sum2 = (sum2 & 0xff) + (sum2 >> 8);
+	return sum2 << 8 | sum1;
+}
+
+function download_success( data )
+{
+	ok( true, 'Successful download' );
+	equals( checksum(data), 42185, 'Correct checksum' );
+	start();
+}
+
+$(function(){
+
+	// Tests which must be run from a local file system
+	module( 'Local file system' );
+
+	if ( location.protocol == 'file:' )
+	{
+		// Test 1:
+		test( '#1 file: without binary support', 1, function()
+		{
+			try
+			{
+				file.support.binary = 0;
+				file.download_to_array( local_file, $.noop );
+			}
+			catch (e)
+			{
+				ok( true, 'Error thrown for file: without binary support (' + e + ')' );
+			}
+		});
+			
+		// Test 2: load a local file
+		asyncTest( '#2 file: loading file:', 2, function()
+		{
+			try
+			{
+				file.support.binary = 1;
+				file.download_to_array( local_file, download_success );
+			}
+			catch (e)
+			{
+				expect(1);
+				ok( false, 'Error thrown (' + e + ')' );
+				start();
+			}
+		});
+	}
+	else
+	{
+		test( 'download this test suite and run locally for the local file system tests', 0, $.noop );
+	}
+
+	// Tests which must be run over HTTP
+	module( 'HTTP' );
+
+	if ( location.protocol != 'file:' )
+	{
+		// Test 3:
+		test( '#3 loading a file: from HTTP', 1, function()
+		{
+			try
+			{
+				file.support.binary = 1;
+				file.download_to_array( 'file:///anything.z5', $.noop );
+			}
+			catch (e)
+			{
+				ok( true, 'Error thrown for file: from HTTP (' + e + ')' );
+			}
+		});
+	
+	
+		// Test 6: load a file on the same domain
+		asyncTest( '#6 load a file on the same domain', 2, function()
+		{
+			try
+			{
+				file.support.binary = 1;
+				file.download_to_array( local_file, download_success );
+			}
+			catch (e)
+			{
+				expect(1);
+				ok( false, 'Error thrown (' + e + ')' );
+				start();
+			}
+		});
+	}
+	else
+	{
+		test( 'run this test suite from a webserver for the HTTP tests', 1, function()
+		{
+			ok( true, 'Or run them from Parchment\'s server <http://parchment-if.appspot.com/tests/download_to_array.html>' );
+		});
+	}
+	
+	// Tests which can run locally or over HTTP
+	module( 'Anywhere' );
+
+/*
+	// Test 2/6: load a file on the same domain
+	asyncTest( '#2/6 load a file on the same domain', 2, function()
+	{
+		try
+		{
+			file.support.binary = 1;
+			file.download_to_array( local_file, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+*/
+
+	// Test 4:
+	asyncTest( '#4 load with XSS / without binary support (should load b64 from proxy)', 2, function()
+	{
+		try
+		{
+			file.support = {
+				binary: 0,
+				cross_origin: 1
+			};
+			file.download_to_array( http_file, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+	
+	// Test 5:
+	asyncTest( '#5 load with neither XSS nor binary support (should load b64 from proxy using jsonp)', 2, function()
+	{
+		try
+		{
+			file.support = {
+				binary: 0,
+				cross_origin: 0
+			};
+			file.download_to_array( http_file, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+
+	// Test 7:
+	asyncTest( '#7 load with binary / without XSS support (should load from proxy using jsonp)', 2, function()
+	{
+		try
+		{
+			file.support = {
+				binary: 1,
+				cross_origin: 0
+			};
+			file.download_to_array( http_file, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+
+	// Test 8:
+	asyncTest( '#8 load with binary and XSS support (should attempt to load the file directly)', 2, function()
+	{
+		try
+		{
+			file.support = {
+				binary: 1,
+				cross_origin: 1
+			};
+			file.download_to_array( http_file, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+
+});
+  
+	</script>
+</head>
+<body>
+	<h1 id='qunit-header'>download_to_array() tests</h1>
+	<h2 id='qunit-banner'></h2>
+	<h2 id='qunit-userAgent'></h2>
+	<ol id='qunit-tests'></ol>
+</body>
+</html>
