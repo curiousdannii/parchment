@@ -160,10 +160,8 @@ $(function(){
 	{
 		try
 		{
-			file.support = {
-				binary: 0,
-				cross_origin: 1
-			};
+			file.support.binary = 0;
+			file.support.cross_origin = 1;
 			file.download_to_array( http_file, download_success );
 		}
 		catch (e)
@@ -179,10 +177,8 @@ $(function(){
 	{
 		try
 		{
-			file.support = {
-				binary: 0,
-				cross_origin: 0
-			};
+			file.support.binary = 0;
+			file.support.cross_origin = 0;
 			file.download_to_array( http_file, download_success );
 		}
 		catch (e)
@@ -198,10 +194,8 @@ $(function(){
 	{
 		try
 		{
-			file.support = {
-				binary: 1,
-				cross_origin: 0
-			};
+			file.support.binary = 1;
+			file.support.cross_origin = 0;
 			file.download_to_array( http_file, download_success );
 		}
 		catch (e)
@@ -217,10 +211,8 @@ $(function(){
 	{
 		try
 		{
-			file.support = {
-				binary: 1,
-				cross_origin: 1
-			};
+			file.support.binary = 1;
+			file.support.cross_origin = 1;
 			file.download_to_array( http_file, download_success );
 		}
 		catch (e)
