@@ -3,7 +3,7 @@
 <head>
 	<title>download_to_array() tests</title>
 	<script src='qunit/qunit.js'></script>
-	<script src='../lib/jquery.min.js'></script>
+	<script src='../src/lib/jquery.js'></script>
 	<script src='../src/parchment/file.js'></script>
 	<link rel='stylesheet' href='qunit/qunit.css'>
 	<script>
@@ -41,6 +41,27 @@ function checksum(data)
 	return sum2 << 8 | sum1;
 }
 
+// A generic test function
+function test_download( title, url, binary, cross_origin )
+{
+	asyncTest( title, 2, function()
+	{
+		try
+		{
+			file.support.binary = binary;
+			file.support.cross_origin = cross_origin;
+			file.download_to_array( url, download_success );
+		}
+		catch (e)
+		{
+			expect(1);
+			ok( false, 'Error thrown (' + e + ')' );
+			start();
+		}
+	});
+}
+
+// XHR callback
 function download_success( data )
 {
 	ok( true, 'Successful download' );
@@ -55,7 +76,6 @@ $(function(){
 
 	if ( location.protocol == 'file:' )
 	{
-		// Test 1:
 		test( '#1 file: without binary support', 1, function()
 		{
 			try
@@ -68,22 +88,8 @@ $(function(){
 				ok( true, 'Error thrown for file: without binary support (' + e + ')' );
 			}
 		});
-			
-		// Test 2: load a local file
-		asyncTest( '#2 file: loading file:', 2, function()
-		{
-			try
-			{
-				file.support.binary = 1;
-				file.download_to_array( local_file, download_success );
-			}
-			catch (e)
-			{
-				expect(1);
-				ok( false, 'Error thrown (' + e + ')' );
-				start();
-			}
-		});
+		
+		test_download( '#4 file: loading file', local_file, 1, 1 );
 	}
 	else
 	{
@@ -95,8 +101,7 @@ $(function(){
 
 	if ( location.protocol != 'file:' )
 	{
-		// Test 3:
-		test( '#3 loading a file: from HTTP', 1, function()
+		test( '#2 loading a file: from HTTP', 1, function()
 		{
 			try
 			{
@@ -109,22 +114,7 @@ $(function(){
 			}
 		});
 	
-	
-		// Test 6: load a file on the same domain
-		asyncTest( '#6 load a file on the same domain', 2, function()
-		{
-			try
-			{
-				file.support.binary = 1;
-				file.download_to_array( local_file, download_success );
-			}
-			catch (e)
-			{
-				expect(1);
-				ok( false, 'Error thrown (' + e + ')' );
-				start();
-			}
-		});
+		test_download( '#5 load a file on the same domain', local_file, 1, 1 );
 	}
 	else
 	{
@@ -137,94 +127,18 @@ $(function(){
 	// Tests which can run locally or over HTTP
 	module( 'Anywhere' );
 
-/*
-	// Test 2/6: load a file on the same domain
-	asyncTest( '#2/6 load a file on the same domain', 2, function()
-	{
-		try
-		{
-			file.support.binary = 1;
-			file.download_to_array( local_file, download_success );
-		}
-		catch (e)
-		{
-			expect(1);
-			ok( false, 'Error thrown (' + e + ')' );
-			start();
-		}
-	});
-*/
+	test_download( '#3 load legacy file', './unicode.z5.js', 1, 1 );
 
-	// Test 4:
-	asyncTest( '#4 load with XSS / without binary support (should load b64 from proxy)', 2, function()
-	{
-		try
-		{
-			file.support.binary = 0;
-			file.support.cross_origin = 1;
-			file.download_to_array( http_file, download_success );
-		}
-		catch (e)
-		{
-			expect(1);
-			ok( false, 'Error thrown (' + e + ')' );
-			start();
-		}
-	});
+	test_download( '#6 load with binary and XSS support (should attempt to load the file directly)', http_file, 1, 1 );
+
+	test_download( '#7 load with XSS / without binary support (should load b64 from proxy)', http_file, 0, 1 );
 	
-	// Test 5:
-	asyncTest( '#5 load with neither XSS nor binary support (should load b64 from proxy using jsonp)', 2, function()
-	{
-		try
-		{
-			file.support.binary = 0;
-			file.support.cross_origin = 0;
-			file.download_to_array( http_file, download_success );
-		}
-		catch (e)
-		{
-			expect(1);
-			ok( false, 'Error thrown (' + e + ')' );
-			start();
-		}
-	});
+	test_download( '#8 load with neither XSS nor binary support (should load b64 from proxy using jsonp)', http_file, 0, 0 );
 
-	// Test 7:
-	asyncTest( '#7 load with binary / without XSS support (should load from proxy using jsonp)', 2, function()
-	{
-		try
-		{
-			file.support.binary = 1;
-			file.support.cross_origin = 0;
-			file.download_to_array( http_file, download_success );
-		}
-		catch (e)
-		{
-			expect(1);
-			ok( false, 'Error thrown (' + e + ')' );
-			start();
-		}
-	});
-
-	// Test 8:
-	asyncTest( '#8 load with binary and XSS support (should attempt to load the file directly)', 2, function()
-	{
-		try
-		{
-			file.support.binary = 1;
-			file.support.cross_origin = 1;
-			file.download_to_array( http_file, download_success );
-		}
-		catch (e)
-		{
-			expect(1);
-			ok( false, 'Error thrown (' + e + ')' );
-			start();
-		}
-	});
+	test_download( '#9 load with binary / without XSS support (should load b64 from proxy using jsonp)', http_file, 1, 0 );
 
 });
-  
+
 	</script>
 </head>
 <body>
