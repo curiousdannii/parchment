@@ -249,10 +249,32 @@ function handleZ_je(engine, a) {
   }
 
 function handleZ_jl(engine, a) {
-    return engine._brancher(a[0]+'<'+a[1]); }
+	// Convert both arguments to signed for the comparison.
+	var t1code, t2code;
+	if (isNotConst.test(a[0]))
+		t1code = 't=' + a[0] + ';t=((t & 0x8000 ? ~0xFFFF : 0) | t);';
+	else
+		t1code = 't=' + engine._unsigned2signed(a[0]) + ';';
+	if (isNotConst.test(a[1]))
+		t2code = 't2=' + a[1] + ';t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);';
+	else
+		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
+	return t1code + t2code + engine._brancher('t<t2'); 
+}
 
 function handleZ_jg(engine, a) {
-    return engine._brancher(a[0]+'>'+a[1]); }
+	// Convert both arguments to signed for the comparison.
+	var t1code, t2code;
+	if (isNotConst.test(a[0]))
+		t1code = 't=' + a[0] + ';t=((t & 0x8000 ? ~0xFFFF : 0) | t);';
+	else
+		t1code = 't=' + engine._unsigned2signed(a[0]) + ';';
+	if (isNotConst.test(a[1]))
+		t2code = 't2=' + a[1] + ';t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);';
+	else
+		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
+	return t1code + t2code + engine._brancher('t>t2'); 
+}
 /***
 function handleZ_dec_chk(engine, a) {
     return 't='+a[0]+';t2=_varcode_get(t)-1;_varcode_set(t2,t);'+engine._brancher('t2<'+a[1]);
@@ -267,12 +289,26 @@ function handleZ_inc_chk(engine, a) {
 
 function handleZ_inc_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '+', 1) + engine._brancher('tmp_' + temp_var + ' > ' + a[1]);
+	var tcode, t2code;
+	tcode = handleZ_incdec(engine, a[0], '+', 1);
+	// Convert both arguments to signed for the comparison.
+	if (isNotConst.test(a[1]))
+		t2code = 't2=' + a[1] + ';t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);';
+	else
+		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
+	return tcode + t2code + 'tmp_'+temp_var+'=(('+'tmp_'+temp_var+' & 0x8000 ? ~0xFFFF : 0) | '+'tmp_'+temp_var+');' + engine._brancher('tmp_'+temp_var+' > t2');
 }
 
 function handleZ_dec_chk(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '-', 1) + engine._brancher('tmp_' + temp_var + ' < ' + a[1]);
+	var tcode, t2code;
+	tcode = handleZ_incdec(engine, a[0], '-', 1);
+	// Convert both arguments to signed for the comparison.
+	if (isNotConst.test(a[1]))
+		t2code = 't2=' + a[1] + ';t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);';
+	else
+		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
+	return tcode + t2code + 'tmp_'+temp_var+'=(('+'tmp_'+temp_var+' & 0x8000 ? ~0xFFFF : 0) | '+'tmp_'+temp_var+');' + engine._brancher('tmp_'+temp_var+' < t2');
 }
 
 function handleZ_jin(engine, a) {
@@ -282,10 +318,10 @@ function handleZ_test(engine, a) {
     return 't='+a[1]+';'+engine._brancher('('+a[0]+'&t)==t');
   }
 function handleZ_or(engine, a) {
-    return engine._storer('('+a[0]+'|'+a[1]+')&0xffff');
+    return engine._storer('('+a[0]+'|'+a[1]+')');
   }
 function handleZ_and(engine, a) {
-    return engine._storer(a[0]+'&'+a[1]+'&0xffff');
+    return engine._storer('('+a[0]+'&'+a[1]+')');
   }
 function handleZ_test_attr(engine, a) {
     return engine._brancher('_test_attr('+a[0]+','+a[1]+')');
@@ -313,11 +349,17 @@ function handleZ_store(engine, a)
 {
 	if (isNotConst.test(a[0]))
 		engine.logger('Z_store', a[0]);
+	if (engine.m_value_asserts) {
+		if (a[0] == null || a[0] === true || a[0] === false || a[0] < 0 || a[0] > 0xFFFF)
+			engine.logger('Z_store address', a[0]);
+		if (a[1] == null || a[1] === true || a[1] === false || a[1] < 0 || a[1] > 0xFFFF)
+			engine.logger('Z_store value', a[1]);
+	}
 
 	if (a[0] == 0)
 		return 'm_gamestack.push(' + a[1] + ')';
 	else if (a[0] < 16)
-		return 'm_locals[' + a[0] + ' - 1] = ' + a[1];
+		return 'm_locals[' + (a[0]-1) + '] = ' + a[1];
 	else
 	{
 		// If the variable is a function rather than a constant it will have to be determined at run time
@@ -329,7 +371,7 @@ function handleZ_store(engine, a)
 		// If we are setting a constant get the high and low bytes at compile time
 		if (!isNotConst.test(a[1]))
 		{
-			var value = (a[1] & 0x8000 ? ~0xFFFF : 0) | a[1];
+			var value = a[1];
 			return code + 'm_memory[' + high + '] = ' + ((value >> 8) & 0xFF) + ';' +
 				'm_memory[' + low + '] = ' + (value & 0xFF);
 		}
@@ -337,7 +379,6 @@ function handleZ_store(engine, a)
 		{
 			var tmp = 'tmp_' + (++temp_var);
 			return code + 'var ' + tmp + ' = ' + a[1] + ';' +
-				tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
 				'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
 				'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
 		}
@@ -351,26 +392,29 @@ function handleZ_insert_obj(engine, a) {
 // Load an array word
 function handleZ_loadw(engine, a)
 {
-	// Inline this getWord call
-	//return engine._storer("getWord((1*"+a[0]+"+2*"+a[1]+")&0xFFFF)");
+	// Inline this getUnsignedWord call
+	//return engine._storer("getUnsignedWord(("+a[0]+"+2*"+a[1]+")&0xFFFF)");
 
 	// Calculate the address
+	// BUG: fails to wrap if the address is split across addresses 0xFFFF
+	// and 0x0000. I don't care. --Z
 	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
 		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF, ',
-			addr = 'tmp_' + temp_var;
+			addr = 'tmp_' + temp_var,
+			addr1 = addr+'+1';
 	else
 		var code = 'var ',
-			addr = (a[0] + 2 * a[1]) & 0xFFFF;
+			addr = (a[0] + 2 * a[1]) & 0xFFFF,
+			addr1 = addr+1;
 
 	// Get the value and store it
 	var tmp = 'tmp_' + (++temp_var);
-	return code + tmp + ' = (m_memory[' + addr + '] << 8) | m_memory[' + addr + ' + 1];' +
-		tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ');' +
+	return code + tmp + ' = (m_memory[' + addr + '] << 8) | m_memory[' + addr1 + '];' +
 		engine._storer(tmp);
 }
 
 function handleZ_loadb(engine, a) {
-    return engine._storer("m_memory[0xFFFF&(1*"+a[0]+"+1*"+a[1]+")]");
+    return engine._storer("m_memory[0xFFFF&("+a[0]+"+"+a[1]+")]");
   }
 function handleZ_get_prop(engine, a) {
     return engine._storer("_get_prop("+a[0]+','+a[1]+')');
@@ -385,7 +429,7 @@ function handleZ_get_next_prop(engine, a) {
 // Should add/mul/div also check for overflows?
 
 function handleZ_add(engine, a) {
-    return engine._storer(a[0]+'*1+'+a[1]+'*1'); }
+    return engine._storer( '(' + a[0]+' + '+a[1] + ') & 0xFFFF'); }
 /***
 function handleZ_sub(engine, a) {
     return engine._storer(a[0]+'-'+a[1]); }
@@ -394,16 +438,16 @@ function handleZ_sub(engine, a) {
 // Subtract and store
 function handleZ_sub(engine, a)
 {
-	return engine._storer( '(' + a[0] + ' - 1 * ' + a[1] + ') & 0xFFFF' );
+	return engine._storer( '(' + a[0] + ' - ' + a[1] + ') & 0xFFFF' );
 }
 
 function handleZ_mul(engine, a) {
-    return engine._storer(a[0]+'*'+a[1]); }
+    return engine._storer( '(' + a[0]+'*'+a[1] + ') & 0xFFFF'); }
 function handleZ_div(engine, a) {
     return engine._storer('_trunc_divide('+a[0]+','+a[1]+')');
   }
 function handleZ_mod(engine, a) {
-    return engine._storer(a[0]+'%'+a[1]);
+    return engine._storer('_trunc_modulo('+a[0]+','+a[1]+')');
   }
 function handleZ_set_colour(engine, a) {
     return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_STYLE+",-1,"+a[0]+','+a[1]+"];return";
@@ -466,9 +510,9 @@ function handleZ_incdec(engine, variable, sign, varRequired)
 
 	var tmp = 'tmp_' + (++temp_var);
 	if (variable == 0)
-		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_gamestack[m_gamestack.length - 1];';
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + '(m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1]'+sign+'1)&0xFFFF);';
 	else if (variable < 0x10)
-		return (varRequired ? 'var ' + tmp + ' = ' : '') + sign + sign + 'm_locals[' + variable + ' - 1];';
+		return (varRequired ? 'var ' + tmp + ' = ' : '') + '(m_locals[' + (variable-1) + '] = (m_locals[' + (variable-1) + ']'+sign+'1)&0xFFFF);';
 	else
 	{
 		// If the variable is a function rather than a constant it will have to be determined at run time
@@ -479,7 +523,7 @@ function handleZ_incdec(engine, variable, sign, varRequired)
 
 		// Get the value from memory and inc/dec it!
 		return code + tmp + ' = (m_memory[' + add + '] << 8) | m_memory[' + add + ' + 1];' +
-			tmp + ' = ((' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ') ' + sign + ' 1;' +
+			tmp + ' = (' + tmp + ' ' + sign + ' 1) & 0xFFFF;' +
 			'm_memory[' + add + '] = (' + tmp + ' >> 8) & 0xFF;' +
 			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
@@ -548,7 +592,7 @@ function handleZ_ret_popped(engine, a) {
 function handleZ_catch(engine, a) {
     // The stack frame cookie is specified by Quetzal 1.3b s6.2
     // to be the number of frames on the stack.
-    return engine._storer("call_stack.length");
+    return engine._storer("m_call_stack.length");
 }
 
 function handleZ_pop(engine, a) {
@@ -626,7 +670,7 @@ function handleZ_call_vs(engine, a) {
 ////////////////////////////////////////////////////////////////
 /***
 function handleZ_store_w(engine, a) {
-    return "setWord("+a[2]+",1*"+a[0]+"+2*"+a[1]+")";
+    return "setWord("+a[2]+","+a[0]+"+2*"+a[1]+")";
   }
 ***/
 
@@ -635,29 +679,31 @@ function handleZ_store_w(engine, a)
 {
 	// Calculate the address
 	if (isNotConst.test(a[0]) || isNotConst.test(a[1]))
-		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF;', addr = 'tmp_' + temp_var;
+		var code = 'var tmp_' + (++temp_var) + ' = (' + a[0] + ' + 2 * ' + a[1] + ') & 0xFFFF;', addr = 'tmp_' + temp_var, addr1 = addr+'+1';
 	else
-		var code = '', addr = (a[0] + 2 * a[1]) & 0xFFFF;
+		var code = '', addr = (a[0] + 2 * a[1]) & 0xFFFF, addr1 = addr+1;
 
 	// If we are setting a constant get the high and low bytes at compile time
 	if (!isNotConst.test(a[2]))
 	{
-		var value = (a[2] & 0x8000 ? ~0xFFFF : 0) | a[2];
-		return code + 'm_memory[' + addr + '] = ' + ((value >> 8) & 0xFF) + ';' +
-			'm_memory[' + addr + ' + 1] = ' + (value & 0xFF);
+    if (engine.m_value_asserts) {
+      if (a[2] == null || a[2] === true || a[2] === false || a[2] < 0 || a[2] > 0xFFFF)
+        engine.logger('Z_store_w value', a[2]);
+    }
+		return code + 'm_memory[' + addr + '] = ' + ((a[2] >> 8) & 0xFF) + ';' +
+			'm_memory[' + addr1 + '] = ' + (a[2] & 0xFF);
 	}
 	else
 	{
 		var tmp = 'tmp_' + (++temp_var);
 		return code + 'var ' + tmp + ' = ' + a[2] + ';' +
-			tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';' +
 			'm_memory[' + addr + '] = (' + tmp + ' >> 8) & 0xFF;' +
-			'm_memory[' + addr + ' + 1] = ' + tmp + ' & 0xFF;';
+			'm_memory[' + addr1 + '] = ' + tmp + ' & 0xFF;';
 	}
 }
 
 function handleZ_storeb(engine, a) {
-    return "setByte("+a[2]+",1*"+a[0]+"+1*"+a[1]+")";
+    return "setByte("+a[2]+",("+a[0]+"+"+a[1]+")&0xFFFF)";
   }
 
 function handleZ_putprop(engine, a) {
@@ -770,7 +816,7 @@ function handleZ_print_char(engine, a) {
     return engine._handler_zOut('_zscii_char_to_ascii('+a[0]+')',0);
 }
 function handleZ_print_num(engine, a) {
-    return engine._handler_zOut(a[0],0);
+    return engine._handler_zOut('_unsigned2signed('+a[0]+')',0);
 }
 function handleZ_random(engine, a) {
     return engine._storer("_random_number("+a[0]+")");
@@ -794,7 +840,7 @@ function handleZ_set_window(engine, a) {
   }
 function handleZ_erase_window(engine, a) {
     engine.m_compilation_running=0;
-    return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_ERASEWINDOW+","+a[0]+"];return";
+    return "m_pc="+engine.m_pc+";m_effects=["+GNUSTO_EFFECT_ERASEWINDOW+","+engine._unsigned2signed(a[0])+"];return";
   }
 function handleZ_erase_line(engine, a) {
     engine.m_compilation_running=0;
@@ -916,7 +962,7 @@ function handleZ_not(engine, a) {
 }
 
 function handleZ_tokenise(engine, a) {
-    return "_tokenise(("+a[0]+")&0xFFFF,("+a[1]+")&0xFFFF,"+a[2]+","+a[3]+")";
+    return "_tokenise("+a[0]+","+a[1]+","+a[2]+","+a[3]+")";
   }
 
 function handleZ_encode_text(engine, a) {
@@ -975,7 +1021,7 @@ function handleZ_restoreV45678(engine, a) {
 }
 
 function handleZ_log_shift(engine, a) {
-    // log_shift logarithmic-bit-shift.  Right shifts are zero-padded
+    // logical-bit-shift.  Right shifts are zero-padded
     return engine._storer("_log_shift("+a[0]+','+a[1]+')');
   }
 
@@ -1324,6 +1370,7 @@ function pc_translate_v8(p)   { return '(('+p+')&0xFFFF)*8'; }
 function gnusto_error(number) {
 
 		message ='Component: engine\n';
+		message += 'Code: ' + number + '\n';
 
 		for (var i=1; i<arguments.length; i++) {
 				if (arguments[i] && arguments[i].toString) {
@@ -1961,6 +2008,7 @@ GnustoEngine.prototype = {
       this.m_copperTrail = 0;
 
       this.m_version     = this.m_memory[0];
+      this.m_original_memory = this.m_memory.slice(); // Make a copy.
 
       this.m_himem       = this.getUnsignedWord(0x4);
       this.m_pc          = this.getUnsignedWord(0x6);
@@ -1983,8 +2031,6 @@ GnustoEngine.prototype = {
       }
 
       this.m_hext_start  = this.getUnsignedWord(0x36);
-
-      this.m_original_memory = this.m_memory.slice(); // Make a copy.
 
       // Use the correct addressing mode for this Z-machine version...
 
@@ -2143,25 +2189,9 @@ GnustoEngine.prototype = {
 
 // Inlined some of these functions...
 
-  getByte: function ge_getbyte(address) {
-    if (address<0) { address &= 0xFFFF; }
-    return this.m_memory[address];
-  },
-
-  setByte: function ge_setByte(value, address) {
-    if (address<0) { address &= 0xFFFF; }
-    this.m_memory[address] = value;
-  },
-
-  getWord: function ge_getWord(address) {
-    if (address<0) { address &= 0xFFFF; }
-//    return this._unsigned2signed((this.m_memory[address]<<8)|
-//																 this.m_memory[address+1]);
-		var value = (this.m_memory[address] << 8) | this.m_memory[address + 1];
-		return ((value & 0x8000) ? ~0xFFFF : 0) | value;
-  },
-
   _unsigned2signed: function ge_unsigned2signed(value) {
+    // The argument must be between 0 and 0xFFFF!
+    // The return value will be signed (-8000..7FFF).
     return ((value & 0x8000)?~0xFFFF:0)|value;
   },
 
@@ -2169,13 +2199,67 @@ GnustoEngine.prototype = {
     return value & 0xFFFF;
   },
 
+	// Note that getByte/getWord can read any memory address. setByte/setWord
+	// only work on RAM addresses.
+
+  getByte: function ge_getbyte(address) {
+    if (engine.m_value_asserts) {
+      if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
+        engine.logger('getByte addr', address);
+			var val = this.m_memory[address];
+      if (val == null || val === true || val === false || val < 0 || val > 0xFF)
+        engine.logger('getByte byte', val);
+    }
+    return this.m_memory[address];
+  },
+
+  setByte: function ge_setByte(value, address) {
+		// The value is safely truncated, but the address must be valid
+    if (engine.m_value_asserts) {
+      if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
+        engine.logger('setByte addr', address);
+    }
+    this.m_memory[address] = value & 0xFF;
+  },
+
+  getWord: function ge_getWord(address) {
+    // The return value will be signed (-8000..7FFF).
+    if (engine.m_value_asserts) {
+      if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
+        engine.logger('getWord addr', address);
+			var val = this.m_memory[address];
+      if (val == null || val === true || val === false || val < 0 || val > 0xFF)
+        engine.logger('getWord high byte', val);
+			var val = this.m_memory[address+1];
+      if (val == null || val === true || val === false || val < 0 || val > 0xFF)
+        engine.logger('getWord low byte', val);
+    }
+//    return this._unsigned2signed((this.m_memory[address]<<8)|
+//																 this.m_memory[address+1]);
+		var value = (this.m_memory[address] << 8) | this.m_memory[address + 1];
+		return ((value & 0x8000) ? ~0xFFFF : 0) | value;
+  },
+
   getUnsignedWord: function ge_getUnsignedWord(address) {
-    if (address<0) { address &= 0xFFFF; }
+    if (engine.m_value_asserts) {
+      if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
+				engine.logger('getUnsignedWord addr', address);
+			var val = this.m_memory[address];
+      if (val == null || val === true || val === false || val < 0 || val > 0xFF)
+        engine.logger('getUnsignedWord high byte', val);
+			var val = this.m_memory[address+1];
+      if (val == null || val === true || val === false || val < 0 || val > 0xFF)
+        engine.logger('getUnsignedWord low byte', val);
+    }
     return (this.m_memory[address]<<8)|this.m_memory[address+1];
   },
 
   setWord: function ge_setWord(value, address) {
-    if (address<0) { address &= 0xFFFF; }
+		// The value is safely truncated, but the address must be valid
+    if (engine.m_value_asserts) {
+      if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
+        engine.logger('setWord', address);
+    }
 //			this.setByte((value>>8) & 0xFF, address);
 		this.m_memory[address] = (value >> 8) & 0xFF;
 //		this.setByte((value) & 0xFF, address+1);
@@ -2195,7 +2279,7 @@ GnustoEngine.prototype = {
 					if (current==0xC000) {
 							return code;
 					} else if (current==0x0000) {
-							args[argcursor++] = this.getWord(this.m_pc);
+							args[argcursor++] = this.getUnsignedWord(this.m_pc);
 							this.m_pc+=2;
 					} else if (current==0x4000) {
 							args[argcursor++] = this.m_memory[this.m_pc++];
@@ -2230,6 +2314,10 @@ GnustoEngine.prototype = {
 					var args = [];
 
 					this_instr_pc = this.m_pc;
+					if (engine.m_value_asserts) {
+						if (this_instr_pc == null || this_instr_pc < 0 || this_instr_pc >= this.m_original_memory.length)
+							gnusto_error(206, this_instr_pc);
+					}
 
 					// Add the touch (see bug 4687). This lets us track progress simply.
 //				touch() has a huge overhead and without tracing there's no need for it. Whether this replacement is even useful is a good question...
@@ -2270,7 +2358,7 @@ GnustoEngine.prototype = {
 
 					switch(instr & 0x30) {
 						case 0x00:
-							args[0] = this.getWord(this.m_pc);
+							args[0] = this.getUnsignedWord(this.m_pc);
 							this.m_pc+=2;
 							instr = (instr & 0x0F) | 0x80;
 							break;
@@ -2382,6 +2470,7 @@ GnustoEngine.prototype = {
 	},
 
 	_set_output_stream: function ge_set_output_stream(target, address) {
+ 			target = this._unsigned2signed(target);
 			if (target==0) {
 					// then it's a no-op.
 			} else if (target==1) {
@@ -2419,8 +2508,9 @@ GnustoEngine.prototype = {
 	},
 
 	_trunc_divide: function ge_trunc_divide(over, under) {
-
 			var result;
+      over = this._unsigned2signed(over);
+      under = this._unsigned2signed(under);
 
 			if (under==0) {
 					gnusto_error(701); // division by zero
@@ -2430,11 +2520,22 @@ GnustoEngine.prototype = {
 			result = over / under;
 
 			if (result > 0) {
-					return Math.floor(result);
+					return Math.floor(result) & 0xFFFF;
 			} else {
-					return Math.ceil(result);
+					return Math.ceil(result) & 0xFFFF;
+			}
+	},
+
+	_trunc_modulo: function ge_trunc_modulo(over, under) {
+      over = this._unsigned2signed(over);
+      under = this._unsigned2signed(under);
+
+			if (under==0) {
+					gnusto_error(701); // division by zero
+					return 0;
 			}
 
+			return (over % under) & 0xFFFF;
 	},
 
 	_zscii_char_to_ascii: function ge_zscii_char_to_ascii(zscii_code) {
@@ -2500,6 +2601,7 @@ GnustoEngine.prototype = {
 	},
 
 	_random_number: function ge_random_number(arg) {
+ 			arg = this._unsigned2signed(arg);
 
 			if (arg==0) {
 
@@ -2597,7 +2699,7 @@ GnustoEngine.prototype = {
 							if (i3<actuals.length) {
 									templocals.push(actuals[i3]);
 							} else {
-									templocals.push(this.getWord(this.m_pc));
+									templocals.push(this.getUnsignedWord(this.m_pc));
 							}
 							this.m_pc += 2;
 					}
@@ -2924,7 +3026,7 @@ GnustoEngine.prototype = {
 					// Versions before z5 don't have terminating character tables.
 					return '\r';
 			} else {
-					var terms_address = this.getWord(0x2e);
+					var terms_address = this.getUnsignedWord(0x2e);
 
 					var result = '\r';
 					while(1) {
@@ -3016,7 +3118,11 @@ GnustoEngine.prototype = {
 	},
 
 	_get_prop_len: function ge_get_prop_len(address) {
-			address &= 0xFFFF;
+	    if (engine.m_value_asserts) {
+				if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
+			 		engine.logger('get_prop_len', address);
+			}
+
 			if (this.m_version<4) {
 					return 1+(this.m_memory[address-1] >> 5);
 			} else {
@@ -3081,18 +3187,18 @@ GnustoEngine.prototype = {
 
 			var temp = this._property_search(object, property, -1);
 
-			// Correct negative addresses
-			if (temp[0] < 0)
-				temp[0] &= 0xFFFF;
+	    if (engine.m_value_asserts) {
+				if (temp[0] == null || temp[0] === true || temp[0] === false || temp[0] < 0 || temp[0] >= this.m_stat_start)
+			 		engine.logger('get_prop', temp[0]);
+			}
 
 			if (temp[1] == 1)
 				return this.m_memory[temp[0]];
 			else if (temp[1] == 2)
 			{
-				// Inline this call to getWord()
-				//return this.getWord(temp[0]);
-				var value = (this.m_memory[temp[0]] << 8) | this.m_memory[temp[0] + 1];
-				return ((value & 0x8000) ? ~0xFFFF : 0) | value;
+				// Inline this call to getUnsignedWord()
+				//return this.getUnsignedWord(temp[0]);
+				return (this.m_memory[temp[0]] << 8) | this.m_memory[temp[0] + 1];
 			}
 			else
 			{
@@ -3106,7 +3212,7 @@ GnustoEngine.prototype = {
 
 					// gnusto_error(706, object, property);
 
-					return this.getWord(temp[0]);
+					return this.getUnsignedWord(temp[0]);
 			}
 
 			gnusto_error(174); // impossible
@@ -3238,9 +3344,9 @@ GnustoEngine.prototype = {
 			}
 
 			if (address[1]==1) {
-					this.setByte(value & 0xff, address[0]);
+					this.setByte(value, address[0]);
 			} else if (address[1]==2) {
-					this.setWord(value&0xffff, address[0]);
+					this.setWord(value, address[0]);
 			} else {
 					gnusto_error(705); // weird length
 			}
@@ -3366,6 +3472,8 @@ GnustoEngine.prototype = {
 
 	// Implements @copy_table, as in the Z-spec.
 	_copy_table: function ge_copy_table(first, second, size) {
+ 			size = this._unsigned2signed(size);
+
 			if (second==0) {
 
 					// Zero out the first |size| bytes of |first|.
@@ -3870,7 +3978,7 @@ GnustoEngine.prototype = {
 			} else if (varcode < 0x10) {
 					return 'm_locals['+(varcode-1)+']';
 			} else {
-					return 'getWord('+(this.m_vars_start+(varcode-16)*2)+')';
+					return 'getUnsignedWord('+(this.m_vars_start+(varcode-16)*2)+')';
 			}
 
 			gnusto_error(170, 'code_for_varcode'); // impossible
@@ -3890,8 +3998,7 @@ GnustoEngine.prototype = {
 		{
 			var high = this.m_vars_start + (variable - 16) * 2, low = high + 1;
 			var tmp = 'tmp_' + (++temp_var);
-			code = 'var ' + tmp + ' = (m_memory[' + high + '] << 8) | m_memory[' + low + '];' +
-				tmp + ' = (' + tmp + ' & 0x8000 ? ~0xFFFF : 0) | ' + tmp + ';';
+			code = 'var ' + tmp + ' = (m_memory[' + high + '] << 8) | m_memory[' + low + '];';
 			arg = tmp;
 		}
 		return [code, arg];
@@ -3916,7 +4023,7 @@ GnustoEngine.prototype = {
 			} else if (varcode < 0x10) {
 					return this.m_locals[(varcode-1)];
 			} else {
-					return this.getWord(this.m_vars_start+(varcode-16)*2);
+					return this.getUnsignedWord(this.m_vars_start+(varcode-16)*2);
 			}
 
 			gnusto_error(170, 'varcode_get'); // impossible
@@ -4114,20 +4221,23 @@ GnustoEngine.prototype = {
 	},
 
 	_log_shift: function ge_log_shift(value, shiftbits) {
-			// log_shift logarithmic-bit-shift.  Right shifts are zero-padded
-			if (shiftbits < 0) {
-					return (value >>> (-1* shiftbits)) & 0x7FFF;
+			// logical-bit-shift.  Right shifts are zero-padded
+      // the arguments are unsigned, remember
+			if (shiftbits & 0x8000) {
+					return (value >>> (0x10000-shiftbits)) & 0xFFFF;
 			} else {
-					return (value << shiftbits) & 0x7FFF;
+					return (value << shiftbits) & 0xFFFF;
 			}
 	},
 
 	_art_shift: function ge_art_shift(value, shiftbits) {
 			// arithmetic-bit-shift.  Right shifts are sign-extended
-			if (shiftbits < 0) {
-					return (value >> (-1* shiftbits)) & 0x7FFF;
+      // the arguments are unsigned, remember
+      value = engine._unsigned2signed(value);
+			if (shiftbits & 0x8000) {
+					return (value >> (0x10000-shiftbits)) & 0xFFFF;
 			} else {
-					return (value << shiftbits) &0x7FFF;
+					return (value << shiftbits) & 0xFFFF;
 			}
 	},
 
@@ -4440,6 +4550,8 @@ GnustoEngine.prototype = {
   m_single_step: 0,
   m_debug_mode: 0,
   m_parser_debugging: 0,
+  // assert when any value outside 0..FFFF is written or read
+  m_value_asserts: 0,
 
   // Hash of breakpoints. If compile() reaches one of these, it will stop
   // before executing that instruction with GNUSTO_EFFECT_BREAKPOINT, and the

@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+March 2010
+================================================================================
+ + Zarf made many changes to Gnusto to remove signed data from the memory, and correct for overflows etc.
+
 February 2010
 ================================================================================
  - Removed jquery.mousewheel.js and associated event handlers, and switched back to normal scrolling.
