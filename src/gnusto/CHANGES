@@ -1,5 +1,10 @@
 Change log started July 2009.
 
+March 2010
+================================================================================
+ + Zarf made many changes to remove signed data from the memory, and correct for overflows etc.
+ + Fix a typo in @catch.
+
 February 2010
 ================================================================================
  + Fixed an overflow bug in handleZ_sub() which had been causing the illegal object number bug.
