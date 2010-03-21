@@ -71,6 +71,79 @@ function download_success( data )
 
 $(function(){
 
+	// What are we trying to download here?
+	/*
+		Page	Data	Binary	Backup	#	Action
+		http	file					1	Fail
+		file	file	0		0		2	Fail
+			legacy						3	Load legacy file
+			same		1				4	Load directly
+			same		0		1		5	Load encoded backup file directly
+										6	Load from proxy (base64 + JSONP)
+	*/
+
+	// Tests which must be run over HTTP
+	module( 'HTTP' );
+
+	if ( location.protocol != 'file:' )
+	{
+		test( '#1 file: loaded from http:', 1, function()
+		{
+			try
+			{
+				file.support.binary = 1;
+				file.download_to_array( 'file:///anything.z5', $.noop );
+			}
+			catch (e)
+			{
+				ok( true, 'Error thrown for file: from HTTP (' + e + ')' );
+			}
+		});
+	}
+	else
+	{
+		test( 'run this test suite from a webserver for the HTTP tests', 1, function()
+		{
+			ok( true, 'Or run them from Parchment\'s server <http://parchment-if.appspot.com/tests/download_to_array.html>' );
+		});
+	}
+
+	// Tests which must be run from a local file system
+	module( 'Local file system' );
+
+	if ( location.protocol == 'file:' )
+	{
+		test( '#2 file: with neither binary support nor a backup encoded file', 1, function()
+		{
+			try
+			{
+				file.support.binary = 0;
+				file.download_to_array( local_file, $.noop );
+			}
+			catch (e)
+			{
+				ok( true, 'Error thrown for file: without binary support (' + e + ')' );
+			}
+		});
+	}
+	else
+	{
+		test( 'download this test suite and run locally for the local file system tests', 0, $.noop );
+	}
+
+	// Tests which can run locally or over HTTP
+	module( 'Anywhere' );
+
+	test_download( '#3 Load legacy file', './unicode.z5.js', 1, 1 );
+
+	test_download( '#4 Local file with binary support', local_file, 1, 1 );
+
+	test_download( '#5 Load encoded backup file directly', [local_file, local_file + '.txt'], 0, 1 );
+	
+	test_download( '#6 Load from proxy (base64 + JSONP)', http_file, 0, 0 );
+
+// Old tests
+/*
 	// Tests which must be run from a local file system
 	module( 'Local file system' );
 
@@ -136,6 +209,7 @@ $(function(){
 	test_download( '#8 load with neither XSS nor binary support (should load b64 from proxy using jsonp)', http_file, 0, 0 );
 
 	test_download( '#9 load with binary / without XSS support (should load b64 from proxy using jsonp)', http_file, 1, 0 );
+*/
 
 });
 

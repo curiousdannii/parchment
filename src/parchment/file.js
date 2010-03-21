@@ -116,7 +116,8 @@ else
 // XMLHttpRequest feature support
 var xhr = jQuery.ajaxSettings.xhr(),
 support = {
-	binary: xhr.overrideMimeType !== undefined,
+	// Unfortunately Opera's overrideMimeType() doesn't work
+	binary: xhr.overrideMimeType !== undefined && !$.browser.opera,
 	cross_origin: xhr.withCredentials !== undefined
 //	cross_origin: 0
 };
@@ -130,22 +131,101 @@ function download_to_array( url, callback )
 	// URL regexp
 	var urldomain = /^(file:|(\w+:)?\/\/[^\/?#]+)/,
 	
+	// If url is an array we are being given a binary and a backup encoded file
+	backup_url;
+	if ( $.isArray( url ) )
+	{
+		backup_url = url[1];
+		url = url[0];
+	}
+	
 	// Test the page and data URLs
-	page_domain = urldomain.exec(location)[0],
+	var page_domain = urldomain.exec(location)[0],
 	data_exec = urldomain.exec(url),
 	data_domain = data_exec ? data_exec[0] : page_domain,
-	
+
 	// Standard ajax options
 	options = {
-		data: {},
 		error: function ( XMLHttpRequest, textStatus )
 		{
 			throw new FatalError('Error loading story: ' + textStatus);
-		},
-		url: url
+		}
 	};
+
+	// What are we trying to download here?
+	/*
+		Page	Data	Binary	Backup	#	Action
+		http	file					1	Fail
+		file	file	0		0		2	Fail
+			legacy						3	Load legacy file
+			same		1				4	Load directly
+			same		0		1		5	Load encoded backup file directly
+										6	Load from proxy (base64 + JSONP)
+	*/
+
+	// Case #1: file: loaded from http:
+	// Case #2: file: with neither binary support nor a backup encoded file
+	if ( data_domain == 'file:' && ( page_domain != data_domain || ( !support.binary && !backup_url ) ) )
+	{
+		throw "Can't load local files with this browser, sorry!";
+	}
+
+	// Case #3: Load legacy file
+	if ( url.slice(-3).toLowerCase() == '.js' )
+	{
+		var processBase64Zcode = function( data )
+		{
+			callback( base64_decode( data ));
+			delete window['processBase64Zcode'];
+		};
+		window['processBase64Zcode'] = processBase64Zcode;
+		$.getScript( url );
+		return;
+	}
+
+	// Case #4: Local file with binary support
+	if ( support.binary && page_domain == data_domain )
+	{
+		options.beforeSend = function ( XMLHttpRequest )
+		{
+			XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+		};
+		options.success = function ( data )
+		{
+			// Check to see if this could actually be base64 encoded?
+			callback( text_to_array( $.trim( data )));
+		};
+		options.url = url;
+	}
+	
+	// Cases #5/6: Load base64 encoded data
+	else
+	{
+		options.success = function ( data )
+		{
+			callback( base64_decode( $.trim( data )));
+		};
+		
+		// Case #5: Load encoded backup file directly
+		if ( page_domain == data_domain && backup_url )
+		{
+			options.url = backup_url;
+		}
+		
+		// Case #6: Load from proxy (base64 + JSONP)
+		else
+		{
+			options.data = {
+				encode: 'base64',
+				url: url
+			};
+			options.dataType = 'jsonp';
+			options.url = parchment.options.proxy_url;
+		}
+	}
 	
 	// What are we trying to download here?
+	// Old list... will leave here for now, until we add cross origin requests again
 	/*
 		Parchment	Data	Binary	XSS	#	Action
 					file	0			1	Fail
@@ -160,6 +240,7 @@ function download_to_array( url, callback )
 											TODO: investigate options.scriptCharset so #9 can load raw
 	*/
 
+/*
 	// Case #1: file: but no binary support: Fail.
 	// Case #2: file: loaded from http:
 	if ( data_domain == 'file:' && ( !support.binary || page_domain != data_domain ) )
@@ -214,6 +295,7 @@ function download_to_array( url, callback )
 			options.data.encode = 'base64';
 		}
 	}
+*/
 	
 	// Log the options for debugging
 	;;; if ( window.console && console.log ) console.log( options );

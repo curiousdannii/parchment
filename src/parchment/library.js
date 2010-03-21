@@ -211,11 +211,14 @@ Library = Class.extend({
 		{
 			$('#progress-text').html('Retrieving story file...');
 			// When Glulx support is added we will need to sniff the filename to decide which to launch
-			launch_zmachine( url, this );
-			//if (url.slice(-3).toLowerCase() == '.js')
-			//	$.getScript(url);
-			//else
-			//	$.getScript(parchment.options.zcode_appspot_url + '?url=' + escape(url) + '&jsonp=processZcodeAppspotResponse');
+			try
+			{
+				launch_zmachine( url, this );
+			}
+			catch (e)
+			{
+				throw new FatalError( e );
+			}
 		}
 	},
 
