@@ -173,12 +173,11 @@ function download_to_array( url, callback )
 	// Case #3: Load legacy file
 	if ( url.slice(-3).toLowerCase() == '.js' )
 	{
-		var processBase64Zcode = function( data )
+		window['processBase64Zcode'] = function( data )
 		{
 			callback( base64_decode( data ));
 			delete window['processBase64Zcode'];
 		};
-		window['processBase64Zcode'] = processBase64Zcode;
 		$.getScript( url );
 		return;
 	}

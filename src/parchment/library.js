@@ -129,7 +129,7 @@ StoryCache = Class.extend({
 launch_zmachine = function( url, library )
 {
 	// Store the story in this closure so we can still launch when things load out of order
-	var story,
+	var story, files = 1, timer,
 
 	// Callback to check if everything has loaded, and to launch the Z-Machine if so
 	callback = function( data )
@@ -138,11 +138,24 @@ launch_zmachine = function( url, library )
 		if ( $.isArray(data) )
 			story = data;
 		
+		if ( --files == 0 )
+		{
+			// Theoretically everything has been loaded now... though that may not be the case in reality
+			// Call stage2() with a timer in case we have to wait a little longer.
+			timer = setInterval( stage2, 10 );
+		}
+	},
+	
+	// Truly launch it now
+	stage2 = function()
+	{
 		// Check that everything has loaded
 		if ( library.loaded_zmachine || 
 		     window.GnustoEngine && window.Quetzal && window.EngineRunner && window.Console && window.WebZui && story )
 		{
+			// Everything is here, finally
 			library.loaded_zmachine = true;
+			clearInterval( timer );
 			
 			// Start the VM
 			$('#progress-text').html('Starting interpreter...');
@@ -174,12 +187,14 @@ launch_zmachine = function( url, library )
 	if ( !library.loaded_zmachine )
 	{
 		// Get the correct files for parchment.full.html/parchment.html
+		;;; files = 6;
 		;;; var libs = ['src/gnusto/gnusto-engine.js', 'src/plugins/quetzal.js', 'src/parchment/engine-runner.js', 'src/parchment/console.js', 'src/parchment/web-zui.js'], i = 0, l = 5;
 		;;; while ( i < l ) {
 		;;; 	$.getScript( libs[i], callback );
 		;;; 	i++;
 		;;; }
 		;;; /*
+		files = 3;
 		$.getScript( 'lib/gnusto.min.js', callback );
 		$.getScript( 'lib/zmachine.min.js', callback );
 		;;; */

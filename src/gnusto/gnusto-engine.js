@@ -2203,36 +2203,36 @@ GnustoEngine.prototype = {
 	// only work on RAM addresses.
 
   getByte: function ge_getbyte(address) {
-    if (engine.m_value_asserts) {
+    if (this.m_value_asserts) {
       if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
-        engine.logger('getByte addr', address);
+        this.logger('getByte addr', address);
 			var val = this.m_memory[address];
       if (val == null || val === true || val === false || val < 0 || val > 0xFF)
-        engine.logger('getByte byte', val);
+        this.logger('getByte byte', val);
     }
     return this.m_memory[address];
   },
 
   setByte: function ge_setByte(value, address) {
 		// The value is safely truncated, but the address must be valid
-    if (engine.m_value_asserts) {
+    if (this.m_value_asserts) {
       if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
-        engine.logger('setByte addr', address);
+        this.logger('setByte addr', address);
     }
     this.m_memory[address] = value & 0xFF;
   },
 
   getWord: function ge_getWord(address) {
     // The return value will be signed (-8000..7FFF).
-    if (engine.m_value_asserts) {
+    if (this.m_value_asserts) {
       if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
-        engine.logger('getWord addr', address);
+        this.logger('getWord addr', address);
 			var val = this.m_memory[address];
       if (val == null || val === true || val === false || val < 0 || val > 0xFF)
-        engine.logger('getWord high byte', val);
+        this.logger('getWord high byte', val);
 			var val = this.m_memory[address+1];
       if (val == null || val === true || val === false || val < 0 || val > 0xFF)
-        engine.logger('getWord low byte', val);
+        this.logger('getWord low byte', val);
     }
 //    return this._unsigned2signed((this.m_memory[address]<<8)|
 //																 this.m_memory[address+1]);
@@ -2241,24 +2241,24 @@ GnustoEngine.prototype = {
   },
 
   getUnsignedWord: function ge_getUnsignedWord(address) {
-    if (engine.m_value_asserts) {
+    if (this.m_value_asserts) {
       if (address == null || address === true || address === false || address < 0 || address >= this.m_original_memory.length)
-				engine.logger('getUnsignedWord addr', address);
+				this.logger('getUnsignedWord addr', address);
 			var val = this.m_memory[address];
       if (val == null || val === true || val === false || val < 0 || val > 0xFF)
-        engine.logger('getUnsignedWord high byte', val);
+        this.logger('getUnsignedWord high byte', val);
 			var val = this.m_memory[address+1];
       if (val == null || val === true || val === false || val < 0 || val > 0xFF)
-        engine.logger('getUnsignedWord low byte', val);
+        this.logger('getUnsignedWord low byte', val);
     }
     return (this.m_memory[address]<<8)|this.m_memory[address+1];
   },
 
   setWord: function ge_setWord(value, address) {
 		// The value is safely truncated, but the address must be valid
-    if (engine.m_value_asserts) {
+    if (this.m_value_asserts) {
       if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
-        engine.logger('setWord', address);
+        this.logger('setWord', address);
     }
 //			this.setByte((value>>8) & 0xFF, address);
 		this.m_memory[address] = (value >> 8) & 0xFF;
@@ -2314,7 +2314,7 @@ GnustoEngine.prototype = {
 					var args = [];
 
 					this_instr_pc = this.m_pc;
-					if (engine.m_value_asserts) {
+					if (this.m_value_asserts) {
 						if (this_instr_pc == null || this_instr_pc < 0 || this_instr_pc >= this.m_original_memory.length)
 							gnusto_error(206, this_instr_pc);
 					}
@@ -3118,9 +3118,9 @@ GnustoEngine.prototype = {
 	},
 
 	_get_prop_len: function ge_get_prop_len(address) {
-	    if (engine.m_value_asserts) {
+	    if (this.m_value_asserts) {
 				if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
-			 		engine.logger('get_prop_len', address);
+			 		this.logger('get_prop_len', address);
 			}
 
 			if (this.m_version<4) {
@@ -3187,9 +3187,9 @@ GnustoEngine.prototype = {
 
 			var temp = this._property_search(object, property, -1);
 
-	    if (engine.m_value_asserts) {
+	    if (this.m_value_asserts) {
 				if (temp[0] == null || temp[0] === true || temp[0] === false || temp[0] < 0 || temp[0] >= this.m_stat_start)
-			 		engine.logger('get_prop', temp[0]);
+			 		this.logger('get_prop', temp[0]);
 			}
 
 			if (temp[1] == 1)
@@ -4233,7 +4233,7 @@ GnustoEngine.prototype = {
 	_art_shift: function ge_art_shift(value, shiftbits) {
 			// arithmetic-bit-shift.  Right shifts are sign-extended
       // the arguments are unsigned, remember
-      value = engine._unsigned2signed(value);
+      value = this._unsigned2signed(value);
 			if (shiftbits & 0x8000) {
 					return (value >> (0x10000-shiftbits)) & 0xFFFF;
 			} else {
