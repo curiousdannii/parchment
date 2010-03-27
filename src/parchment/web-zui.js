@@ -173,7 +173,7 @@
 	}
 
 
-function WebZui( engine, logfunc) {
+function WebZui( library, engine, logfunc) {
 	  var widthInChars = gIsIphone ? 38 : 80;
 
 	  this._size = [widthInChars, 25];
@@ -190,6 +190,7 @@ function WebZui( engine, logfunc) {
 	  this._isFixedWidth = false;
 	  this._bufferMode = 0;
 	  
+	  this.library = library;
 	  this.engine = engine;
 
 	this.bottom = $("#bottom");
@@ -518,7 +519,7 @@ function WebZui( engine, logfunc) {
       // (e.g. Google Gears, HTML 5 database storage, etc) if
       // available; if none are available, we should return false.
 
-      var saveKey = gStory + '_saveData';
+      var saveKey = this.library.url + '_saveData';
       var b64data = file.base64_encode(data);
 
       if (window.globalStorage && location.href.slice(0, 5) != 'file:')
@@ -541,7 +542,7 @@ function WebZui( engine, logfunc) {
         b64data = window.location.hash.slice(1);
 
       if (!b64data && window.globalStorage) {
-        var saveData = globalStorage[location.hostname][gStory + '_saveData'];
+        var saveData = globalStorage[location.hostname][this.library.url + '_saveData'];
         if (saveData)
           b64data = saveData.value;
       }

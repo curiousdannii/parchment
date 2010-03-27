@@ -165,7 +165,7 @@ launch_zmachine = function( url, library )
 				function(msg) { window.console.log(msg); },
 
 			engine = new GnustoEngine( logfunc ),
-			zui = new WebZui( engine, logfunc ),
+			zui = new WebZui( library, engine, logfunc ),
 			runner = new EngineRunner( engine, zui, logfunc ),
 
 			mystory = new Story( story.slice(), storyName );
@@ -211,7 +211,9 @@ Library = Class.extend({
 	{
 		// Load from URL, or the default story
 		var querystring = new Querystring(),
-		url = querystring.get('story', parchment.options.default_story);
+		storyfile = querystring.get('story', parchment.options.default_story),
+		url = $.isArray( storyfile ) ? storyfile[0] : storyfile;
+		this.url = url;
 
 		storyName = url.slice( url.lastIndexOf("/") + 1 );
 		storyName = storyName ? storyName + " - Parchment" : "Parchment";
@@ -228,7 +230,7 @@ Library = Class.extend({
 			// When Glulx support is added we will need to sniff the filename to decide which to launch
 			try
 			{
-				launch_zmachine( url, this );
+				launch_zmachine( storyfile, this );
 			}
 			catch (e)
 			{
