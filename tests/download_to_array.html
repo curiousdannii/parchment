@@ -71,6 +71,10 @@ function download_success( data )
 
 $(function(){
 
+	// Save a copy of the original file.support
+	var binary_support = file.support.binary,
+	cross_origin_support = file.support.cross_origin;
+
 	// What are we trying to download here?
 	/*
 		Page	Data	Binary	Backup	#	Action
@@ -141,6 +145,9 @@ $(function(){
 	test_download( '#5 Load encoded backup file directly', [local_file, local_file + '.txt'], 0, 1 );
 	
 	test_download( '#6 Load from proxy (base64 + JSONP)', http_file, 0, 0 );
+	
+	// Test the browser's default support
+	test_download( 'Default browser support', http_file, binary_support, cross_origin_support );
 
 // Old tests
 /*
