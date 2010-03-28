@@ -7,6 +7,7 @@ March 2010
  + If an array is passed to download_to_array() the second element is treated as a backup base64 file.
  + Fixed some problems in Gnusto caused by refering to engine rather than this.
  + The launch_zmachine() callback now runs in two stages, in case it is run prematurely.
+ + Fix page up/down support.
 
 February 2010
 ================================================================================

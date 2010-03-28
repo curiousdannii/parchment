@@ -6,6 +6,8 @@
 	var UP_KEYCODE = 38;
 	var RIGHT_KEYCODE = 39;
 	var DOWN_KEYCODE = 40;
+var PAGEUP_KEYCODE = 33,
+PAGEDOWN_KEYCODE = 34;
 
 	var ZSCII_UP = 129;
 	var ZSCII_DOWN = 130;
@@ -264,7 +266,8 @@ function WebZui( library, engine, logfunc) {
 	    // keystrokes before they get to us in the future.
 
 	    _isHotKey: function(event) {
-	      return (event.altKey || event.ctrlKey || event.metaKey);
+	      // Don't process hotkeys, OR page up/down
+	      return (event.altKey || event.ctrlKey || event.metaKey || event.keyCode == PAGEUP_KEYCODE || event.keyCode == PAGEDOWN_KEYCODE);
 	    },
 
 	    _iphoneKeyup: function(event) {
