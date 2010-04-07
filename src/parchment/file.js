@@ -144,13 +144,7 @@ function download_to_array( url, callback )
 	data_exec = urldomain.exec(url),
 	data_domain = data_exec ? data_exec[0] : page_domain,
 
-	// Standard ajax options
-	options = {
-		error: function ( XMLHttpRequest, textStatus )
-		{
-			throw new FatalError('Error loading story: ' + textStatus);
-		}
-	};
+	options = {};
 
 	// What are we trying to download here?
 	/*
@@ -185,26 +179,23 @@ function download_to_array( url, callback )
 	// Case #4: Local file with binary support
 	if ( support.binary && page_domain == data_domain )
 	{
-		options.beforeSend = function ( XMLHttpRequest )
-		{
-			XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+		options = {
+			beforeSend: function ( XMLHttpRequest )
+			{
+				XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+			},
+			success: function ( data )
+			{
+				// Check to see if this could actually be base64 encoded?
+				callback( text_to_array( $.trim( data )));
+			},
+			url: url
 		};
-		options.success = function ( data )
-		{
-			// Check to see if this could actually be base64 encoded?
-			callback( text_to_array( $.trim( data )));
-		};
-		options.url = url;
 	}
 	
 	// Cases #5/6: Load base64 encoded data
 	else
-	{
-		options.success = function ( data )
-		{
-			callback( base64_decode( $.trim( data )));
-		};
-		
+	{	
 		// Case #5: Load encoded backup file directly
 		if ( page_domain == data_domain && backup_url )
 		{
@@ -214,13 +205,20 @@ function download_to_array( url, callback )
 		// Case #6: Load from proxy (base64 + JSONP)
 		else
 		{
-			options.data = {
-				encode: 'base64',
-				url: url
+			options = {
+				data: {
+					encode: 'base64',
+					url: url
+				},
+				dataType: 'jsonp',
+				url: parchment.options.proxy_url
 			};
-			options.dataType = 'jsonp';
-			options.url = parchment.options.proxy_url;
 		}
+		
+		options.success = function ( data )
+		{
+			callback( base64_decode( $.trim( data )));
+		};
 	}
 	
 	// What are we trying to download here?
@@ -300,6 +298,10 @@ function download_to_array( url, callback )
 	;;; if ( window.console && console.log ) console.log( options );
 	
 	// Get the file
+	options.error = function ( XMLHttpRequest, textStatus )
+	{
+		throw new FatalError('Error loading story: ' + textStatus);
+	};
 	$.ajax(options);
 }
 

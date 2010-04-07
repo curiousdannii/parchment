@@ -1036,17 +1036,15 @@ function handleZ_set_font(engine, a) {
   }
 
 function handleZ_save_undo(engine, a) {
-		// 3 is the distance between the PC at the moment we call save_undo
-		// and the varcode which gives the place to store the success code.
-		// This is different for other similar instructions, such as @save.
-    return engine._storer('_save_undo(3)');
+		// Gnusto can't be relied upon to have the correct PC at runtime, so store it at compile time instead
+    return engine._storer( '_save_undo(' + engine.m_pc + ')' );
 }
 
 function handleZ_restore_undo(engine, a) {
 		// If the restore was successful, return from this block immediately
 		// so that execution can continue with the new PC value. If that
 		// doesn't happen, it must have failed, so store zero.
-    return 'if(_restore_undo(3))return;'+engine._storer('0');
+    return 'if(_restore_undo())return;'+engine._storer('0');
 }
 
 function handleZ_print_unicode(engine, a) {
@@ -4269,8 +4267,21 @@ GnustoEngine.prototype = {
 			this.m_pc = address;
 	},
 
-	_save_undo: function ge_save_undo(varcode_offset) {
-			this.m_undo = this._saveable_state(varcode_offset);
+	_save_undo: function ge_save_undo( pc ) {
+			// Save the game state
+			// As Gnusto can't be relied upon to have the correct PC at runtime, we store it at compile time
+			this.m_undo.push({
+					'm_call_stack': this.m_call_stack.slice(),
+					'm_locals': this.m_locals.slice(),
+					'm_locals_stack': this.m_locals_stack.slice(),
+					'm_param_counts': this.m_param_counts.slice(),
+					'm_result_targets': this.m_result_targets.slice(),
+					'm_gamestack': this.m_gamestack.slice(),
+          'm_gamestack_callbreaks': this.m_gamestack_callbreaks.slice(),
+          'm_memory': this.m_memory.slice(0, this.m_stat_start),
+					'm_resultvar': this.m_memory[pc], // move onto target varcode,
+					'm_pc': pc + 1
+			});
 			return 1;
 	},
 
@@ -4288,30 +4299,27 @@ GnustoEngine.prototype = {
 	//
 	_restore_undo: function ge_restore_undo() {
 
-			if (typeof this.m_undo != 'object') {
+			if (this.m_undo.length == 0) {
 					// No undo information is saved in m_undo.
 					return 0;
 			}
 
-			this.m_call_stack = this.m_undo.m_call_stack;
-			this.m_locals = this.m_undo.m_locals;
-			this.m_locals_stack = this.m_undo.m_locals_stack;
-			this.m_param_counts = this.m_undo.m_param_counts;
-			this.m_result_targets = this.m_undo.m_result_targets;
-			this.m_gamestack = this.m_undo.m_gamestack;
-      this.m_gamestack_callbreaks = this.m_undo.m_gamestack_callbreaks;
-			var mem = this.m_undo.m_memory;
+			// Get the most recent undo save data
+			var undo_data = this.m_undo.pop();
+
+			this.m_call_stack =undo_data.m_call_stack;
+			this.m_locals = undo_data.m_locals;
+			this.m_locals_stack = undo_data.m_locals_stack;
+			this.m_param_counts = undo_data.m_param_counts;
+			this.m_result_targets = undo_data.m_result_targets;
+			this.m_gamestack = undo_data.m_gamestack;
+      this.m_gamestack_callbreaks = undo_data.m_gamestack_callbreaks;
+			var mem = undo_data.m_memory;
 			this.m_memory = mem.concat(this.m_memory.slice(mem.length));
 
-			// The PC we're given is actually pointing at the varcode
-			// into which the success code must be stored. It should be 2.
-			// (This is specified by section 5.8 of the Quetzal document,
-			// version 1.4.)
-			this._varcode_set(2, this.m_memory[this.m_undo.m_pc]);
-			this.m_pc = this.m_undo.m_pc+1;
-
-			// OK, clear that out so we can't un-undo.
-			this.m_undo = 0;
+			// Set the @save_undo result var to 2, and fix the PC
+			this._varcode_set(2, undo_data.m_resultvar);
+			this.m_pc = undo_data.m_pc;
 
 			return 1;
 	},
@@ -4594,6 +4602,7 @@ GnustoEngine.prototype = {
   m_pc_translate_for_routine: pc_translate_v45,
   m_pc_translate_for_string: pc_translate_v45,
 
+	// An array of undo save data.
 	// If this is an object, it should contain copies of other
 	// properties of the engine object with the same names,
 	// backed up for @save_undo. These should be the same as
@@ -4602,9 +4611,8 @@ GnustoEngine.prototype = {
 	//    m_pc points at the } address (<z5)  { which receives the
 	//                       } varcode (>=z5) { success result.
 	//
-	// If this is not an object, no undo information is saved.
-	// (Future: It should eventually be an array, for multiple undo.)
-	m_undo: 0,
+	// If the array is empty, no undo information is saved.
+	m_undo: [],
 
 	// Like m_undo, but only well-defined during a save effect.
 	m_state_to_save: 0,

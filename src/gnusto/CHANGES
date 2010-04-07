@@ -1,9 +1,15 @@
 Change log started July 2009.
 
+April 2010
+================================================================================
+Fixed undo support, now with multi-undo support.
+
 March 2010
 ================================================================================
  + Zarf made many changes to remove signed data from the memory, and correct for overflows etc.
  + Fix a typo in @catch.
+ + Fixed many references to the variable engine which should have been referencing this.
+ + Made a Gnusto Bootstrap script, and used it for a Praxix test page (gnusto-bootstrap.js, praxix.html).
 
 February 2010
 ================================================================================
