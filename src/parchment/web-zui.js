@@ -176,7 +176,7 @@ PAGEDOWN_KEYCODE = 34;
 
 
 function WebZui( library, engine, logfunc) {
-	  var widthInChars = gIsIphone ? 38 : 80;
+	  var widthInChars = ( gIsIphone && $( document.body ).width() <= 480 ) ? 38 : 80;
 
 	  this._size = [widthInChars, 25];
 	  this._console = null;
@@ -275,9 +275,11 @@ function WebZui( library, engine, logfunc) {
 	      var newEvent = new Object();
 	      switch (event.keyCode) {
 	      case 127:
+	      case 8:
 	        newEvent.keyCode = BACKSPACE_KEYCODE;
 	        break;
 	      case 10:
+	      case 13:
 	        newEvent.keyCode = RETURN_KEYCODE;
 	        break;
 	      default:

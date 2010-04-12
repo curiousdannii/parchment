@@ -1,13 +1,13 @@
 /*
  * Parchment UI
  *
- * Copyright (c) 2003-2009 The Parchment Contributors
+ * Copyright (c) 2008-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
 (function(){
 
-window.gIsIphone = navigator.userAgent.match(/iPhone/i);
+window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
 
 var topwin_element;
 var topwin_dist = '0';
