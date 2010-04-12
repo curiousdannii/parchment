@@ -2579,6 +2579,7 @@ GnustoEngine.prototype = {
 		// Correct for the arrow keys
 		var ZSCII_corrections = {
 			10: 13, // Enter
+			13: 13,
 			37: 131, // Left
 			38: 129, // Up
 			39: 132, // Right
