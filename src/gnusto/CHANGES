@@ -3,6 +3,7 @@ Change log started July 2009.
 April 2010
 ================================================================================
 Fixed undo support, now with multi-undo support.
+Fixed ge_ascii_char_to_zscii() for Enter and arrow keys.
 
 March 2010
 ================================================================================

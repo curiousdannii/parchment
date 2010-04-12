@@ -295,7 +295,7 @@ function download_to_array( url, callback )
 */
 	
 	// Log the options for debugging
-	;;; if ( window.console && console.log ) console.log( options );
+	;;; if ( window.console && console.log ) console.log( '$.ajax() options from download_to_array(): ', options );
 	
 	// Get the file
 	options.error = function ( XMLHttpRequest, textStatus )

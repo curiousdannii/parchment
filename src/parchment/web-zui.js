@@ -9,47 +9,13 @@
 var PAGEUP_KEYCODE = 33,
 PAGEDOWN_KEYCODE = 34;
 
-	var ZSCII_UP = 129;
-	var ZSCII_DOWN = 130;
-	var ZSCII_LEFT = 131;
-	var ZSCII_RIGHT = 132;
-	var ZSCII_NEWLINE = 13;
-	var ZSCII_DELETE = 8;
-	var ZSCII_ESCAPE = 27;
-
-	// We want to use named constants, but because of the way JS's object
-	// literals work, our named constants will just be strings; we'll
-	// convert them to their integer values at load time.
-	var __origKeyCodeHandlerMap = {
-	  BACKSPACE_KEYCODE  : "backwardDeleteChar",
-	  LEFT_KEYCODE       : "backwardChar",
-	  UP_KEYCODE         : "previousHistory",
-	  RIGHT_KEYCODE      : "forwardChar",
-	  DOWN_KEYCODE       : "nextHistory"
-	};
-
-	// Mapping from JS key codes to equivalent ZSCII characters, as
-	// defined in section 3.8 of the Z-Machine Specification.
-	var __originalKeyCodeToZSCIIMap = {
-	  RETURN_KEYCODE     : ZSCII_NEWLINE,
-	  BACKSPACE_KEYCODE  : ZSCII_DELETE,
-	  ESCAPE_KEYCODE     : ZSCII_ESCAPE,
-	  LEFT_KEYCODE       : ZSCII_LEFT,
-	  UP_KEYCODE         : ZSCII_UP,
-	  RIGHT_KEYCODE      : ZSCII_RIGHT,
-	  DOWN_KEYCODE       : ZSCII_DOWN
-	};
-
-	function constKeysToValues(originalMap, constObj) {
-	  var finalMap = {};
-	  for (name in originalMap) {
-	    finalMap[constObj[name]] = originalMap[name];
-	  }
-	  return finalMap;
-	}
-
-	var keyCodeHandlerMap = constKeysToValues(__origKeyCodeHandlerMap, this);
-	var keyCodeToZSCIIMap = constKeysToValues(__originalKeyCodeToZSCIIMap, this);
+var keyCodeHandlerMap = {
+	8: "backwardDeleteChar", // Backspace
+	37: "backwardChar", // Left
+	38: "previousHistory", // Up
+	39: "forwardChar", // Right
+	40: "nextHistory" // Down
+};
 
 	function LineEditor() {
 	  this.line = "";
@@ -362,17 +328,11 @@ function WebZui( library, engine, logfunc) {
 	        // We're not waiting for a line of input, but we may
 	        // be waiting for a character of input.
 
-	        // Note that we have to return a ZSCII keycode here.
-	        //
-	        // For more information, see:
-	        //
-	        //   http://www.gnelson.demon.co.uk/zspec/sect03.html
+	        // Gnusto will convert from ASCII to ZSCII, so don't do anything fancy
 	        if (self._currentCallback) {
-	          var keyCode = 0;
+	          var keyCode = event.keyCode;
 	          if (event.charCode)
 	            keyCode = event.charCode;
-	          else if (keyCodeToZSCIIMap[event.keyCode])
-	              keyCode = keyCodeToZSCIIMap[event.keyCode];
 	          if (keyCode != 0) {
 	            var callback = self._currentCallback;
 
@@ -399,7 +359,9 @@ function WebZui( library, engine, logfunc) {
 	        );
 			self.current_input = $("#current-input");
 	        callback(finalInputString);
-	      } else if (event.keyCode in keyCodeHandlerMap) {
+	      }
+	      else if ( keyCodeHandlerMap[event.keyCode] )
+	      {
 	          self._lineEditor[keyCodeHandlerMap[event.keyCode]]();
 	      } else if (event.charCode) {
 			self._lineEditor.selfInsert(event.charCode);

@@ -4,6 +4,7 @@ April 2010
 ================================================================================
 Fixed undo support, now with multi-undo support.
 Added a few fixes for various mobile browsers.
+Fixed Enter and arrow key support in menus.
 
 March 2010
 ================================================================================
