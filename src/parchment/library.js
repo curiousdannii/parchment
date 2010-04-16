@@ -8,7 +8,7 @@
 (function(window){
 
 // A story file
-var Story = IFF.extend({
+var Story = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
 	init: function parse_zblorb(data, story_name)
 	{
@@ -114,7 +114,7 @@ var Story = IFF.extend({
 }),
 
 // Story file cache
-StoryCache = Class.extend({
+StoryCache = Object.subClass({
 	// Add a story to the cache
 	add: function(story)
 	{
@@ -205,7 +205,7 @@ launch_zmachine = function( url, library )
 },
 
 // The Parchment Library class
-Library = Class.extend({
+Library = Object.subClass({
 	// Load a story or savefile
 	load: function(id)
 	{

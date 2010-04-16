@@ -1,7 +1,7 @@
 /*!
  * Interchange File Format library
  *
- * Copyright (c) 2003-2009 The Gnusto Contributors
+ * Copyright (c) 2008-2010 The Gnusto Contributors
  * Licenced under the GPL v2
  * http://github.com/curiousdannii/gnusto
  */
@@ -30,11 +30,9 @@ function text_to_word(t)
 	return [t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3)];
 }
 
-var FORM = 'FORM',
-
 // IFF file class
 // Parses an IFF file stored in a byte array
-IFF = Class.extend({
+var IFF = Object.subClass({
 	// Parse a byte array or construct an empty IFF file
 	init: function parse_iff(data)
 	{
@@ -43,7 +41,7 @@ IFF = Class.extend({
 		if (data)
 		{
 			// Check this is an IFF file
-			if (text_from(data, 0) != FORM)
+			if (text_from(data, 0) != 'FORM')
 				throw new Error("Not an IFF file");
 
 			// Parse the file
@@ -85,7 +83,7 @@ IFF = Class.extend({
 		}
 
 		// Add the header and return
-		return text_to_word(FORM).concat(num_to_word(out.length), out);
+		return text_to_word('FORM').concat(num_to_word(out.length), out);
 	}
 });
 

@@ -9,8 +9,8 @@
 # Lists of files to combine together
 includes = (
 	('.build/parchment.js', (
-		'src/plugins/class.js',
-		'src/plugins/iff.js',
+		'src/lib/class.js',
+		'src/lib/iff.js',
 		'src/plugins/jquery.hotkeys.js',
 		'src/plugins/querystring.js',
 		'src/plugins/remedial.js',
