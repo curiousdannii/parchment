@@ -9,22 +9,69 @@
 
 window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
 
-var topwin_element;
-var topwin_dist = '0';
-
 // Make the statusline always move to the top of the screen in MSIE < 7
-$(document).ready(function() {
-    topwin_element = document.getElementById('top-window');
-    topwin_dist = '0';
-    var ieMatch = navigator.appVersion.match(/MSIE (\d+)\./);
-    if(ieMatch && +ieMatch[1]<7) {
-        topwin_element.style.position = 'absolute';
-        var move_element=function() {
-            topwin_element.style.top = 1 * (document.documentElement.scrollTop + 1 * topwin_dist) + 'px';
-        };
-        window.onscroll = move_element;
-        window.onresize = move_element;
-    }
+if ( $.browser.msie && parseInt($.browser.version) < 7 )
+{
+	$(function(){
+		var topwin_element = $( '#top-window' ),
+		move_element = function()
+		{
+			topwin_element.style.top = document.documentElement.scrollTop + 'px';
+		};
+		topwin_element
+			.css( 'position', 'absolute' )
+			.resize( move_element )
+			.scroll( move_element );
+	});
+}
+
+// A generic line input editor
+parchment.lib.LineEditor = Object.subClass({
+	// Set up the line input editor with a container and styles to apply
+	// Note the container should be a jQuery wrapped element, not a selector
+	init: function( container, classes )
+	{
+		// The submission handler
+		var submit = function() {
+			var form = $( this ),
+			input = form.find( 'input' ),
+			command = input.val();
+			
+			form.detach();
+			input.val( '' );
+			
+			form.data().line_editor.callback( command );
+
+			return false;
+		},
+		
+		// The input element itself
+		input = $( '<input>', {
+			"class": classes || ''
+		}),
+		
+		// A form to contain it
+		form = $( '<form/>', {
+			"class": 'generic-line-editor',
+			data: {
+				line_editor: this
+			},
+			submit: submit
+		});
+		
+		form.append( input );
+		this.form = form;
+		this.input = input;
+		this.container = container;
+	},
+	
+	// Get some input
+	get: function( callback )
+	{
+		this.callback = callback;
+		this.form.appendTo( this.container );
+		this.input.focus();
+	}
 });
 
 })();

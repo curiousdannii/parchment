@@ -1,7 +1,7 @@
 /*!
  * Parchment
  *
- * Copyright (c) 2003-2010 The Parchment Contributors
+ * Copyright (c) 2008-2010 The Parchment Contributors
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
@@ -15,4 +15,14 @@ $.ajaxSetup({
 });
 
 // The home for Parchment to live in
-var parchment = {};
+var parchment = {
+
+	// The default parchment options
+	options: {
+		default_story: 'stories/troll.z5.js',
+		proxy_url: 'http://zcode.appspot.com/proxy/'
+	},
+	
+	// Classes etc
+	lib: {}
+};

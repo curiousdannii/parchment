@@ -117,6 +117,18 @@ body {
     text-decoration: blink;
 }
 
+/* A generic line input editor */
+.generic-line-editor
+{
+	display: inline-block;
+}
+
+.generic-line-editor input
+{
+	/*border: 0;*/
+	width: 100%;
+}
+
 .finished-input {
     opacity: 0.5;
 }

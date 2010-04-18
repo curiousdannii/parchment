@@ -160,6 +160,7 @@ function WebZui( library, engine, logfunc) {
 	  
 	  this.library = library;
 	  this.engine = engine;
+	  this.line_editor = new parchment.lib.LineEditor( $('#content') );
 
 	this.bottom = $("#bottom");
 	this.current_input = $("#current-input");
@@ -201,10 +202,10 @@ function WebZui( library, engine, logfunc) {
 				$(document).keyup(self._iphoneKeyup);
 			else
 			{
-				$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
-					.keypress(self._windowKeypress)
-					.keyup(self._windowKeyup)
-					.keydown(self._windowKeydown);
+			//	$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
+			//		.keypress(self._windowKeypress)
+			//		.keyup(self._windowKeyup)
+			//		.keydown(self._windowKeydown);
 			}
 			$(window).resize(self._windowResize);
 			 self._intervalId = window.setInterval(self._windowHashCheck, 1000);
@@ -470,11 +471,12 @@ function WebZui( library, engine, logfunc) {
           }
 
    	      self._currentCallback = callback;
-	      $("#content").append(
+	      /*$("#content").append(
 	        '<span id="current-input"><span id="cursor">_</span></span>'
 	      );
 	      self.current_input = $("#current-input");
-	      self.current_input.attr("class", self._calcFinalStyles());
+	      self.current_input.attr("class", self._calcFinalStyles());*/
+	      this.line_editor.get( callback );
 	    },
 
 	    onCharacterInput: function(callback) {
