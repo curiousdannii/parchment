@@ -168,14 +168,15 @@ launch_zmachine = function( url, library )
 			zui = new WebZui( library, engine, logfunc ),
 			runner = new EngineRunner( engine, zui, logfunc ),
 
-			mystory = new Story( story.slice(), storyName );
+			mystory = new Story( story, storyName ),
+			savefile = location.hash;
+			
 			logfunc( "Story type: " + mystory.filetype )
 			mystory.load( engine );
 
-			if ( window.location.hash )
+			if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
 			{
-				var b64data = window.location.hash.slice(1);
-				engine.loadSavedGame( file.base64_decode(b64data) );
+				engine.loadSavedGame( file.base64_decode( savefile.slice(1)));
 				logfunc( 'Loading savefile' );
 			}
 

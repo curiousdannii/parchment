@@ -482,7 +482,7 @@ function WebZui( library, engine, logfunc) {
 
 	    _restart: function() {
 	      self._finalize();
-      window.setTimeout(_webZuiStartup, 0);
+	      location.reload();
 	    },
 
 	    setVersion: function(version) {
@@ -529,36 +529,45 @@ function WebZui( library, engine, logfunc) {
 
       if (window.globalStorage && location.href.slice(0, 5) != 'file:')
         window.globalStorage[location.hostname][saveKey] = b64data;
-      window.location.hash = "#" + b64data;
-      self._expectedHash = window.location.hash;
+        
+      // Something very strange happens with local files on windows... perhaps it's because the url has the drive letter?
+	  // Anyway, we have to make our own location string
+	  location = location.protocol + '//' + location.host + location.pathname + location.search + '#' + b64data;
+      self._expectedHash = location.hash;
+      
 			self.onPrint("Your game has been saved to the URL. You may want " +
 				"to bookmark this page now; just reload it at any " +
                    "time to restore your game from this point.\n");
 			return true;
 		},
 
-	    onRestore: function() {
-      // TODO: Attempt to use other forms of local storage if
-      // available; if none are available, we should return null.
+onRestore: function()
+{
+	// TODO: Attempt to use other forms of local storage if
+	// available; if none are available, we should return null.
 
-      var b64data = null;
+	var b64data = null;
 
-      if (window.location.hash)
-        b64data = window.location.hash.slice(1);
+	if (location.hash)
+		b64data = location.hash.slice(1);
 
-      if (!b64data && window.globalStorage) {
-        var saveData = globalStorage[location.hostname][this.library.url + '_saveData'];
-        if (saveData)
-          b64data = saveData.value;
-      }
+	if (!b64data && window.globalStorage)
+	{
+		var saveData = globalStorage[location.hostname][this.library.url + '_saveData'];
+		if (saveData)
+		{
+			b64data = saveData.value;
+			// See comment above in onSave
+			location = location.protocol + '//' + location.host + location.pathname + location.search + '#' + b64data;
+			self._expectedHash = location.hash;
+		}
+	}
 
-      if (b64data) {
-        window.location.hash = "#" + b64data;
-        self._expectedHash = window.location.hash;
-        return file.base64_decode(b64data);
-      } else
-        return null;
-	    },
+	if (b64data)
+		return file.base64_decode(b64data);
+	else
+		return null;
+},
 
 	    onQuit: function() {
 	      self._finalize();
