@@ -9,12 +9,6 @@
 
 var parchment = window.parchment;
 
-// The default parchment options
-parchment.options = {
-	default_story: 'stories/troll.z5.js',
-	proxy_url: 'http://zcode.appspot.com/proxy/'
-};
-
 // Load Parchment, start it all up!
 function load_parchment()
 {

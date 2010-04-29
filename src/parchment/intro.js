@@ -1,5 +1,6 @@
 /*!
  * Parchment
+ * Built: BUILDDATE
  *
  * Copyright (c) 2003-2010 The Parchment Contributors
  * Licenced under the GPL v2
@@ -15,4 +16,16 @@ $.ajaxSetup({
 });
 
 // The home for Parchment to live in
-var parchment = {};
+var parchment = {
+
+	// The default parchment options
+	options: {
+		default_story: 'stories/troll.z5.js',
+		lib_path: 'lib/',
+		page_title: 1,
+		proxy_url: 'http://zcode.appspot.com/proxy/'
+	},
+
+	// Classes etc
+	lib: {}
+};

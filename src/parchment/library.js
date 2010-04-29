@@ -129,7 +129,9 @@ StoryCache = Class.extend({
 launch_zmachine = function( url, library )
 {
 	// Store the story in this closure so we can still launch when things load out of order
-	var story, files = 1, timer,
+	var story,
+	
+	files = 1, timer, lib_path = parchment.options.lib_path,
 
 	// Callback to check if everything has loaded, and to launch the Z-Machine if so
 	callback = function( data )
@@ -196,8 +198,8 @@ launch_zmachine = function( url, library )
 		;;; }
 		;;; /*
 		files = 3;
-		$.getScript( 'lib/gnusto.min.js', callback );
-		$.getScript( 'lib/zmachine.min.js', callback );
+		$.getScript( lib_path + 'gnusto.min.js', callback );
+		$.getScript( lib_path + 'zmachine.min.js', callback );
 		;;; */
 	}
 		
@@ -210,15 +212,22 @@ Library = Class.extend({
 	// Load a story or savefile
 	load: function(id)
 	{
+		var options = parchment.options,
+		
 		// Load from URL, or the default story
-		var querystring = new Querystring(),
-		storyfile = querystring.get('story', parchment.options.default_story),
+		querystring = new Querystring(),
+		storyfile = querystring.get('story', options.default_story),
 		url = $.isArray( storyfile ) ? storyfile[0] : storyfile;
 		this.url = url;
 
 		storyName = url.slice( url.lastIndexOf("/") + 1 );
 		storyName = storyName ? storyName + " - Parchment" : "Parchment";
-		window.document.title = storyName;
+		
+		// Change the page title
+		if ( options.page_title )
+		{
+			window.document.title = storyName;
+		}
 
 		// Check the story cache first
 		if (this.stories.url[url])
