@@ -125,7 +125,7 @@ body {
 
 .generic-line-editor input
 {
-	/*border: 0;*/
+	border: 0;
 	width: 100%;
 }
 
@@ -192,15 +192,4 @@ body {
     font-size: 14pt;
     text-align: right;
     position: relative;
-}
-
-/* Hide the pastebox */
-#pastebox, #pastebox input
-{
-	background: transparent;
-	border: none;
-	position: fixed;
-	right: 0;
-	top: 0;
-	width: 1px;
 }

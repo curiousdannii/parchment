@@ -31,36 +31,30 @@ parchment.lib.LineEditor = Object.subClass({
 	// Note the container should be a jQuery wrapped element, not a selector
 	init: function( container, classes )
 	{
-		// The submission handler
-		var submit = function() {
-			var form = $( this ),
-			input = form.find( 'input' ),
-			command = input.val();
-			
-			form.detach();
-			input.val( '' );
-			
-			form.data().line_editor.callback( command );
-
-			return false;
-		},
+		var self = this,
 		
 		// The input element itself
 		input = $( '<input>', {
-			"class": classes || ''
-		}),
-		
-		// A form to contain it
-		form = $( '<form/>', {
-			"class": 'generic-line-editor',
-			data: {
-				line_editor: this
-			},
-			submit: submit
+			'class': classes || ''
 		});
 		
-		form.append( input );
-		this.form = form;
+		// A form to contain it
+		this.form = $( '<form/>', {
+			'class': 'generic-line-editor',
+			submit: function()
+			{
+				self.submit();
+				return false;
+			}
+		})
+			.append( input );
+		
+		// Focus document clicks
+		$( document ).click( function() {
+			input.focus();
+		});
+		
+		
 		this.input = input;
 		this.container = container;
 	},
@@ -68,9 +62,32 @@ parchment.lib.LineEditor = Object.subClass({
 	// Get some input
 	get: function( callback )
 	{
-		this.callback = callback;
-		this.form.appendTo( this.container );
-		this.input.focus();
+		this.callback = callback || $.noop;
+		
+		var container = this.container, input = this.input;
+		
+		// Adjust the input's width
+		input.width( container.width() - container.children().last().width() );
+		
+		container.append( this.form );
+		input.focus();
+	},
+	
+	// Submit the input data
+	submit: function()
+	{
+		var input = this.input,
+		command = input.val();
+			
+		// Hide the <form> and clear the <input>
+		this.form.detach();
+		input.val( '' );
+		
+		// Copy back the command
+		$( '<span class="finished-input">' + command.entityify() + '</span><br>' )
+			.appendTo( this.container );
+		
+		this.callback( command );
 	}
 });
 

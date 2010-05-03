@@ -202,7 +202,7 @@ function WebZui( library, engine, logfunc) {
 				$(document).keyup(self._iphoneKeyup);
 			else
 			{
-			//	$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
+			//	$(document)
 			//		.keypress(self._windowKeypress)
 			//		.keyup(self._windowKeyup)
 			//		.keydown(self._windowKeydown);
@@ -216,7 +216,7 @@ function WebZui( library, engine, logfunc) {
 				$(document).unbind("keyup", self._iphoneKeyup);
 			else
 			{
-				$(document).unbind('keydown', 'Ctrl+v', self._windowPasteHandler)
+				$(document)
 					.unbind("keypress", self._windowKeypress)
 					.unbind("keyup", self._windowKeyup)
 					.unbind("keydown", self._windowKeydown);
@@ -395,31 +395,6 @@ function WebZui( library, engine, logfunc) {
 	      }
 	      return false;
 	    },
-
-		// Pass focus to the textbox to accept the pasted text
-		_windowPasteHandler: function(event)
-		{
-			if (self.current_input.length != 0)
-			{
-				$("#pasteinput").focus();
-				window.setTimeout(self._inputPasteHandler, 10);
-			}
-		},
-
-		// Add the pasted text to the LineEditor
-		_inputPasteHandler: function(event)
-		{
-			var pasted = $("#pasteinput").val();
-			$("#pasteinput").val('');
-			// $("#pasteinput").blur();
-			var e = {charCode: 0, keyCode: 0};
-			// It would be nice if a string could be added rather than only a single character
-			for (var i = 0; i < pasted.length; i++)
-			{
-				e.charCode = pasted.charCodeAt(i);
-				self._handleKeyEvent(e);
-			}
-		},
 
 	    _windowResize: function() {
 	      var contentLeft = $("#content").offset().left + "px";
