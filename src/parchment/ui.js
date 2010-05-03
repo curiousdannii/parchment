@@ -28,19 +28,31 @@ if ( $.browser.msie && parseInt($.browser.version) < 7 )
 // A generic line input editor
 parchment.lib.LineEditor = Object.subClass({
 	// Set up the line input editor with a container and styles to apply
-	// Note the container should be a jQuery wrapped element, not a selector
 	init: function( container, classes )
 	{
 		var self = this,
+		container = $( container ),
 		
 		// The input element itself
 		input = $( '<input>', {
-			'class': classes || ''
+			'class': classes || '',
+			keydown: function( event )
+			{
+				// Check for up/down to use the command history
+				if ( event.which == 38 ) // up -> prev
+				{
+					self.prev_next( 1 );
+				}
+				else if ( event.which == 40 ) // down -> next
+				{
+					self.prev_next( -1 );
+				}
+			}
 		});
 		
 		// A form to contain it
-		this.form = $( '<form/>', {
-			'class': 'generic-line-editor',
+		self.form = $( '<form/>', {
+			'class': 'generic-line-editor',	
 			submit: function()
 			{
 				self.submit();
@@ -54,40 +66,77 @@ parchment.lib.LineEditor = Object.subClass({
 			input.focus();
 		});
 		
+		// Command history
+		self.history = [];
+		// current and mutable_history are set in .get()
 		
-		this.input = input;
-		this.container = container;
+		self.input = input;
+		self.container = container;
 	},
 	
 	// Get some input
 	get: function( callback )
 	{
-		this.callback = callback || $.noop;
+		var self = this,
+		container = self.container,
+		input = self.input;
 		
-		var container = this.container, input = this.input;
+		self.callback = callback || $.noop;
+		
+		// Set up the mutable history
+		self.current = 0;
+		self.mutable_history = self.history.slice();
+		self.mutable_history.unshift( '' );
 		
 		// Adjust the input's width
 		input.width( container.width() - container.children().last().width() );
 		
-		container.append( this.form );
+		container.append( self.form );
 		input.focus();
 	},
 	
 	// Submit the input data
 	submit: function()
 	{
-		var input = this.input,
+		var self = this,
+		input = self.input,
 		command = input.val();
 			
 		// Hide the <form> and clear the <input>
-		this.form.detach();
+		self.form.detach();
 		input.val( '' );
 		
 		// Copy back the command
 		$( '<span class="finished-input">' + command.entityify() + '</span><br>' )
-			.appendTo( this.container );
+			.appendTo( self.container );
 		
-		this.callback( command );
+		// Add this command to the history, as long as it's not the last command, and not blank
+		if ( command != self.history[0] && /\S/.test( command ) )
+		{
+			self.history.unshift( command );
+		}
+		
+		self.callback( command );
+	},
+	
+	// Get the previous/next command from history
+	// change = 1 for previous and -1 for next
+	prev_next: function( change )
+	{
+		var self = this,
+		input = self.input,
+		mutable_history = self.mutable_history,
+		current = self.current,
+		new_current = current + change;
+		
+		// Check it's within range
+		if ( new_current < mutable_history.length && new_current >= 0 )
+		{
+			mutable_history[current] = input.val();
+			input.val( mutable_history[new_current] );
+			self.current = new_current;
+		}
+		
 	}
 });
 

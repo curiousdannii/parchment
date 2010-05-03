@@ -160,7 +160,7 @@ function WebZui( library, engine, logfunc) {
 	  
 	  this.library = library;
 	  this.engine = engine;
-	  this.line_editor = new parchment.lib.LineEditor( $('#content') );
+	  this.line_editor = new parchment.lib.LineEditor( '#content' );
 
 	this.bottom = $("#bottom");
 	this.current_input = $("#current-input");
