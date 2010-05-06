@@ -916,7 +916,7 @@ function handleZ_read_char(engine, a) {
 						engine.m_pc_translate_for_routine(a[2])+'];';
 
 				rebound_setter = "m_rebound=function(){"+
-						"var t=1*m_answers[0];" +
+						"var t=m_answers[0];" +
 						"if(t<0){"+
 						"_func_interrupt(m_rebound_args[0],onISRReturn_for_read_char);"+ // -ve: timeout
 						"}else{"+
@@ -935,7 +935,7 @@ function handleZ_read_char(engine, a) {
 				// A much simpler rebound function, since zero isn't
 				// a magic answer.
 				rebound_setter = "m_rebound=function(){"+
-						engine._storer("_ascii_code_to_zscii_code(1*m_answers[0])") +
+						engine._storer("_ascii_code_to_zscii_code(m_answers[0])") +
 						"};";
 		}
 
@@ -2572,8 +2572,8 @@ GnustoEngine.prototype = {
 
 			return String.fromCharCode(result);
 	},
-
-	_ascii_code_to_zscii_code: function ge_ascii_char_to_zscii(ascii_code) {
+	
+	_ascii_code_to_zscii_code: function ge_ascii_char_to_zscii( ascii_code ) {
 
 		// ZSCII code 13 must be used for the enter key
 		// Correct for the arrow keys
@@ -2586,10 +2586,18 @@ GnustoEngine.prototype = {
 			40: 130 // Down
 		};
 		
-		// Correct for some ZSCII differences
-		if ( ZSCII_corrections[ascii_code] )
-		{
-			return ZSCII_corrections[ascii_code];
+		// Are we converting a char input event?
+		if ( isNaN( ascii_code ) )
+		{		
+			// Correct for some ZSCII differences
+			if ( ascii_code.keyCode && ZSCII_corrections[ascii_code.keyCode] )
+			{
+				return ZSCII_corrections[ascii_code.keyCode];
+			}
+			else
+			{
+				var ascii_code = ascii_code.charCode;
+			}
 		}
 		
 		// Standard ASCII characters, except for the arrow keys, plus NULL

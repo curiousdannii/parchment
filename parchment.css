@@ -118,19 +118,25 @@ body {
 }
 
 /* A generic line input editor */
-.generic-line-editor
+.LineInput
 {
 	display: inline-block;
 }
 
-.generic-line-editor input
+.LineInput input
 {
 	border: 0;
-	width: 100%;
 }
 
 .finished-input {
     opacity: 0.5;
+}
+
+/* A generic character input */
+.CharInput
+{
+	left: -99em;
+	position: absolute;
 }
 
 .z-roman {

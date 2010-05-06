@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+May 2010
+================================================================================
+Completely rewrote line and char input.
+
 April 2010
 ================================================================================
 Fixed undo support, now with multi-undo support.

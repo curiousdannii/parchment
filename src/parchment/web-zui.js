@@ -1,153 +1,9 @@
-	var ESCAPE_KEYCODE = 27;
-	var BACKSPACE_KEYCODE = 8;
-	var RETURN_KEYCODE = 13;
-	var SHIFT_KEYCODE = 16;
-	var LEFT_KEYCODE = 37;
-	var UP_KEYCODE = 38;
-	var RIGHT_KEYCODE = 39;
-	var DOWN_KEYCODE = 40;
-var PAGEUP_KEYCODE = 33,
-PAGEDOWN_KEYCODE = 34;
-
-var keyCodeHandlerMap = {
-	8: "backwardDeleteChar", // Backspace
-	37: "backwardChar", // Left
-	38: "previousHistory", // Up
-	39: "forwardChar", // Right
-	40: "nextHistory" // Down
-};
-
-	function LineEditor() {
-	  this.line = "";
-	  this.pos = 0;
-	  this._history = [""];
-	  this._savedHistory = {};
-	  this._historyPos = 0;
-
-	  var self = this;
-
-	  this.acceptLine = function() {
-	    var line = self.line;
-
-	    self.line = "";
-	    self.pos = 0;
-
-	    for (var i in self._savedHistory) {
-	      self._history[i] = self._savedHistory[i];
-	    }
-	    self._savedHistory = {};
-
-	    if (line.length > 0) {
-	      self._history[self._history.length-1] = line;
-	      self._history.push("");
-	    }
-	    self._historyPos = self._history.length - 1;
-
-	    return line;
-	  };
-
-	  this.forwardChar = function() {
-	    if (self.pos < self.line.length) {
-	      self.pos++;
-	    }
-	  };
-
-	  this.backwardChar = function() {
-	    if (self.pos > 0) {
-	      self.pos--;
-	    }
-	  };
-
-	  this.backwardDeleteChar = function() {
-	    if (self.pos > 0) {
-	      var beforeCursor = self.line.slice(0, self.pos - 1);
-	      var afterCursor = self.line.slice(self.pos);
-
-	      // Don't allow multiple spaces in a row.
-
-	      // TODO: This is a little strange and unintuitive.  It'd be nice
-	      // to find a better solution for this, e.g. one that allows the
-	      // user to have multiple spaces in their input w/o using
-	      // non-breaking spaces.  Some alternatives include just using a
-	      // specially styled text input field and using blank images for
-	      // spaces.
-
-	      if (afterCursor.charAt(0) == " " &&
-	          beforeCursor.charAt(beforeCursor.length-1) == " ") {
-	        afterCursor = afterCursor.slice(1);
-	      }
-
-	      self.line = beforeCursor + afterCursor;
-	      self.pos--;
-	    }
-	  };
-
-	  this.selfInsert = function(c) {
-	    var newChar = String.fromCharCode(c);
-
-	    // Don't allow multiple spaces in a row.
-	    if (newChar == " ") {
-	      if (self.pos > 0 && self.line.charAt(self.pos-1) == " ") {
-	        return;
-	      } else if (self.pos < self.line.length &&
-	                 self.line.charAt(self.pos) == " ") {
-	        return;
-	      }
-	    }
-
-	    self.line = (self.line.slice(0, self.pos) + newChar +
-	                 self.line.slice(self.pos));
-	    self.pos++;
-	  };
-
-	  // Save the current history entry and replace it with the current text.
-	  // It will be replaced after acceptLine runs.
-	  this._saveHistoryExcursion = function() {
-
-	    // This function only has relevance if the text of the current history
-	    // entry is different from the current input buffer.
-	    if (self._history[self._historyPos] != self._line) {
-
-	      // Save the current history entry if it has not already been saved.
-	      if (!(self._historyPos in self._savedHistory)) {
-	        self._savedHistory[self._historyPos] =
-	          self._history[self._historyPos];
-	      }
-
-	      // Set the current history entry to the current input buffer.
-	      self._history[self._historyPos] = self.line;
-	    }
-	  };
-
-	  this.previousHistory = function() {
-	    if (self._historyPos <= 0) {
-	      return;
-	    }
-	    self._saveHistoryExcursion();
-	    self._historyPos--;
-	    self.line = self._history[self._historyPos];
-	    self.pos = self.line.length;
-	  };
-
-	  this.nextHistory = function() {
-	    if (self._historyPos+1 >= self._history.length) {
-	      return;
-	    }
-	    self._saveHistoryExcursion();
-	    self._historyPos++;
-	    self.line = self._history[self._historyPos];
-	    self.pos = self.line.length;
-	  };
-	}
-
-
 function WebZui( library, engine, logfunc) {
 	  var widthInChars = ( gIsIphone && $( document.body ).width() <= 480 ) ? 38 : 80;
 
 	  this._size = [widthInChars, 25];
 	  this._console = null;
 	  this._activeWindow = 0;
-	  this._lineEditor = new LineEditor();
 	  this._currentCallback = null;
 	  this._foreground = "default";
 	  this._background = "default";
@@ -160,7 +16,8 @@ function WebZui( library, engine, logfunc) {
 	  
 	  this.library = library;
 	  this.engine = engine;
-	  this.line_editor = new parchment.lib.LineEditor( '#content' );
+	  this.line_input = new parchment.lib.LineInput( '#content' );
+	  this.char_input = new parchment.lib.CharInput();
 
 	this.bottom = $("#bottom");
 	this.current_input = $("#current-input");
@@ -198,203 +55,17 @@ function WebZui( library, engine, logfunc) {
 	    },
 
 		_bindEventHandlers: function() {
-			if (gIsIphone)
-				$(document).keyup(self._iphoneKeyup);
-			else
-			{
-			//	$(document)
-			//		.keypress(self._windowKeypress)
-			//		.keyup(self._windowKeyup)
-			//		.keydown(self._windowKeydown);
-			}
 			$(window).resize(self._windowResize);
 			 self._intervalId = window.setInterval(self._windowHashCheck, 1000);
 		},
 
 		_unbindEventHandlers: function() {
-			if (gIsIphone)
-				$(document).unbind("keyup", self._iphoneKeyup);
-			else
-			{
-				$(document)
-					.unbind("keypress", self._windowKeypress)
-					.unbind("keyup", self._windowKeyup)
-					.unbind("keydown", self._windowKeydown);
-			}
 			$(window).unbind("resize", self._windowResize);
 			window.clearInterval(self._intervalId);
+			
+			this.line_input.die();
+			this.char_input.die();
 			},
-
-	    // We want to make sure that all key events don't bubble up, so
-	    // that anything listening in--such as Firefox's "Search for text
-	    // when I start typing" feature--doesn't think that we're not
-	    // doing anything with the keypresses.  If we don't do this, such
-	    // listeners may think that they can intervene and capture
-	    // keystrokes before they get to us in the future.
-
-	    _isHotKey: function(event) {
-	      // Don't process hotkeys, OR page up/down
-	      return (event.altKey || event.ctrlKey || event.metaKey || event.keyCode == PAGEUP_KEYCODE || event.keyCode == PAGEDOWN_KEYCODE);
-	    },
-
-	    _iphoneKeyup: function(event) {
-	      $("#iphone-text-field").val("");
-	      var newEvent = new Object();
-	      switch (event.keyCode) {
-	      case 127:
-	      case 8:
-	        newEvent.keyCode = BACKSPACE_KEYCODE;
-	        break;
-	      case 10:
-	      case 13:
-	        newEvent.keyCode = RETURN_KEYCODE;
-	        break;
-	      default:
-	        newEvent.charCode = event.keyCode;
-	      }
-	      return self._handleKeyEvent(newEvent);
-	    },
-
-	    _windowKeyup: function(event) {
-			if (jQuery.browser.mozilla)
-				return self._isHotKey(event);
-			else
-				return true;
-		},
-
-	_windowKeydown: function(event) {
-	      if (jQuery.browser.mozilla)
-	        return self._isHotKey(event);
-	      else if (((jQuery.browser.safari || jQuery.browser.msie) &&
-	                (!jQuery.browser.opera) &&
-	                (event.keyCode == LEFT_KEYCODE ||
-	                 event.keyCode == UP_KEYCODE ||
-	                 event.keyCode == RIGHT_KEYCODE ||
-	                 event.keyCode == DOWN_KEYCODE ||
-	                 event.keyCode == BACKSPACE_KEYCODE)))
-	          return self._handleKeyEvent(event);
-	      else
-	        return true;
-	    },
-
-	    _windowKeypress: function(event) {
-	      if (self._isHotKey(event))
-	        return true;
-	      if (jQuery.browser.mozilla)
-	        return self._handleKeyEvent(event);
-	      else {
-	        var newEvent = new Object();
-
-	        if (jQuery.browser.opera) {
-	          newEvent.charCode = event.which;
-	          // Opera doesn't seem to let us distinguish between whether
-	          // an arrow key was pressed vs. ', %, &, or (, so we'll play
-	          // it safe and force the ASCII character instead of the
-	          // arrow key, since some games are unwinnable if the user
-	          // can't type such characters.
-	          if (event.which != LEFT_KEYCODE &&
-	              event.which != RIGHT_KEYCODE &&
-	              event.which != UP_KEYCODE &&
-	              event.which != DOWN_KEYCODE)
-	            newEvent.keyCode = event.keyCode;
-	        } else if (jQuery.browser.safari) {
-	          if (event.charCode && event.keyCode != RETURN_KEYCODE)
-	            newEvent.charCode = event.charCode;
-	          else
-	            newEvent.keyCode = event.keyCode;
-	        } else if (jQuery.browser.msie) {
-	          if (event.keyCode == RETURN_KEYCODE)
-	            newEvent.keyCode = event.keyCode;
-	          else
-	            newEvent.charCode = event.keyCode;
-	        }
-
-	        return self._handleKeyEvent(newEvent);
-	      }
-	    },
-
-	    _handleKeyEvent: function(event) {
-	      if (event.keyCode == SHIFT_KEYCODE)
-	        // This only seems to happen on Opera, but just in case it happens
-	        // on some other browsers too, we're not special-casing it.
-	        return false;
-
-	      self._removeBufferedWindows();
-//		$("#buffered-windows").empty();
-	      self._lastSeenY = self.bottom.offset().top;
-
-	      self._scrollBottomWindow();
-
-	      if (self.current_input.length == 0) {
-	        // We're not waiting for a line of input, but we may
-	        // be waiting for a character of input.
-
-	        // Gnusto will convert from ASCII to ZSCII, so don't do anything fancy
-	        if (self._currentCallback) {
-	          var keyCode = event.keyCode;
-	          if (event.charCode)
-	            keyCode = event.charCode;
-	          if (keyCode != 0) {
-	            var callback = self._currentCallback;
-
-	            self._currentCallback = null;
-	            callback(keyCode);
-	          }
-	        }
-	        return false;
-	      }
-
-	      var oldInputString = self._lineEditor.line;
-	      var oldPos = self._lineEditor.pos;
-
-	      if (event.keyCode == RETURN_KEYCODE) {
-	        var finalInputString = self._lineEditor.acceptLine();
-	        var callback = self._currentCallback;
-
-	        self._currentCallback = null;
-	        self._lastSeenY = self.current_input.offset().top;
-	        var styles = self.current_input.attr("class");
-	        self.current_input.replaceWith(
-	          ('<span class="finished-input ' + styles + '">' +
-	           finalInputString.entityify() + '</span><br/>')
-	        );
-			self.current_input = $("#current-input");
-	        callback(finalInputString);
-	      }
-	      else if ( keyCodeHandlerMap[event.keyCode] )
-	      {
-	          self._lineEditor[keyCodeHandlerMap[event.keyCode]]();
-	      } else if (event.charCode) {
-			self._lineEditor.selfInsert(event.charCode);
-		}
-
-	      if (self.current_input &&
-	          (oldInputString != self._lineEditor.line ||
-	           oldPos != self._lineEditor.pos)) {
-	        var prefix = self._lineEditor.line.slice(0, self._lineEditor.pos);
-	        var suffix;
-	        var point;
-	        var cursorId;
-	        if (self._lineEditor.line.length <= self._lineEditor.pos) {
-	          suffix = "";
-	          point = "_";
-	          cursorId = "cursor";
-	        } else {
-	          suffix = self._lineEditor.line.slice(self._lineEditor.pos+1);
-	          point = self._lineEditor.line.charAt(self._lineEditor.pos);
-	          cursorId = "editing-cursor";
-	          if (point == " ") {
-	            point = "&nbsp;";
-	          } else {
-	            point = point.entityify();
-	          }
-	        }
-	        self.current_input.html(prefix.entityify() + '<span id="' +
-	                                 cursorId + '">' + point + '</span>' +
-	                                 suffix.entityify());
-	      }
-	      return false;
-	    },
 
 	    _windowResize: function() {
 	      var contentLeft = $("#content").offset().left + "px";
@@ -451,11 +122,12 @@ function WebZui( library, engine, logfunc) {
 	      );
 	      self.current_input = $("#current-input");
 	      self.current_input.attr("class", self._calcFinalStyles());*/
-	      this.line_editor.get( callback );
+	      this.line_input.get( callback );
 	    },
 
 	    onCharacterInput: function(callback) {
 	      self._currentCallback = callback;
+	      this.char_input.get( callback );
 	    },
 
     onSave: function(data) {
@@ -775,24 +447,4 @@ function WebZui( library, engine, logfunc) {
 	  self._windowResize();
 	  self._bindEventHandlers();
 	  self._eraseBottomWindow();
-
-	  if (gIsIphone) {
-	    // The iPhone needs an actual text field focused in order to
-	    // display the on-screen keyboard, so add a hidden one that
-	    // attempts to overlap any text prompt that may be visible.
-	    $(document.body).append(
-	      '<textarea class="iphone-visible" ' +
-	        'id="iphone-text-field" rows="1" ' +
-	        'cols="20" autocapitalize="off">' +
-	        'Tap here to enter text.</textarea>'
-	    );
-	    var itfHeight = -1 * $("#iphone-text-field").height();
-	    $("#iphone-text-field").css({top: itfHeight + "px"});
-	    function onClick() {
-	      $(this).removeClass("iphone-visible");
-	      $(this).addClass("iphone-invisible");
-	      $(this).unbind("click", onClick);
-	    }
-	    $("#iphone-text-field").click(onClick);
-	  }
 	}
