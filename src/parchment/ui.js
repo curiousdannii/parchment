@@ -178,7 +178,6 @@ parchment.lib.CharInput = Object.subClass({
 			keydown: function( event )
 			{
 				self.keyCode = event.which;
-				return false;
 			},
 			keypress: function( event )
 			{
@@ -186,6 +185,10 @@ parchment.lib.CharInput = Object.subClass({
 				self.submit();
 				return false;
 			},
+			keyup: function( event )
+			{
+				self.submit();
+			}
 		});
 		
 		// Focus document clicks
@@ -212,6 +215,8 @@ parchment.lib.CharInput = Object.subClass({
 		
 		self.callback = callback || $.noop;
 		
+		self.keyCode = self.charCode = 0;
+		
 		// Add the <input> and focus
 		self.input
 			.appendTo( $( 'body' ) )
@@ -222,10 +227,17 @@ parchment.lib.CharInput = Object.subClass({
 	submit: function()
 	{
 		var self = this,
+		keyCode = self.keyCode, charCode = self.charCode,
 		input = {
-			keyCode: self.keyCode,
-			charCode: self.charCode
+			keyCode: keyCode,
+			charCode: charCode
 		};
+		
+		// Do we have anything to submit?
+		if ( !keyCode && !charCode )
+		{
+			return;
+		}
 		
 		// Hide the <input>
 		self.input.detach();
