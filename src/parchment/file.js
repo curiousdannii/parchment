@@ -157,13 +157,6 @@ function download_to_array( url, callback )
 										6	Load from proxy (base64 + JSONP)
 	*/
 
-	// Case #1: file: loaded from http:
-	// Case #2: file: with neither binary support nor a backup encoded file
-	if ( data_domain == 'file:' && ( page_domain != data_domain || ( !support.binary && !backup_url ) ) )
-	{
-		throw "Can't load local files with this browser, sorry!";
-	}
-
 	// Case #3: Load legacy file
 	if ( url.slice(-3).toLowerCase() == '.js' )
 	{
@@ -174,6 +167,13 @@ function download_to_array( url, callback )
 		};
 		$.getScript( url );
 		return;
+	}
+
+	// Case #1: file: loaded from http:
+	// Case #2: file: with neither binary support nor a backup encoded file
+	if ( data_domain == 'file:' && ( page_domain != data_domain || ( !support.binary && !backup_url ) ) )
+	{
+		throw "Can't load local files with this browser, sorry!";
 	}
 
 	// Case #4: Local file with binary support

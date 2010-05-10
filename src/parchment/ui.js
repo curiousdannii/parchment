@@ -114,7 +114,9 @@ parchment.lib.LineInput = Object.subClass({
 			.val( '' );
 		
 		container.append( self.form );
-		input.focus();
+		setTimeout( function(){
+			self.input.focus();
+		}, 1 );
 	},
 	
 	// Submit the input data
@@ -218,9 +220,10 @@ parchment.lib.CharInput = Object.subClass({
 		self.keyCode = self.charCode = 0;
 		
 		// Add the <input> and focus
-		self.input
-			.appendTo( $( 'body' ) )
-			.focus();
+		self.input.appendTo( $( 'body' ) );
+		setTimeout( function(){
+			self.input.focus();
+		}, 1 );
 	},
 	
 	// Submit the input data

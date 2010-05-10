@@ -109,14 +109,6 @@ body {
     margin: 0 auto;
 }
 
-#editing-cursor {
-    text-decoration: underline;
-}
-
-#cursor {
-    text-decoration: blink;
-}
-
 /* A generic line input editor */
 .LineInput
 {
@@ -127,6 +119,7 @@ body {
 {
 	border: 0;
 	outline: 0;
+	padding: 0;
 }
 
 .finished-input {
@@ -182,21 +175,4 @@ body {
 
 #progress-text {
     font-size: 10pt;
-}
-
-.iphone-visible {
-    opacity: 0.5;
-}
-
-.iphone-invisible {
-    opacity: 0;
-}
-
-#iphone-text-field {
-    border: none;
-    background: inherit;
-    font-family: palatino, georgia, verdana, arial, sans-serif;
-    font-size: 14pt;
-    text-align: right;
-    position: relative;
 }
