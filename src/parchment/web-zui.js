@@ -16,8 +16,7 @@ function WebZui( library, engine, logfunc) {
 	  
 	  this.library = library;
 	  this.engine = engine;
-	  this.line_input = new parchment.lib.LineInput( '#content' );
-	  this.char_input = new parchment.lib.CharInput();
+	  this.line_char_input = new parchment.lib.LineCharInput( '#content' );
 
 	this.bottom = $("#bottom");
 	this.current_input = $("#current-input");
@@ -63,8 +62,7 @@ function WebZui( library, engine, logfunc) {
 			$(window).unbind("resize", self._windowResize);
 			window.clearInterval(self._intervalId);
 			
-			this.line_input.die();
-			this.char_input.die();
+			this.line_char_input.die();
 			},
 
 	    _windowResize: function() {
@@ -85,7 +83,7 @@ function WebZui( library, engine, logfunc) {
 	    },
 
 	    _eraseBottomWindow: function() {
-	      $("#content").empty();
+	      $("#content").children( ':not(.LineCharInput)' ).remove();
 	      this._lastSeenY = 0;
 	    },
 
@@ -122,12 +120,12 @@ function WebZui( library, engine, logfunc) {
 	      );
 	      self.current_input = $("#current-input");
 	      self.current_input.attr("class", self._calcFinalStyles());*/
-	      this.line_input.get( callback );
+	      this.line_char_input.get_line( callback );
 	    },
 
 	    onCharacterInput: function(callback) {
 	      self._currentCallback = callback;
-	      this.char_input.get( callback );
+	      this.line_char_input.get_char( callback );
 	    },
 
     onSave: function(data) {
@@ -393,11 +391,11 @@ onRestore: function()
 	            );
 
 	            chunk = '<span class="' + styles + '">' + chunk + '</span>';
-	            $("#content").append(chunk);
+	            $("#content").children().last().before(chunk);
 	          }
 
 	          if (i < lines.length - 1)
-	            $("#content").append("<br/>");
+	            $("#content").children().last().before("<br/>");
 	        }
 
 	        self._scrollBottomWindow();

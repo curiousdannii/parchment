@@ -28,61 +28,87 @@ if ( $.browser.msie && parseInt($.browser.version) < 7 )
 	});
 }
 
-// A generic line input editor
-parchment.lib.LineInput = Object.subClass({
-	// Set up the line input editor with a container and styles to apply
-	init: function( container, classes )
-	{
+// A Line and character input class
+// Because of problems with the iPhone, this class will use a single <input> for both input types
+// To switch between line and character input, classes will be added and removed
+
+parchment.lib.LineCharInput = Object.subClass({
+	// Set up the input editor with a container
+	init: function( container )
+	{	
 		var self = this,
 		container = $( container ),
-		
+
 		// The input element itself
 		input = $( '<input>', {
-			'class': classes || '',
 			keydown: function( event )
 			{
 				var key_code = event.which;
 				
-				// Check for up/down to use the command history
-				if ( key_code == 38 ) // up -> prev
+				if ( self.mode == 'char' )
 				{
+					self.keyCode = key_code;
+				}
+				if ( self.mode == 'line' )
+				{
+					// Check for up/down to use the command history
+					if ( key_code == 38 ) // up -> prev
+					{
 					self.prev_next( 1 );
-				}
-				if ( key_code == 40 ) // down -> next
-				{
+					}
+					if ( key_code == 40 ) // down -> next
+					{
 					self.prev_next( -1 );
-				}
-				
-				// Trigger page up/down on the body
-				if ( key_code == 33 || key_code == 34 )
-				{
+					}
+
+					// Trigger page up/down on the body
+					if ( key_code == 33 || key_code == 34 )
+					{
 					//doc.trigger( 'keyup', event );
+					}
+				}
+			},
+			keypress: function( event )
+			{
+				if ( self.mode == 'char' )
+				{
+					self.charCode = event.which;
+					self.submit_char();
+					return false;
+				}
+			},
+			keyup: function()
+			{
+				if ( self.mode == 'char' )
+				{
+					self.submit_char();
 				}
 			}
-		});
-		
+		})
+
 		// A form to contain it
 		self.form = $( '<form>', {
-			'class': 'LineInput',	
-			submit: function()
+			'class': 'LineCharInput',
+			 submit: function()
 			{
-				self.submit();
+				if ( self.mode == 'line' )
+				{
+					self.submit_line();
+				}
 				return false;
 			}
 		})
-			.append( input );
-		
+			.append( input )
+			.appendTo( container );
+
 		// Focus document clicks
-		doc.bind( 'click.LineInput', function() {
-			if ( $( '.LineInput' ).length )
-			{
-				input.focus();
-			}
+		doc.bind( 'click.LineCharInput', function() {
+			input[0].focus();
 		});
 		
 		// Command history
 		self.history = [];
-		// current and mutable_history are set in .get()
+		// current and mutable_history are set in .getLine()
 		
 		self.input = input;
 		self.container = container;
@@ -91,16 +117,15 @@ parchment.lib.LineInput = Object.subClass({
 	// Cleanup so we can deconstruct
 	die: function()
 	{
-		doc.unbind( '.LineInput' );
+		doc.unbind( '.LineCharInput' );
 	},
 	
-	// Get some input
-	get: function( callback )
+	// Get some line input
+	get_line: function( callback )
 	{
 		var self = this,
-		container = self.container,
-		input = self.input;
-		
+		container = self.container;
+		self.mode = 'line';
 		self.callback = callback || $.noop;
 		
 		// Set up the mutable history
@@ -109,28 +134,24 @@ parchment.lib.LineInput = Object.subClass({
 		self.mutable_history.unshift( '' );
 		
 		// Adjust the input's width and ensure it's empty
-		input
-			.width( container.width() - container.children().last().width() )
+		self.input
+			.width( container.width() - container.children().eq(-2).width() )
 			.val( '' );
-		
-		container.append( self.form );
-		setTimeout( function(){
-			self.input.focus();
-		}, 1 );
 	},
 	
 	// Submit the input data
-	submit: function()
+	submit_line: function()
 	{
 		var self = this,
 		command = self.input.val();
 			
 		// Hide the <form>
-		self.form.detach();
+		self.mode = 0;
+		self.input.width( 0 );
 		
 		// Copy back the command
 		$( '<span class="finished-input">' + command.entityify() + '</span><br>' )
-			.appendTo( self.container );
+			.insertBefore( self.form );
 		
 		// Add this command to the history, as long as it's not the same as the last, and not blank
 		if ( command != self.history[0] && /\S/.test( command ) )
@@ -164,86 +185,35 @@ parchment.lib.LineInput = Object.subClass({
 			input.val( mutable_history[new_current] );
 			self.current = new_current;
 		}
-	}
-});
-
-// A generic character input
-parchment.lib.CharInput = Object.subClass({
-	// Set up the character input
-	init: function()
-	{
-		var self = this,
-		
-		// The input element itself
-		input = $( '<input>', {
-			'class': 'CharInput',
-			keydown: function( event )
-			{
-				self.keyCode = event.which;
-			},
-			keypress: function( event )
-			{
-				self.charCode = event.which;
-				self.submit();
-				return false;
-			},
-			keyup: function( event )
-			{
-				self.submit();
-			}
-		});
-		
-		// Focus document clicks
-		doc.bind( 'click.CharInput', function() {
-			if ( $( '.CharInput' ).length )
-			{
-				input.focus();
-			}
-		});
-		
-		self.input = input;
 	},
 	
-	// Cleanup so we can deconstruct
-	die: function()
-	{
-		doc.unbind( '.CharInput' );
-	},
-	
-	// Get some input
-	get: function( callback )
+	// Get some char input
+	get_char: function( callback )
 	{
 		var self = this;
-		
+		self.mode = 'char';
 		self.callback = callback || $.noop;
 		
 		self.keyCode = self.charCode = 0;
-		
-		// Add the <input> and focus
-		self.input.appendTo( $( 'body' ) );
-		setTimeout( function(){
-			self.input.focus();
-		}, 1 );
 	},
 	
 	// Submit the input data
-	submit: function()
+	submit_char: function()
 	{
 		var self = this,
-		keyCode = self.keyCode, charCode = self.charCode,
 		input = {
-			keyCode: keyCode,
-			charCode: charCode
+			keyCode: self.keyCode,
+			charCode: self.charCode
 		};
 		
 		// Do we have anything to submit?
-		if ( !keyCode && !charCode )
+		if ( !self.keyCode )
 		{
 			return;
 		}
 		
-		// Hide the <input>
-		self.input.detach();
+		// Disable the input
+		self.mode = 0;
 		
 		// Trigger a custom event for anyone listening in for key strokes
 		doc.trigger({

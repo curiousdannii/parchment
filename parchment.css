@@ -109,13 +109,13 @@ body {
     margin: 0 auto;
 }
 
-/* A generic line input editor */
-.LineInput
+/* Line and character input */
+.LineCharInput
 {
 	display: inline-block;
 }
 
-.LineInput input
+.LineCharInput input
 {
 	border: 0;
 	outline: 0;
@@ -124,13 +124,6 @@ body {
 
 .finished-input {
     opacity: 0.5;
-}
-
-/* A generic character input */
-.CharInput
-{
-	left: -99em;
-	position: absolute;
 }
 
 .z-roman {
