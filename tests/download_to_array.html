@@ -142,7 +142,7 @@ $(function(){
 
 	test_download( '#4 Local file with binary support', local_file, 1, 1 );
 
-	test_download( '#5 Load encoded backup file directly', [local_file, local_file + '.txt'], 0, 1 );
+	test_download( '#5 Load \'JSONP\' backup file directly', [local_file, local_file + '.js'], 0, 1 );
 	
 	test_download( '#6 Load from proxy (base64 + JSONP)', http_file, 0, 0 );
 	
