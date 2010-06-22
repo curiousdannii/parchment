@@ -212,12 +212,21 @@ Library = Class.extend({
 	// Load a story or savefile
 	load: function(id)
 	{
-		var options = parchment.options,
+		var options = parchment.options;
 		
-		// Load from URL, or the default story
-		querystring = new Querystring(),
-		storyfile = querystring.get('story', options.default_story),
-		url = $.isArray( storyfile ) ? storyfile[0] : storyfile;
+		if ( options.lock_story )
+		{
+
+			// Locked to the default story
+			var storyfile = options.default_story;
+		}
+		else
+		{
+			// Load from URL, or the default story
+			var querystring = new Querystring(),
+			storyfile = querystring.get('story', options.default_story);
+		}
+		var url = $.isArray( storyfile ) ? storyfile[0] : storyfile;
 		this.url = url;
 
 		storyName = url.slice( url.lastIndexOf("/") + 1 );

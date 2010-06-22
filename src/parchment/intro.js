@@ -22,6 +22,10 @@ var parchment = {
 	options: {
 		default_story: 'stories/troll.z5.js',
 		lib_path: 'lib/',
+		
+		// Lock Parchment so it will only run the default story
+		lock_story: 0,
+		
 		page_title: 1,
 		proxy_url: 'http://zcode.appspot.com/proxy/'
 	},

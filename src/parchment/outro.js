@@ -23,7 +23,7 @@ function load_parchment()
 
 	// Add the Analytics tracker, but only if we're at parchment.googlecode.com
 	if (location.href.slice(0, 31) == 'http://parchment.googlecode.com')
-		$.getScript('http://www.google-analytics.com/ga.js', function(){gat._getTracker("UA-7949545-1")._trackPageview();});
+		$.getScript('http://www.google-analytics.com/ga.js', function(){_gat._getTracker("UA-7949545-1")._trackPageview();});
 }
 
 $(load_parchment);
