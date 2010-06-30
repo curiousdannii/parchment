@@ -1,25 +1,21 @@
 /*
  * Quetzal Common Save-File Format
  *
- * Copyright (c) 2003-2009 The Gnusto Contributors
+ * Copyright (c) 2008-2010 The Gnusto Contributors
  * Licenced under the GPL v2
  * http://github.com/curiousdannii/gnusto
  */
-(function(){
-
-// Form and chunk type constants
-var IFZS = 'IFZS', IFHD = 'IFhd', CMEM = 'CMem', UMEM = 'UMem', STKS = 'Stks';
 
 // A savefile
-window.Quetzal = IFF.extend({
+window.Quetzal = IFF.subClass({
 	// Parse a Quetzal savefile, or make a blank one
-	init: function parse_quetzal(bytes)
+	init: function(bytes)
 	{
 		this._super(bytes);
 		if (bytes)
 		{
 			// Check this is a Quetzal savefile
-			if (this.type != IFZS)
+			if (this.type != 'IFZS')
 				throw new Error('Not a Quetzal savefile');
 
 			// Go through the chunks and extract the useful ones
@@ -28,16 +24,16 @@ window.Quetzal = IFF.extend({
 				var type = this.chunks[i].type, data = this.chunks[i].data;
 
 				// Memory and stack chunks. Overwrites existing data if more than one of each is present!
-				if (type == CMEM || type == UMEM)
+				if (type == 'CMem' || type == 'UMem')
 				{
 					this.memory = data;
-					this.compressed = (type == CMEM);
+					this.compressed = (type == 'CMem');
 				}
-				else if (type == STKS)
+				else if (type == 'Stks')
 					this.stacks = data;
 
 				// Story file data
-				else if (type == IFHD)
+				else if (type == 'IFhd')
 				{
 					this.release = data.slice(0, 2);
 					this.serial = data.slice(2, 8);
@@ -50,10 +46,10 @@ window.Quetzal = IFF.extend({
 	},
 
 	// Write out a savefile
-	write: function write_quetzal()
+	write: function()
 	{
 		// Reset the IFF type
-		this.type = IFZS;
+		this.type = 'IFZS';
 
 		// Format the IFhd chunk correctly
 		var pc = this.pc,
@@ -65,14 +61,12 @@ window.Quetzal = IFF.extend({
 
 		// Add the chunks
 		this.chunks = [
-			{type: IFHD, data: ifhd},
-			{type: (this.compressed ? CMEM : UMEM), data: this.memory},
-			{type: STKS, data: this.stacks}
+			{type: 'IFhd', data: ifhd},
+			{type: (this.compressed ? 'CMem' : 'UMem'), data: this.memory},
+			{type: 'Stks', data: this.stacks}
 		];
 
 		// Return the byte array
 		return this._super();
 	}
 });
-
-})();

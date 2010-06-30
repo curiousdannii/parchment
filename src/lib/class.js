@@ -8,25 +8,24 @@
  * Inspired by base2 and Prototype
  */
 (function(){
-  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
-
-  // The base Class implementation (does nothing)
-  this.Class = function(){};
+  var initializing = false,
+  // Determine if functions can be serialized
+  fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
  
   // Create a new Class that inherits from this class
-  Class.extend = function(prop) {
+  Object.subClass = function(prop) {
     var _super = this.prototype;
    
     // Instantiate a base class (but only create the instance,
     // don't run the init constructor)
     initializing = true;
-    var prototype = new this();
+    var proto = new this();
     initializing = false;
    
     // Copy the properties over onto the new prototype
     for (var name in prop) {
       // Check if we're overwriting an existing function
-      prototype[name] = typeof prop[name] == "function" &&
+      proto[name] = typeof prop[name] == "function" &&
         typeof _super[name] == "function" && fnTest.test(prop[name]) ?
         (function(name, fn){
           return function() {
@@ -55,13 +54,13 @@
     }
    
     // Populate our constructed prototype object
-    Class.prototype = prototype;
+    Class.prototype = proto;
    
     // Enforce the constructor to be what we expect
     Class.constructor = Class;
 
     // And make this class extendable
-    Class.extend = arguments.callee;
+    Class.subClass = arguments.callee;
    
     return Class;
   };
