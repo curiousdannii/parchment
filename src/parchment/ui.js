@@ -5,7 +5,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(){
+(function($){
 
 window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
 
@@ -27,4 +27,4 @@ $(document).ready(function() {
     }
 });
 
-})();
+})(jQuery);

@@ -9,7 +9,7 @@
 
 // Don't append a timestamp to XHR requests
 // Use the Last-Modified/If-Modified-Since headers, but not when loading from a file:
-$.ajaxSetup({
+jQuery.ajaxSetup({
 	cache: true,
 	dataType: 'text',
 	ifModified: location.protocol !== 'file:'

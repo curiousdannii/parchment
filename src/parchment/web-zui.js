@@ -1,3 +1,5 @@
+(function($){
+
 	var ESCAPE_KEYCODE = 27;
 	var BACKSPACE_KEYCODE = 8;
 	var RETURN_KEYCODE = 13;
@@ -866,3 +868,5 @@ onRestore: function()
 	    $("#iphone-text-field").click(onClick);
 	  }
 	}
+
+})(jQuery);

@@ -5,7 +5,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(window){
+(function(window, $){
 
 // A story file
 var Story = IFF.extend({
@@ -265,4 +265,4 @@ Library = Class.extend({
 
 window.Library = Library;
 
-})(window);
+})(window, jQuery);

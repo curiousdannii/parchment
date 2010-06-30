@@ -5,7 +5,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(window){
+(function(window, $){
 
 var parchment = window.parchment;
 
@@ -28,4 +28,4 @@ function load_parchment()
 
 $(load_parchment);
 
-})(window);
+})(window, jQuery);

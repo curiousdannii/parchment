@@ -6,7 +6,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(window){
+(function(window, $){
 
 // Text to byte array and vice versa
 function text_to_array(text, array)
@@ -346,4 +346,4 @@ window.file = {
 	support: support
 };
 
-})(window);
+})(window, jQuery);
