@@ -184,7 +184,7 @@ PAGEDOWN_KEYCODE = 34;
 	  };
 	}
 
-parchment.lib.ZUI = Class.extend({
+parchment.lib.ZUI = Object.subClass({
 	// Initiate this ZUI
 	init: function( library, engine, logfunc )
 	{
