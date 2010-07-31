@@ -215,6 +215,7 @@ parchment.lib.ZUI = Object.subClass({
 			
 			bottom: $("#bottom"),
 			current_input: $("#current-input"),
+			_lineEditor: new LineEditor(),
 			
 			_log: logfunc || $.noop,
 			
@@ -223,6 +224,43 @@ parchment.lib.ZUI = Object.subClass({
 				if ( window.location.hash != self._expectedHash )
 				{
 					self._restart();
+				}
+			},
+			keyupHandler: function( e )
+			{
+				self._windowKeyup.call( self, e );
+			},
+			keydownHandler: function( e )
+			{
+				self._windowKeydown.call( self, e );
+			},
+			keypressHandler: function( e )
+			{
+				self._windowKeypress.call( self, e );
+			},
+			
+			// Pass focus to the textbox to accept the pasted text
+			_windowPasteHandler: function(event)
+			{
+				if (self.current_input.length != 0)
+				{
+					$("#pasteinput").focus();
+					window.setTimeout(self._inputPasteHandler, 10);
+				}
+			},
+			
+			// Add the pasted text to the LineEditor
+			_inputPasteHandler: function(event)
+			{
+				var pasted = $("#pasteinput").val();
+				$("#pasteinput").val('');
+				// $("#pasteinput").blur();
+				var e = {charCode: 0, keyCode: 0};
+				// It would be nice if a string could be added rather than only a single character
+				for (var i = 0; i < pasted.length; i++)
+				{
+					e.charCode = pasted.charCodeAt(i);
+					self._handleKeyEvent(e);
 				}
 			}
 		});
@@ -289,9 +327,9 @@ parchment.lib.ZUI = Object.subClass({
 			else
 			{
 				$(document).bind('keydown', 'Ctrl+v', self._windowPasteHandler)
-					.keypress(self._windowKeypress)
-					.keyup(self._windowKeyup)
-					.keydown(self._windowKeydown);
+					.keypress(self.keypressHandler)
+					.keyup(self.keyupHandler)
+					.keydown(self.keydownHandler);
 			}
 			$(window).resize(self._windowResize);
 			 self._intervalId = window.setInterval(self._windowHashCheck, 1000);
@@ -304,9 +342,9 @@ parchment.lib.ZUI = Object.subClass({
 			else
 			{
 				$(document).unbind('keydown', 'Ctrl+v', self._windowPasteHandler)
-					.unbind("keypress", self._windowKeypress)
-					.unbind("keyup", self._windowKeyup)
-					.unbind("keydown", self._windowKeydown);
+					.unbind("keypress", self.keypressHandler)
+					.unbind("keyup", self.keyupHandler)
+					.unbind("keydown", self.keydownHandler);
 			}
 			$(window).unbind("resize", self._windowResize);
 			window.clearInterval(self._intervalId);
@@ -344,12 +382,13 @@ parchment.lib.ZUI = Object.subClass({
 
 	    _windowKeyup: function(event) {
 			if (jQuery.browser.mozilla)
-				return self._isHotKey(event);
+				return this._isHotKey(event);
 			else
 				return true;
 		},
 
 	_windowKeydown: function(event) {
+	      var self = this;
 	      if (jQuery.browser.mozilla)
 	        return self._isHotKey(event);
 	      else if (((jQuery.browser.safari || jQuery.browser.msie) &&
@@ -365,6 +404,7 @@ parchment.lib.ZUI = Object.subClass({
 	    },
 
 	    _windowKeypress: function(event) {
+	      var self = this;
 	      if (self._isHotKey(event))
 	        return true;
 	      if (jQuery.browser.mozilla)
@@ -401,6 +441,7 @@ parchment.lib.ZUI = Object.subClass({
 	    },
 
 	    _handleKeyEvent: function(event) {
+	      var self = this;
 	      if (event.keyCode == SHIFT_KEYCODE)
 	        // This only seems to happen on Opera, but just in case it happens
 	        // on some other browsers too, we're not special-casing it.
@@ -486,31 +527,6 @@ parchment.lib.ZUI = Object.subClass({
 	      }
 	      return false;
 	    },
-
-		// Pass focus to the textbox to accept the pasted text
-		_windowPasteHandler: function(event)
-		{
-			if (self.current_input.length != 0)
-			{
-				$("#pasteinput").focus();
-				window.setTimeout(self._inputPasteHandler, 10);
-			}
-		},
-
-		// Add the pasted text to the LineEditor
-		_inputPasteHandler: function(event)
-		{
-			var pasted = $("#pasteinput").val();
-			$("#pasteinput").val('');
-			// $("#pasteinput").blur();
-			var e = {charCode: 0, keyCode: 0};
-			// It would be nice if a string could be added rather than only a single character
-			for (var i = 0; i < pasted.length; i++)
-			{
-				e.charCode = pasted.charCodeAt(i);
-				self._handleKeyEvent(e);
-			}
-		},
 
 	    _windowResize: function() {
 	      var contentLeft = $("#content").offset().left + "px";
