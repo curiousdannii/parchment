@@ -7,8 +7,23 @@
  */
 (function(){
 
+var window = this,
+
 // Wrap document
-var doc = $( document );
+doc = $( document );
+
+// window.scrollByPages() compatibility
+if ( !window.scrollByPages )
+{
+	window.scrollByPages = function( pages )
+	{
+		// From Mozilla's nsGfxScrollFrame.cpp
+		// delta = viewportHeight - Min( 10%, lineHeight * 2 )
+		var height = doc[0].documentElement.clientHeight,
+		delta = height - Math.min( height / 10, parseInt( $( 'body' ).css( 'line-height' ) ) * 2 );
+		scrollBy( 0, delta * pages );
+	};
+}
 
 window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
 
@@ -86,9 +101,14 @@ parchment.lib.TextInput = Object.subClass({
 				}
 				
 				// Trigger page up/down on the body
-				if ( keyCode == 33 || keyCode == 34 )
+				// FIX: Won't scroll repeatably
+				if ( keyCode == 33 ) // Up
 				{
-					//doc.trigger( 'keyup', event );
+					scrollByPages(-1);
+				}
+				if ( keyCode == 34 ) // Down
+				{
+					scrollByPages(1);
 				}
 			}
 		}),
