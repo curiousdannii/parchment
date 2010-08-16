@@ -1,4 +1,4 @@
-/*!
+/*
  * Interchange File Format library
  *
  * Copyright (c) 2008-2010 The Gnusto Contributors

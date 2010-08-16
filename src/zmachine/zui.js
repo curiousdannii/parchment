@@ -1,50 +1,104 @@
-function WebZui( library, engine, logfunc) {
-	  var widthInChars = ( gIsIphone && $( document.body ).width() <= 480 ) ? 38 : 80;
+/*!
+ * Parchment Z-Machine UI and Runner
+ * Built: BUILDDATE
+ *
+ * Copyright (c) 2008-2010 The Parchment Contributors
+ * Licenced under the GPL v2
+ * http://code.google.com/p/parchment
+ */
+(function($){
 
-	  this._size = [widthInChars, 25];
-	  this._console = null;
-	  this._activeWindow = 0;
-	  this._currentCallback = null;
-	  this._foreground = "default";
-	  this._background = "default";
-	  this._reverseVideo = false;
-	  this._lastSeenY = 0;
-	  this._currStyles = ["z-roman"];
-	  this._expectedHash = window.location.hash;
-	  this._isFixedWidth = false;
-	  this._bufferMode = 0;
-	  
-	  this.library = library;
-	  this.engine = engine;
-	  this.text_input = new parchment.lib.TextInput( '#parchment', '#content' );
+parchment.lib.ZUI = Object.subClass({
+	// Initiate this ZUI
+	init: function( library, engine, logfunc )
+	{
+		var self = this,
+		
+		widthInChars = ( gIsIphone && $( document.body ).width() <= 480 ) ? 38 : 80;
+		
+		// Set up the HTML we need
+		library.container.html( '<div id="top-window" class="buffered-window"></div><div id="buffered-windows"></div><div id="content"></div><div id="bottom"></div>' );
+		
+		// Defaults
+		$.extend( self, {
+			_size: [widthInChars, 25],
+			_console: null,
+			_activeWindow: 0,
+			_currentCallback: null,
+			_foreground: "default",
+			_background: "default",
+			_reverseVideo: false,
+			_lastSeenY: 0,
+			_currStyles: ['z-roman'],
+			_expectedHash: window.location.hash,
+			_isFixedWidth: false,
+			_bufferMode: 0,
+			
+			library: library,
+			engine: engine,
+			
+			bottom: $("#bottom"),
+			current_input: $("#current-input"),
+			text_input: new parchment.lib.TextInput( '#parchment', '#content' ),
+			
+			_log: logfunc || $.noop,
+			
+			_windowHashCheck: function()
+			{
+				if ( window.location.hash != self._expectedHash )
+				{
+					self._restart();
+				}
+			}
+		});
 
-	this.bottom = $("#bottom");
-	this.current_input = $("#current-input");
+		self._setFixedPitchSizes();
 
-	  if (logfunc) {
-	    this._log = logfunc;
-	  } else {
-	    this._log = function() {};
+		$("#top-window").css({width: self._pixelWidth + "px",
+		lineHeight: self._pixelLineHeight + "px"});
+		$("#content").css({width: self._pixelWidth + "px"});
+
+		self._windowResize();
+		self._bindEventHandlers();
+		self._eraseBottomWindow();
+
+	  if (gIsIphone) {
+	    // The iPhone needs an actual text field focused in order to
+	    // display the on-screen keyboard, so add a hidden one that
+	    // attempts to overlap any text prompt that may be visible.
+	    $(document.body).append(
+	      '<textarea class="iphone-visible" ' +
+	        'id="iphone-text-field" rows="1" ' +
+	        'cols="20" autocapitalize="off">' +
+	        'Tap here to enter text.</textarea>'
+	    );
+	    var itfHeight = -1 * $("#iphone-text-field").height();
+	    $("#iphone-text-field").css({top: itfHeight + "px"});
+	    function onClick() {
+	      $(this).removeClass("iphone-visible");
+	      $(this).addClass("iphone-invisible");
+	      $(this).unbind("click", onClick);
+	    }
+	    $("#iphone-text-field").click(onClick);
 	  }
+	},
 
-	  var self = this;
-
-	  var methods = {
 	    onConsoleRender: function() {
 	      var height = $("#top-window").height();
 	      $("#content").css({padding: "" + height + "px 0 0 0"});
-	      self._scrollBottomWindow();
+	      this._scrollBottomWindow();
 	    },
 
 	    _scrollBottomWindow: function() {
 	      // If we're on the iPhone, do nothing; the iPhone will handle
 	      // scrolling as it likes and anything we do to stop it will
 	      // just result in confusion.
-	      if (!gIsIphone)
-	        window.scroll(0, self._lastSeenY);
+	      //if (!gIsIphone)
+	      //  window.scroll(0, this._lastSeenY);
 	    },
 
 	    _finalize: function() {
+	    	var self = this;
 	      if (self._console) {
 	        self._console.close();
 	        self._console = null;
@@ -54,11 +108,13 @@ function WebZui( library, engine, logfunc) {
 	    },
 
 		_bindEventHandlers: function() {
+			var self = this;
 			$(window).resize(self._windowResize);
 			 self._intervalId = window.setInterval(self._windowHashCheck, 1000);
 		},
 
 		_unbindEventHandlers: function() {
+			var self = this;
 			$(window).unbind("resize", self._windowResize);
 			window.clearInterval(self._intervalId);
 			
@@ -68,11 +124,6 @@ function WebZui( library, engine, logfunc) {
 	    _windowResize: function() {
 	      var contentLeft = $("#content").offset().left + "px";
 	      $(".buffered-window").css({left: contentLeft});
-	    },
-
-	    _windowHashCheck: function() {
-	      if (window.location.hash != self._expectedHash)
-	        self._restart();
 	    },
 
 	    _removeBufferedWindows: function() {
@@ -88,29 +139,30 @@ function WebZui( library, engine, logfunc) {
 	    },
 
 	    _restart: function() {
-	      self._finalize();
+	      this._finalize();
 	      location.reload();
 	    },
 
 	    setVersion: function(version) {
-	      self._version = version;
+	      this._version = version;
 	    },
 
 	    getSize: function() {
-	      return self._size;
+	      return this._size;
 	    },
 
 	    onLineInput: function(callback) {
+	    	var self = this;
     	  if ( self.engine.m_version <= 3 ) { // Redraw status line automatically in V1-V3
     	    var oldwin = self._activeWindow;
-	        var oldrev = this._reverseVideo;
+	        var oldrev = self._reverseVideo;
 	        if (!self._console)
 	          self.onSplitWindow(1);
 	        self._console.moveTo(0,0);
 	        self._activeWindow = 1;
-	        this._reverseVideo = true;
+	        self._reverseVideo = true;
 	        self.onPrint( self.engine.getStatusLine(self._console.width) );
-	        this._reverseVideo = oldrev;
+	        self._reverseVideo = oldrev;
 	        self._activeWindow = oldwin;
           }
 
@@ -124,17 +176,19 @@ function WebZui( library, engine, logfunc) {
 	    },
 
 	    onCharacterInput: function(callback) {
+	    	var self = this;
 	      self._currentCallback = callback;
-	      this.text_input.getChar( callback );
+	      self.text_input.getChar( callback );
 	    },
 
     onSave: function(data) {
       // TODO: Attempt to use other forms of local storage
       // (e.g. Google Gears, HTML 5 database storage, etc) if
       // available; if none are available, we should return false.
+      var self = this,
 
-      var saveKey = this.library.url + '_saveData';
-      var b64data = file.base64_encode(data);
+      saveKey = this.library.url + '_saveData',
+      b64data = file.base64_encode(data);
 
       if (window.globalStorage && location.href.slice(0, 5) != 'file:')
         window.globalStorage[location.hostname][saveKey] = b64data;
@@ -168,7 +222,7 @@ onRestore: function()
 			b64data = saveData.value;
 			// See comment above in onSave
 			location = location.protocol + '//' + location.host + location.pathname + location.search + '#' + b64data;
-			self._expectedHash = location.hash;
+			this._expectedHash = location.hash;
 		}
 	}
 
@@ -179,19 +233,20 @@ onRestore: function()
 },
 
 	    onQuit: function() {
-	      self._finalize();
+	      this._finalize();
 	    },
 
 	    onRestart: function() {
-      self._finalize();
+			var self = this;
+			self._finalize();
 
-	      // TODO: It's not high-priority, but according to the Z-Machine
-	      // spec documentation for the restart opcode, we need to
-	      // preserve the "transcribing to printer" bit and the "use
-	      // fixed-pitch font" bit when restarting.
+			// TODO: It's not high-priority, but according to the Z-Machine
+			// spec documentation for the restart opcode, we need to
+			// preserve the "transcribing to printer" bit and the "use
+			// fixed-pitch font" bit when restarting.
 
-      window.location.hash = "";
-	      self._restart();
+			window.location.hash = "";
+			self._restart();
 	    },
 
 	    onWimpOut: function(callback) {
@@ -202,7 +257,7 @@ onRestore: function()
 	      if (isToTranscript)
 	        // TODO: Deal with isToTranscript.
 	        throw new FatalError("To transcript not yet implemented!");
-	      self._isFixedWidth = isFixedWidth;
+	      this._isFixedWidth = isFixedWidth;
 	    },
 
 	    onSetStyle: function(textStyle, foreground, background) {
@@ -248,6 +303,7 @@ onRestore: function()
 	    },
 
 	    onSetWindow: function(window) {
+	    	var self = this;
 	      if (window == 1) {
 	        // The following isn't outlined in the Z-Spec, but Fredrik
 	        // Ramsberg's "Aventyr" sets the top window shortly after
@@ -264,6 +320,7 @@ onRestore: function()
 	    },
 
 	    onEraseWindow: function(window) {
+	    	var self = this;
 	      // Set the background color.
 	      document.body.className = "bg-" + self._background;
 
@@ -285,6 +342,7 @@ onRestore: function()
 	    },
 
 	    onSetCursor: function(x, y) {
+	    	var self = this;
 	      if (self._console)
 	        self._console.moveTo(x - 1, y - 1);
 	    },
@@ -297,10 +355,11 @@ onRestore: function()
 	      // asked to split the window, we'll leave an "imprint" of what
 	      // was drawn there until the user presses a key, at which point
 	      // it'll fade away.
-	      self._bufferMode = flag;
+	      this._bufferMode = flag;
 	    },
 
 	    onSplitWindow: function(numlines) {
+	    	var self = this;
 	      if (numlines == 0) {
 	        if (self._console) {
 	          self._console.close();
@@ -340,8 +399,9 @@ onRestore: function()
 	    },
 
 	    _calcFinalStyles: function() {
-	      var fg = self._foreground;
-	      var bg = self._background;
+	    	var self = this,
+	    	fg = self._foreground,
+	    	bg = self._background;
 
 	      if (self._reverseVideo) {
 	        fg = self._background;
@@ -364,7 +424,8 @@ onRestore: function()
 	    },
 
 	    onPrint: function(output) {
-	      var styles = self._calcFinalStyles();
+	    	var self = this,
+	    	styles = self._calcFinalStyles();
 
 	      self._log("print wind: " + self._activeWindow + " output: " +
 	                output.quote() + " style: " + styles);
@@ -409,11 +470,12 @@ onRestore: function()
 	      // these lines or not, or setting the current text style
 	      // to monospace if we're displaying in the bottom window.
 	      for (var i = 0; i < lines.length; i++)
-	        self.onPrint(lines[i]);
+	        this.onPrint(lines[i]);
 	    },
 
 	    _setFixedPitchSizes: function() {
-	      var row = document.createElement("div");
+	    	var self = this,
+	    	row = document.createElement("div");
 	      row.className = "buffered-window";
 	      for (var i = 0; i < self._size[0]; i++)
 	        row.innerHTML += "O";
@@ -440,18 +502,6 @@ onRestore: function()
 	      self._pixelLineHeight = $(row.firstChild).height();
 	      $("#buffered-windows").empty();
 	    }
-	  };
+});
 
-	  for (name in methods)
-	    self[name] = methods[name];
-
-	  self._setFixedPitchSizes();
-
-	  $("#top-window").css({width: self._pixelWidth + "px",
-	                        lineHeight: self._pixelLineHeight + "px"});
-	  $("#content").css({width: self._pixelWidth + "px"});
-
-	  self._windowResize();
-	  self._bindEventHandlers();
-	  self._eraseBottomWindow();
-	}
+})(jQuery);

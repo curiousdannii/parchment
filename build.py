@@ -21,10 +21,10 @@ includes = (
 		'src/parchment/outro.js',
 	)),
 	('.build/zmachine.js', (
+		'src/zmachine/zui.js',
 		'src/plugins/quetzal.js',
-		'src/parchment/engine-runner.js',
-		'src/parchment/console.js',
-		'src/parchment/web-zui.js',
+		'src/zmachine/runner.js',
+		'src/zmachine/console.js',
 	)),
 )
 

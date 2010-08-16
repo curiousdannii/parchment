@@ -5,7 +5,7 @@
  * Licenced under the GPL v2
  * http://code.google.com/p/parchment
  */
-(function(){
+(function($){
 
 var window = this,
 
@@ -290,4 +290,4 @@ parchment.lib.TextInput = Object.subClass({
 	}
 });
 
-})();
+})(jQuery);

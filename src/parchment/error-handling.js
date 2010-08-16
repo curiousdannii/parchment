@@ -1,3 +1,5 @@
+(function($){
+
 function FatalError(message) {
   this.message = message;
   this.traceback = this._makeTraceback(arguments.callee);
@@ -54,3 +56,5 @@ FatalError.prototype = {
     return "Traceback (most recent call last):\n" + procstring;
   }
 };
+
+})(jQuery);

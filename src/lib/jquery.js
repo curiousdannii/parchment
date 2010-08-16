@@ -5057,6 +5057,10 @@ jQuery.extend({
 		var parts = rurl.exec( s.url ),
 			remote = parts && (parts[1] && parts[1] !== location.protocol || parts[2] !== location.host);
 
+		// Quick hack for file: on Chrome
+		if ( location.protocol === "file:" && navigator.userAgent.match(/chrome/i) )
+			remote = 1;
+
 		// If we're requesting a remote document
 		// and trying to load JSON or Script with a GET
 		if ( s.dataType === "script" && type === "GET" && remote ) {

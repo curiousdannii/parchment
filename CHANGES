@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+June 2010
+================================================================================
+Backup files must now be wrapped in processBase64Zcode('') so that local file loading will work on Chrome.
+
 May 2010
 ================================================================================
 Completely rewrote line and char input.
