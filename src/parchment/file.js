@@ -116,8 +116,8 @@ else
 // XMLHttpRequest feature support
 var xhr = jQuery.ajaxSettings.xhr(),
 support = {
-	// Unfortunately Opera's overrideMimeType() doesn't work
-	binary: xhr.overrideMimeType !== undefined && !$.browser.opera,
+	// Unfortunately in Opera < 10.5 overrideMimeType() doesn't work
+	binary: xhr.overrideMimeType !== undefined && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ),
 	cross_origin: xhr.withCredentials !== undefined
 };
 
@@ -143,9 +143,10 @@ function download_to_array( url, callback )
 	data_exec = urldomain.exec(url),
 	data_domain = data_exec ? data_exec[0] : page_domain,
 	
-	// Chrome doesn't allow file: to file: XHR
+	// Chrome > 4 doesn't allow file: to file: XHR
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	binary = ( data_domain === "file:" && navigator.userAgent.match(/chrome/i) ) ? 0 : support.binary,
+	chrome = /chrome\/(.)/i.exec( navigator.userAgent ),
+	binary = data_domain === "file:" && chrome && parseInt( chrome[1] ) > 4 ? 0 : support.binary,
 	
 	options,
 	
