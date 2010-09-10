@@ -143,7 +143,7 @@ parchment.lib.ZUI = Object.subClass({
 	      );
 	      self.current_input = $("#current-input");
 	      self.current_input.attr("class", self._calcFinalStyles());*/
-	      this.text_input.getLine( callback );
+	      self.text_input.getLine( callback, self._calcFinalStyles() );
 	    },
 
 	    onCharacterInput: function(callback) {

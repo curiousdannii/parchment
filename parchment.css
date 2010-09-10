@@ -1,5 +1,14 @@
-html {
-    -webkit-text-size-adjust: none;
+html
+{
+	overflow-y: scroll;
+	-webkit-text-size-adjust: none;
+}
+
+body
+{
+	font-family: Georgia, Palatino, serif;
+	margin: 0 0 8px;
+	text-align: center;
 }
 
 .fg-default {
@@ -82,13 +91,6 @@ html {
     background: white;
 }
 
-body {
-    font-family: palatino, georgia, verdana, arial, sans-serif;
-    text-align: center;
-    margin-top: 0px;
-    margin-bottom: 8px;
-}
-
 .buffered-window {
     text-align: center;
     margin: 0 auto;
@@ -112,12 +114,14 @@ body {
 /* A generic line input editor */
 .LineInput
 {
-	display: inline-block;
+	display: inline;
 }
 
 .LineInput input
 {
+	background: none;
 	border: 0;
+	font: inherit;
 	outline: 0;
 	padding: 0;
 }

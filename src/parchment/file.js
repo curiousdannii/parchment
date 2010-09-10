@@ -156,7 +156,8 @@ function download_to_array( url, callback )
 		window['processBase64Zcode'] = function( data )
 		{
 			callback( base64_decode( data ));
-			delete window['processBase64Zcode'];
+			window.processBase64Zcode = null;
+			try { delete window.processBase64Zcode; } catch(e) {}
 		};
 		$.getScript( url );
 	};

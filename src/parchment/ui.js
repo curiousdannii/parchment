@@ -169,14 +169,14 @@ parchment.lib.TextInput = Object.subClass({
 	// Cleanup so we can deconstruct
 	die: function()
 	{
-		container.unbind( '.TextInput' );
+		this.container.unbind( '.TextInput' );
 	},
 	
 	// Get some input
-	getLine: function( callback )
+	getLine: function( callback, style )
 	{
 		var self = this,
-		stream = self.stream,
+		prompt = self.stream.children().last(),
 		input = self.lineInput;
 		
 		self.callback = callback || $.noop;
@@ -186,12 +186,16 @@ parchment.lib.TextInput = Object.subClass({
 		self.mutable_history = self.history.slice();
 		self.mutable_history.unshift( '' );
 		
+		// Store the text style
+		self.style = style || '';
+		
 		// Adjust the input's width and ensure it's empty
 		input
-			.width( stream.width() - stream.children().last().width() )
-			.val( '' );
+			.width( self.stream.width() - prompt.width() )
+			.val( '' )
+			.addClass( self.style );
 		
-		stream.append( self.form );
+		prompt.append( self.form );
 		setTimeout( function(){
 			input.focus();
 		}, 1 );
@@ -203,12 +207,13 @@ parchment.lib.TextInput = Object.subClass({
 		var self = this,
 		command = self.lineInput.val();
 			
-		// Hide the <form>
+		// Hide the <form>, reset the styles
 		self.form.detach();
+		self.lineInput.removeClass( self.style );
 		
 		// Copy back the command
 		$( '<span class="finished-input">' + command.entityify() + '</span><br>' )
-			.appendTo( self.stream );
+			.appendTo( self.stream.children().last() );
 		
 		// Add this command to the history, as long as it's not the same as the last, and not blank
 		if ( command != self.history[0] && /\S/.test( command ) )
