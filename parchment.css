@@ -165,14 +165,3 @@ body {
     padding: 10px;
     margin: 10px;
 }
-
-#loading-screen {
-    padding: 50px;
-    text-align: center;
-    color: gray;
-    font-size: 18pt;
-}
-
-#progress-text {
-    font-size: 10pt;
-}

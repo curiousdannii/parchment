@@ -61,40 +61,11 @@ parchment.lib.ZUI = Object.subClass({
 		self._windowResize();
 		self._bindEventHandlers();
 		self._eraseBottomWindow();
-
-	  if (gIsIphone) {
-	    // The iPhone needs an actual text field focused in order to
-	    // display the on-screen keyboard, so add a hidden one that
-	    // attempts to overlap any text prompt that may be visible.
-	    $(document.body).append(
-	      '<textarea class="iphone-visible" ' +
-	        'id="iphone-text-field" rows="1" ' +
-	        'cols="20" autocapitalize="off">' +
-	        'Tap here to enter text.</textarea>'
-	    );
-	    var itfHeight = -1 * $("#iphone-text-field").height();
-	    $("#iphone-text-field").css({top: itfHeight + "px"});
-	    function onClick() {
-	      $(this).removeClass("iphone-visible");
-	      $(this).addClass("iphone-invisible");
-	      $(this).unbind("click", onClick);
-	    }
-	    $("#iphone-text-field").click(onClick);
-	  }
 	},
 
 	    onConsoleRender: function() {
 	      var height = $("#top-window").height();
 	      $("#content").css({padding: "" + height + "px 0 0 0"});
-	      this._scrollBottomWindow();
-	    },
-
-	    _scrollBottomWindow: function() {
-	      // If we're on the iPhone, do nothing; the iPhone will handle
-	      // scrolling as it likes and anything we do to stop it will
-	      // just result in confusion.
-	      //if (!gIsIphone)
-	      //  window.scroll(0, this._lastSeenY);
 	    },
 
 	    _finalize: function() {
@@ -458,8 +429,6 @@ onRestore: function()
 	          if (i < lines.length - 1)
 	            $("#content").append("<br/>");
 	        }
-
-	        self._scrollBottomWindow();
 	      } else {
 	        self._console.write(output, styles);
 	      }
