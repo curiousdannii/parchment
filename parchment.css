@@ -111,6 +111,27 @@ body
     margin: 0 auto;
 }
 
+/* General dialogs */
+.dialog
+{
+	background: #fff;
+	border: 3px solid #ddd;
+	border-radius: 10px;
+	-webkit-box-shadow: 5px 5px 10px #777;
+	box-shadow: 5px 5px 10px #777;
+	left: 30%;
+	padding: 0px 20px;
+	position: fixed;
+	top: 20%;
+	width: 40%;
+}
+
+/* Load indicator */
+.load
+{
+	text-align: left;
+}
+
 /* A generic line input editor */
 .LineInput
 {

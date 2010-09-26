@@ -216,16 +216,23 @@ Library = Object.subClass({
 		
 		// Keep a reference to our container
 		self.container = $( parchment.options.container );
+		
+		// Load indicator
+		self.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
 	
 	// Load a story or savefile
 	load: function(id)
 	{
-		var options = parchment.options;
+		var self = this,
+		
+		options = parchment.options;
+		
+		// Show the load indicator
+		$( 'body' ).append( self.load_indicator );
 		
 		if ( options.lock_story )
 		{
-
 			// Locked to the default story
 			var storyfile = options.default_story;
 		}
@@ -236,7 +243,7 @@ Library = Object.subClass({
 			storyfile = querystring.get('story', options.default_story);
 		}
 		var url = $.isArray( storyfile ) ? storyfile[0] : storyfile;
-		this.url = url;
+		self.url = url;
 
 		storyName = url.slice( url.lastIndexOf("/") + 1 );
 		storyName = storyName ? storyName + " - Parchment" : "Parchment";
@@ -248,8 +255,8 @@ Library = Object.subClass({
 		}
 		
 		// Check the story cache first
-		if (this.stories.url[url])
-			var story = this.stories.url[url];
+		if ( self.stories.url[url] )
+			var story = self.stories.url[url];
 
 		// We will have to download it
 		else
@@ -258,7 +265,7 @@ Library = Object.subClass({
 			// When Glulx support is added we will need to sniff the filename to decide which to launch
 			try
 			{
-				launch_zmachine( storyfile, this );
+				launch_zmachine( storyfile, self );
 			}
 			catch (e)
 			{

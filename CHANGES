@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+September 2010
+================================================================================
+Added a new load indicator, and the styles for dialogs in general.
+
 June 2010
 ================================================================================
 Backup files must now be wrapped in processBase64Zcode('') so that local file loading will work on Chrome.

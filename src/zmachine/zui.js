@@ -37,6 +37,8 @@ parchment.lib.ZUI = Object.subClass({
 			library: library,
 			engine: engine,
 			
+			hidden_load_indicator: 0,
+			
 			bottom: $("#bottom"),
 			current_input: $("#current-input"),
 			text_input: new parchment.lib.TextInput( '#parchment', '#content' ),
@@ -136,7 +138,14 @@ parchment.lib.ZUI = Object.subClass({
 	        self._reverseVideo = oldrev;
 	        self._activeWindow = oldwin;
           }
-
+          
+          // Hide load indicator
+          if ( !self.hidden_load_indicator )
+          {
+          	self.hidden_load_indicator = 1;
+          	self.library.load_indicator.detach();
+          }
+          
    	      self._currentCallback = callback;
 	      /*$("#content").append(
 	        '<span id="current-input"><span id="cursor">_</span></span>'
@@ -149,6 +158,14 @@ parchment.lib.ZUI = Object.subClass({
 	    onCharacterInput: function(callback) {
 	    	var self = this;
 	      self._currentCallback = callback;
+	      
+	      // Hide load indicator
+          if ( !self.hidden_load_indicator )
+          {
+          	self.hidden_load_indicator = 1;
+          	self.library.load_indicator.detach();
+          }
+          
 	      self.text_input.getChar( callback );
 	    },
 
