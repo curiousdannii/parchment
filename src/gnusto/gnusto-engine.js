@@ -347,17 +347,12 @@ function handleZ_store(engine, a) {
 
 function handleZ_store(engine, a)
 {
-	if (isNotConst.test(a[0]))
-		engine.logger('Z_store', a[0]);
-	if (engine.m_value_asserts) {
-		if (a[0] == null || a[0] === true || a[0] === false || a[0] < 0 || a[0] > 0xFFFF)
-			engine.logger('Z_store address', a[0]);
-		if (a[1] == null || a[1] === true || a[1] === false || a[1] < 0 || a[1] > 0xFFFF)
-			engine.logger('Z_store value', a[1]);
-	}
+	;;; if (isNotConst.test(a[0])) { engine.logger('Z_store', a[0]); }	
+	;;; if (a[0] == null || a[0] === true || a[0] === false || a[0] < 0 || a[0] > 0xFFFF) { engine.logger('Z_store address', a[0]); }
+	;;; if (a[1] == null || a[1] === true || a[1] === false || a[1] < 0 || a[1] > 0xFFFF) { engine.logger('Z_store value', a[1]); }
 
 	if (a[0] == 0)
-		return 'm_gamestack.push(' + a[1] + ')';
+		return 'm_gamestack[m_gamestack.length - 1] = ' + a[1] + ';';
 	else if (a[0] < 16)
 		return 'm_locals[' + (a[0]-1) + '] = ' + a[1];
 	else
@@ -554,9 +549,19 @@ function handleZ_jump(engine, a) {
 function handleZ_print_paddr(engine, a) {
     return engine._handler_zOut("_zscii_from("+engine.m_pc_translate_for_string(a[0])+")",0);
 }
-function handleZ_load(engine, a) {
-    return engine._storer('_varcode_get('+a[0]+')');
-  }
+
+function handleZ_load( engine, a )
+{
+	//return engine._storer('_varcode_get('+a[0]+')');
+	var code;
+	if ( a[0] == 0 )
+		code = 'm_gamestack[m_gamestack.length - 1]';
+	else if ( a[0] < 0x10 )
+		code = 'm_locals[( ' + a[0] + ' - 1 )]';
+	else
+		code = 'getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+	return engine._storer( code );
+}
 
 function handleZ_rtrue(engine, a) {
     engine.m_compilation_running=0;
@@ -1059,6 +1064,12 @@ function handleZ_check_unicode(engine, a) {
     return engine._storer('3');
 }
 
+function handleZ_gestalt( engine, a )
+{
+    // 1.2 Standard @gestalt
+    return engine._storer('gestalt(' + a[0] + ', ' + ( a.length < 2 ? 0 : a[1] ) + ')' );
+}
+
 ////////////////////////////////////////////////////////////////
 //
 // |handlers|
@@ -1187,7 +1198,7 @@ var handlers_v578 = {
     1009: handleZ_save_undo,
     1010: handleZ_restore_undo,
     1011: handleZ_print_unicode,
-    1012: handleZ_check_unicode
+    1012: handleZ_check_unicode,
 
     //1013-1015: illegal
     //1016: move_window (V6 opcode)
@@ -1203,6 +1214,7 @@ var handlers_v578 = {
     //1026: print_form (V6 opcode)
     //1027: make_menu (V6 opcode)
     //1028: picture_table (V6 opcode)
+    1030: handleZ_gestalt
 };
 
 // Differences between each version and v5.
@@ -1622,6 +1634,9 @@ GnustoEngine.prototype = {
 			// Restore the memory.
 			this.m_memory = mem.concat(this.m_memory.slice(mem.length));
 
+			var offset = (this.m_version<=4? 1: 3) + 1;
+			this.m_pc = pc-offset; // rewind to before the varcode_offset
+
 			if (this.m_version <= 3) {
 					// This is pretty ugly, but then the design isn't too beautiful either.
 					// The Quetzal code loads up with the PC pointing at the end of the @save
@@ -1636,17 +1651,13 @@ GnustoEngine.prototype = {
 					// mess things up. (The alternative would be to special-case
 					// |_brancher()|, but this case is so very, very rare and perverted
 					// that that seems inelegant.)
-
-					this.m_pc = pc;
-					eval("var t=new Function('with(this){'+_brancher('1')+'}');t.call(this);");
-
+					eval("var t=new Function('with(this){'+this._brancher('1')+'}');t.call(this);");
 			} else {
 					// The PC we're given is actually pointing at the varcode
 					// into which the success code must be stored. It should be 2.
 					// (This is specified by section 5.8 of the Quetzal document,
 					// version 1.4.)
-					this._varcode_set(2, this.m_memory[pc]);
-					this.m_pc = pc+1;
+					this._varcode_set(2, this.m_memory[this.m_pc++]);
 			}
 
 	},
@@ -1975,6 +1986,16 @@ GnustoEngine.prototype = {
 
     return outtext + spacebuffer + outtext2;
   },
+  
+	// @gestalt selectors
+	gestalt: function( id, arg )
+	{
+		// 1: Standard Revision
+		if ( id == 1 )
+			return 0x0102;
+		else
+			return 0;
+	},
 
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
@@ -2053,6 +2074,8 @@ GnustoEngine.prototype = {
       } else {
 	  gnusto_error(170, 'impossible: unknown z-version got this far');
       }
+      
+      this.m_memory[1] |= 0x1D; // announce support for styled text and color
 
       // And pick up the relevant instruction set.
 
@@ -3139,11 +3162,15 @@ GnustoEngine.prototype = {
 			}
 	},
 
-	_get_prop_len: function ge_get_prop_len(address) {
-	    if (this.m_value_asserts) {
-				if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start)
-			 		this.logger('get_prop_len', address);
-			}
+	_get_prop_len: function ge_get_prop_len(address)
+	{
+		;;; if (address == null || address === true || address === false || address < 0 || address >= this.m_stat_start) { this.logger('get_prop_len', address); }
+
+		// Spec 1.1 clarification: @get_prop_len 0 must return 0
+		if ( address == 0 )
+		{
+			return 0;
+		}
 
 			if (this.m_version<4) {
 					return 1+(this.m_memory[address-1] >> 5);
@@ -3172,7 +3199,6 @@ GnustoEngine.prototype = {
 							}
 					}
 			}
-			gnusto_error(170, 'get_prop_len'); // impossible
 	},
 
 	_get_next_prop: function ge_get_next_prop(object, property) {
@@ -4039,6 +4065,8 @@ GnustoEngine.prototype = {
 	// TODO: We need a varcode_getcode() which returns a JS string
 	// which will perform the same job as this function, to save us
 	// the extra call we use when encoding "varcode_get(constant)".
+/***
+	Not in current use... inlined in handleZ_load
 	_varcode_get: function ge_varcode_get(varcode) {
 			if (varcode==0) {
 					return this.m_gamestack.pop();
@@ -4050,6 +4078,7 @@ GnustoEngine.prototype = {
 
 			gnusto_error(170, 'varcode_get'); // impossible
 	},
+***/
 
 	////////////////////////////////////////////////////////////////
 	//
