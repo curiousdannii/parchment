@@ -131,6 +131,7 @@ function EngineRunner(engine, zui, logfunc) {
       self._engine.answer(0, 13);
 
       self._engine.answer(1, input);
+      self._zui._removeBufferedWindows();
       if (!self._isInLoop) {
         self._continueRunning();
       } else {
@@ -141,6 +142,7 @@ function EngineRunner(engine, zui, logfunc) {
     _receiveCharacterInput: function(input) {
       self._isWaitingForCallback = false;
       self._engine.answer(0, input);
+      self._zui._removeBufferedWindows();
       if (!self._isInLoop) {
         self._continueRunning();
       } else {
