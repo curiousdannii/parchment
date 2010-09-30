@@ -289,6 +289,10 @@ function handleZ_inc_chk(engine, a) {
 
 function handleZ_inc_chk(engine, a)
 {
+	var tcode = handleZ_inc(engine, a);
+	tcode += '{var t1=incdec; t1 = ((t1 & 0x8000 ? ~0xFFFF : 0) | t1); var t2=' + a[1] + '; t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);' + engine._brancher('t1 > t2') + '}';
+	return tcode;
+/*
 	var tcode, t2code;
 	tcode = handleZ_incdec(engine, a[0], '+', 1);
 	// Convert both arguments to signed for the comparison.
@@ -297,10 +301,15 @@ function handleZ_inc_chk(engine, a)
 	else
 		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
 	return tcode + t2code + 'tmp_'+temp_var+'=(('+'tmp_'+temp_var+' & 0x8000 ? ~0xFFFF : 0) | '+'tmp_'+temp_var+');' + engine._brancher('tmp_'+temp_var+' > t2');
+*/
 }
 
 function handleZ_dec_chk(engine, a)
 {
+	var tcode = handleZ_dec(engine, a);
+	tcode += '{var t1=incdec; t1 = ((t1 & 0x8000 ? ~0xFFFF : 0) | t1); var t2=' + a[1] + '; t2=((t2 & 0x8000 ? ~0xFFFF : 0) | t2);' + engine._brancher('t1 < t2') + '}';
+	return tcode;
+/*
 	var tcode, t2code;
 	tcode = handleZ_incdec(engine, a[0], '-', 1);
 	// Convert both arguments to signed for the comparison.
@@ -309,6 +318,7 @@ function handleZ_dec_chk(engine, a)
 	else
 		t2code = 't2=' + engine._unsigned2signed(a[1]) + ';';
 	return tcode + t2code + 'tmp_'+temp_var+'=(('+'tmp_'+temp_var+' & 0x8000 ? ~0xFFFF : 0) | '+'tmp_'+temp_var+');' + engine._brancher('tmp_'+temp_var+' < t2');
+*/
 }
 
 function handleZ_jin(engine, a) {
@@ -347,6 +357,21 @@ function handleZ_store(engine, a) {
 
 function handleZ_store(engine, a)
 {
+	var code;
+	if (a[0].constructor === String ) { // branch at runtime
+		code = '(' + a[0] + ' == 0) ? m_gamestack[m_gamestack.length - 1] = ' + a[1] + ' : (' + a[0] + ' < 0x10) ? m_locals[( ' + a[0] + ' - 1 )] = ' + a[1] + ' : setWord(' + a[1] + ', m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+	} else {
+		if (a[0] == 0) {
+			code = 'm_gamestack[m_gamestack.length - 1] = ' + a[1];
+		} else if (a[0] < 0x10) {
+			code = 'm_locals[( ' + a[0] + ' - 1 )] = ' + a[1];
+		} else {
+			code = 'setWord(' + a[1] + ', m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+		}
+	}
+	return code;
+
+/*	
 	;;; if (isNotConst.test(a[0])) { engine.logger('Z_store', a[0]); }	
 	;;; if (a[0] == null || a[0] === true || a[0] === false || a[0] < 0 || a[0] > 0xFFFF) { engine.logger('Z_store address', a[0]); }
 	;;; if (a[1] == null || a[1] === true || a[1] === false || a[1] < 0 || a[1] > 0xFFFF) { engine.logger('Z_store value', a[1]); }
@@ -377,7 +402,7 @@ function handleZ_store(engine, a)
 				'm_memory[' + high + '] = (' + tmp + ' >> 8) & 0xFF;' +
 				'm_memory[' + low + '] = ' + tmp + ' & 0xFF;';
 		}
-	}
+	}*/
 }
 
 function handleZ_insert_obj(engine, a) {
@@ -482,12 +507,40 @@ function handleZ_dec(engine, a) {
 
 function handleZ_inc(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '+');
+//	return handleZ_incdec(engine, a[0], '+');
+
+	var code = 'var incdec; ';
+	if (a[0].constructor === String) { // branch at runtime
+		code += 'var incdec; if (' + a[0] + ' == 0) { incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] + 1) & 0xFFFF; } else if (' + a[0] + ' < 0x10) { incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] + 1) & 0xFFFF; } else { var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val++; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val; }';
+	} else {
+		if (a[0] == 0) {
+			code += 'incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] + 1) & 0xFFFF;';
+		} else if (a[0] < 0x10) {
+			code += 'incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] + 1) & 0xFFFF;';
+		} else {
+			code += '{var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val++; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val;}';
+		}
+	}
+	return code;
 }
 
 function handleZ_dec(engine, a)
 {
-	return handleZ_incdec(engine, a[0], '-');
+	//	return handleZ_incdec(engine, a[0], '-');
+
+	var code = 'var incdec; ';
+	if (a[0].constructor === String) { // branch at runtime
+		code += 'if (' + a[0] + ' == 0) { incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] - 1) & 0xFFFF; } else if (' + a[0] + ' < 0x10) { incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] - 1) & 0xFFFF; } else { var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val--; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val; }';
+	} else {
+		if (a[0] == 0) {
+			code += 'incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] - 1) & 0xFFFF;';
+		} else if (a[0] < 0x10) {
+			code += 'incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] - 1) & 0xFFFF;';
+		} else {
+			code += '{var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val--; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val;}';
+		}
+	}
+	return code;
 }
 
 // Increment and decrement variables
@@ -497,7 +550,7 @@ function handleZ_dec(engine, a)
 //	0     = top of game stack
 //	1-15  = local variables
 //	16 up = global variables
-
+/*
 function handleZ_incdec(engine, variable, sign, varRequired)
 {
 	if (isNotConst.test(variable))
@@ -523,7 +576,7 @@ function handleZ_incdec(engine, variable, sign, varRequired)
 			'm_memory[' + add + ' + 1] = ' + tmp + ' & 0xFF;';
 	}
 }
-
+*/
 function handleZ_print_addr(engine, a) {
     return engine._handler_zOut('_zscii_from('+a[0]+')',0);
   }
@@ -552,15 +605,31 @@ function handleZ_print_paddr(engine, a) {
 
 function handleZ_load( engine, a )
 {
-	//return engine._storer('_varcode_get('+a[0]+')');
 	var code;
-	if ( a[0] == 0 )
-		code = 'm_gamestack[m_gamestack.length - 1]';
-	else if ( a[0] < 0x10 )
-		code = 'm_locals[( ' + a[0] + ' - 1 )]';
-	else
-		code = 'getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+	if (a[0].constructor === String) { // branch at runtime
+		code = '(' + a[0] + ' == 0) ? m_gamestack[m_gamestack.length - 1] : (' + a[0] + ' < 0x10) ? m_locals[( ' + a[0] + ' - 1 )] : getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+	} else {
+		if (a[0] == 0) {
+			code = 'm_gamestack[m_gamestack.length - 1]';
+		} else if (a[0] < 0x10) {
+			code = 'm_locals[( ' + a[0] + ' - 1 )]';
+		} else {
+			code = 'getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+		}
+	}
 	return engine._storer( code );
+
+	//return engine._storer('_varcode_get('+a[0]+')');
+/*	var code;
+	if ( a[0] == 0 ) {
+		code = 'm_gamestack[m_gamestack.length - 1]';
+	} else if ( a[0] < 0x10 ) {
+		code = 'm_locals[( ' + a[0] + ' - 1 )]';
+	} else {
+		code = 'getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
+	}
+	return engine._storer( code );
+	*/
 }
 
 function handleZ_rtrue(engine, a) {
@@ -832,7 +901,8 @@ function handleZ_push(engine, a) {
 function handleZ_pull(engine, a)
 {
 //	return '_varcode_set(m_gamestack.pop(),'+a[0]+')';
-	return handleZ_store(engine, [a[0], 'm_gamestack.pop()']);
+	var code = 'var pull = m_gamestack.pop(); ';
+	return code += handleZ_store(engine, [a[0], 'pull']);
 }
 
 function handleZ_split_window(engine, a) {
@@ -2449,7 +2519,8 @@ GnustoEngine.prototype = {
 					//code = code + '/*' + instr + '*/';
 
 					if (this.m_handlers[instr]) {
-							code = code + this.m_handlers[instr](this, args)+';';
+						code = code + this.m_handlers[instr](this, args)+';';
+						// NOTE: insert this.logger here to debug a particular opcode
 					} else if (instr>=1128 && instr<=1255 &&
 										 "special_instruction_EXT"+(instr-1000) in this) {
 
