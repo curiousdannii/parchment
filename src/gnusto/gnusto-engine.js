@@ -518,7 +518,7 @@ function handleZ_inc(engine, a)
 		} else if (a[0] < 0x10) {
 			code += 'incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] + 1) & 0xFFFF;';
 		} else {
-			code += '{var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val++; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val;}';
+			code += '{var val = getWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val++; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val;}';
 		}
 	}
 	return code;
