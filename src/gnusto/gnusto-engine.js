@@ -358,7 +358,7 @@ function handleZ_store(engine, a) {
 function handleZ_store(engine, a)
 {
 	var code;
-	if (a[0].constructor === String ) { // branch at runtime
+	if (isNaN(a[0])) { // branch at runtime
 		code = '(' + a[0] + ' == 0) ? m_gamestack[m_gamestack.length - 1] = ' + a[1] + ' : (' + a[0] + ' < 0x10) ? m_locals[( ' + a[0] + ' - 1 )] = ' + a[1] + ' : setWord(' + a[1] + ', m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
 	} else {
 		if (a[0] == 0) {
@@ -510,7 +510,7 @@ function handleZ_inc(engine, a)
 //	return handleZ_incdec(engine, a[0], '+');
 
 	var code = 'var incdec; ';
-	if (a[0].constructor === String) { // branch at runtime
+	if (isNaN(a[0])) { // branch at runtime
 		code += 'var incdec; if (' + a[0] + ' == 0) { incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] + 1) & 0xFFFF; } else if (' + a[0] + ' < 0x10) { incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] + 1) & 0xFFFF; } else { var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val++; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val; }';
 	} else {
 		if (a[0] == 0) {
@@ -529,7 +529,7 @@ function handleZ_dec(engine, a)
 	//	return handleZ_incdec(engine, a[0], '-');
 
 	var code = 'var incdec; ';
-	if (a[0].constructor === String) { // branch at runtime
+	if (isNaN(a[0])) { // branch at runtime
 		code += 'if (' + a[0] + ' == 0) { incdec = m_gamestack[m_gamestack.length - 1] = (m_gamestack[m_gamestack.length - 1] - 1) & 0xFFFF; } else if (' + a[0] + ' < 0x10) { incdec = m_locals[( ' + a[0] + ' - 1 )] = (m_locals[( ' + a[0] + ' - 1 )] - 1) & 0xFFFF; } else { var val = getUnsignedWord(m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); val--; setWord(val, m_vars_start + ( ' + a[0] + ' - 16 ) * 2 ); incdec = val; }';
 	} else {
 		if (a[0] == 0) {
@@ -606,7 +606,7 @@ function handleZ_print_paddr(engine, a) {
 function handleZ_load( engine, a )
 {
 	var code;
-	if (a[0].constructor === String) { // branch at runtime
+	if (isNaN(a[0])) { // branch at runtime
 		code = '(' + a[0] + ' == 0) ? m_gamestack[m_gamestack.length - 1] : (' + a[0] + ' < 0x10) ? m_locals[( ' + a[0] + ' - 1 )] : getUnsignedWord( m_vars_start + ( ' + a[0] + ' - 16 ) * 2 )';
 	} else {
 		if (a[0] == 0) {
