@@ -104,6 +104,7 @@ function EngineRunner(engine, zui, logfunc) {
   var methods = {
     stop: function() {
       self._isRunning = false;
+      self._zui._removeBufferedWindows();
     },
 
     run: function() {
@@ -113,6 +114,8 @@ function EngineRunner(engine, zui, logfunc) {
       self._isRunning = true;
       self._engine.m_memory[0x20] = size[1];
       self._engine.m_memory[0x21] = size[0];
+      this._engine.setWord(size[0], 0x22); // screen width in 'units'
+      this._engine.setWord(size[1], 0x24);
       self._continueRunning();
     },
 
@@ -229,7 +232,8 @@ function EngineRunner(engine, zui, logfunc) {
         self._zui.onFlagsChanged(isToTranscript, isFixedWidth);
         break;
       case GNUSTO_EFFECT_PIRACY:
-        throw new FatalError("Unimplemented effect: " + effect);
+				break;
+//        throw new FatalError("Unimplemented effect: " + effect);
       case GNUSTO_EFFECT_STYLE:
         self._zui.onSetStyle(engine.effect(1),
                              engine.effect(2),

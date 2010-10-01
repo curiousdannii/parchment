@@ -699,7 +699,7 @@ function handleZ_illegal_extended(engine, a) {
 function handleZ_piracy(engine, a) {
     engine.m_compilation_running = 0;
 
-    var setter = 'm_rebound=function(){'+engine._brancher('(!m_answers[0])')+'};';
+    var setter = 'm_rebound=function(){'+engine._brancher('(!0)')+'};';//m_answers[0])')+'};';
     return "m_pc="+engine.m_pc+";"+setter+"m_effects=["+GNUSTO_EFFECT_PIRACY+"];return";
 }
 
@@ -2145,8 +2145,6 @@ GnustoEngine.prototype = {
 	  gnusto_error(170, 'impossible: unknown z-version got this far');
       }
       
-      this.m_memory[1] |= 0x1D; // announce support for styled text and color
-
       // And pick up the relevant instruction set.
 
       if (!(this.m_version in handlers_fixups)) {
@@ -2272,7 +2270,17 @@ GnustoEngine.prototype = {
       this.m_leftovers = '';
 
 		// Set some header variables
+		this.m_memory[0x1E] = 1; // DEC
+		this.m_memory[0x1F] = 70 // ASCII 'F'
 
+		// set in runner.js in run();
+		// this.m_memory[0x20] = 25; // screen height (255 = infinite)
+		// this.m_memory[0x21] = 80; // screen width in characters ('0')
+		// this.setWord(80, 0x22); // screen width in 'units'
+		// this.setWord(25, 0x24);
+		this.m_memory[1] |= 0x1D; // announce support for styled text and color
+		this.m_memory[0x26] = 1; // font width/height (dep. version) in 'units'
+		this.m_memory[0x27] = 1; // font width/height (dep. version) in 'units'
 		// Z Machine Spec version
 		this.m_memory[0x32] = 1;
 		this.m_memory[0x33] = 0;

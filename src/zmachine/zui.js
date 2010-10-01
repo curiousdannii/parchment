@@ -76,7 +76,8 @@ parchment.lib.ZUI = Object.subClass({
 	        self._console.close();
 	        self._console = null;
 	      }
-	      $("#content").empty();
+	      //$("#content").empty();
+	      self.onPrint("\n[ The game has finished. ]")
 	      self._unbindEventHandlers();
 	    },
 
@@ -102,6 +103,12 @@ parchment.lib.ZUI = Object.subClass({
 	    _removeBufferedWindows: function() {
 	      var windows = $("#buffered-windows > .buffered-window");
 	      windows.fadeOut("slow", function() { windows.remove(); });
+        // Hide load indicator
+        if ( !this.hidden_load_indicator )
+        {
+          this.hidden_load_indicator = 1;
+          this.library.load_indicator.detach();
+        }
 	      // A more conservative alternative to the above is:
 	      // $("#buffered-windows").empty();
 	    },
