@@ -2271,7 +2271,7 @@ GnustoEngine.prototype = {
 
 		// Set some header variables
 		this.m_memory[0x1E] = 1; // DEC
-		this.m_memory[0x1F] = 70 // ASCII 'F'
+		this.m_memory[0x1F] = 0; // no letter ('F' would indicate that we're frotz, which may not be desirable)
 
 		// set in runner.js in run();
 		// this.m_memory[0x20] = 25; // screen height (255 = infinite)
