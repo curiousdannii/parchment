@@ -1,5 +1,10 @@
 Change log started August 2009.
 
+October 2010
+================================================================================
+Set more header variables.
+Fixed some bugs in Gnusto with indirect variables.
+
 September 2010
 ================================================================================
 Added a new load indicator, and the styles for dialogs in general.

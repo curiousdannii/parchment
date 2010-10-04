@@ -17,7 +17,7 @@ parchment.lib.ZUI = Object.subClass({
 		widthInChars = ( gIsIphone && $( document.body ).width() <= 480 ) ? 38 : 80;
 		
 		// Set up the HTML we need
-		library.container.html( '<div id="top-window" class="buffered-window"></div><div id="buffered-windows"></div><div id="content"></div><div id="bottom"></div>' );
+		library.container.html( '<div id="top-window" class="buffered-window"></div><div id="buffered-windows"></div><div id="content" role="log"></div><div id="bottom"></div>' );
 		
 		// Defaults
 		$.extend( self, {
