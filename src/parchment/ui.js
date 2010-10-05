@@ -10,20 +10,22 @@
 var window = this,
 
 // Wrap document
-doc = $( document );
+doc = $( document ),
 
 // window.scrollByPages() compatibility
-if ( !window.scrollByPages )
+scrollByPages = window.scrollByPages || function( pages )
 {
-	window.scrollByPages = function( pages )
-	{
-		// From Mozilla's nsGfxScrollFrame.cpp
-		// delta = viewportHeight - Min( 10%, lineHeight * 2 )
-		var height = doc[0].documentElement.clientHeight,
-		delta = height - Math.min( height / 10, parseInt( $( 'body' ).css( 'line-height' ) ) * 2 );
-		scrollBy( 0, delta * pages );
-	};
-}
+	// From Mozilla's nsGfxScrollFrame.cpp
+	// delta = viewportHeight - Min( 10%, lineHeight * 2 )
+	var height = doc[0].documentElement.clientHeight,
+	delta = height - Math.min( height / 10, parseInt( $( 'body' ).css( 'line-height' ) ) * 2 );
+	scrollBy( 0, delta * pages );
+},
+
+// getSelection compatibility-ish. We only care about the text value of a selection
+selection = window.getSelection ||
+	( document.selection && function() { return document.selection.createRange().text; } ) ||
+	function() { return ''; };
 
 window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
 
@@ -146,13 +148,17 @@ parchment.lib.TextInput = Object.subClass({
 		// Focus clicks in the container (only)
 		// To focus document clicks use UI.addTextInput()
 		container.bind( 'click.TextInput', function() {
-			if ( $( '.LineInput' ).length )
+			// Don't do anything if the user is selecting some text
+			if ( selection() == '' )
 			{
-				lineInput.focus();
-			}
-			if ( $( '.CharInput' ).length )
-			{
-				charInput.focus();
+				if ( $( '.LineInput' ).length )
+				{
+					lineInput.focus();
+				}
+				if ( $( '.CharInput' ).length )
+				{
+					charInput.focus();
+				}
 			}
 		});
 		
