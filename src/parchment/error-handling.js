@@ -1,10 +1,18 @@
 (function($){
 
-function FatalError(message) {
+window.FatalError = function(message) {
   this.message = message;
   this.traceback = this._makeTraceback(arguments.callee);
   this.onError(this);
-}
+  
+	// Hide load indicator
+	if ( $('.load').length > 0 )
+	{
+		//self.hidden_load_indicator = 1;
+		//self.library.load_indicator.detach();
+		$('.load').detach();
+	}
+};
 
 FatalError.prototype = {
   onError: function(e) {

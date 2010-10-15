@@ -88,6 +88,7 @@ parchment.lib.TextInput = Object.subClass({
 		
 		// The line input element
 		lineInput = $( '<input>', {
+			autocapitalize: 'off',
 			keydown: function( event )
 			{
 				var keyCode = event.which;
@@ -244,7 +245,8 @@ parchment.lib.TextInput = Object.subClass({
 		input = self.lineInput,
 		mutable_history = self.mutable_history,
 		current = self.current,
-		new_current = current + change;
+		new_current = current + change,
+		len;
 		
 		// Check it's within range
 		if ( new_current < mutable_history.length && new_current >= 0 )
@@ -252,6 +254,13 @@ parchment.lib.TextInput = Object.subClass({
 			mutable_history[current] = input.val();
 			input.val( mutable_history[new_current] );
 			self.current = new_current;
+			
+			// Move the cursor to the end of the input box if we can
+			if ( input[0].setSelectionRange )
+			{
+				len = mutable_history[new_current].length;
+				input[0].setSelectionRange( len, len );
+			}
 		}
 	},
 	
