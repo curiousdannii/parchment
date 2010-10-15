@@ -12,6 +12,10 @@ var window = this,
 // Wrap document
 doc = $( document ),
 
+// Cached regexs
+rmobileua = /iPhone|iPod|iPad|Android/i,
+rnotwhite = /\S/,
+
 // window.scrollByPages() compatibility
 scrollByPages = window.scrollByPages || function( pages )
 {
@@ -27,7 +31,7 @@ selection = window.getSelection ||
 	( document.selection && function() { return document.selection.createRange().text; } ) ||
 	function() { return ''; };
 
-window.gIsIphone = navigator.userAgent.match(/iPhone|iPod|iPad|Android/i);
+window.gIsIphone = rmobileua.test( navigator.userAgent );
 
 // Make the statusline always move to the top of the screen in MSIE < 7
 if ( $.browser.msie && parseInt($.browser.version) < 7 )
@@ -91,16 +95,19 @@ parchment.lib.TextInput = Object.subClass({
 			autocapitalize: 'off',
 			keydown: function( event )
 			{
-				var keyCode = event.which;
+				var keyCode = event.which,
+				cancel;
 				
 				// Check for up/down to use the command history
 				if ( keyCode == 38 ) // up -> prev
 				{
 					self.prev_next( 1 );
+					cancel = 1;
 				}
 				if ( keyCode == 40 ) // down -> next
 				{
 					self.prev_next( -1 );
+					cancel = 1;
 				}
 				
 				// Trigger page up/down on the body
@@ -108,10 +115,19 @@ parchment.lib.TextInput = Object.subClass({
 				if ( keyCode == 33 ) // Up
 				{
 					scrollByPages(-1);
+					cancel = 1;
 				}
 				if ( keyCode == 34 ) // Down
 				{
 					scrollByPages(1);
+					cancel = 1;
+				}
+				
+				// Don't do the default browser action
+				// (For example in Mac OS pressing up will force the cursor to the beginning of a line)
+				if ( cancel )
+				{
+					return false;
 				}
 			}
 		}),
@@ -223,7 +239,7 @@ parchment.lib.TextInput = Object.subClass({
 			.appendTo( self.stream.children().last() );
 		
 		// Add this command to the history, as long as it's not the same as the last, and not blank
-		if ( command != self.history[0] && /\S/.test( command ) )
+		if ( command != self.history[0] && rnotwhite.test( command ) )
 		{
 			self.history.unshift( command );
 		}
@@ -245,8 +261,7 @@ parchment.lib.TextInput = Object.subClass({
 		input = self.lineInput,
 		mutable_history = self.mutable_history,
 		current = self.current,
-		new_current = current + change,
-		len;
+		new_current = current + change;
 		
 		// Check it's within range
 		if ( new_current < mutable_history.length && new_current >= 0 )
@@ -254,13 +269,6 @@ parchment.lib.TextInput = Object.subClass({
 			mutable_history[current] = input.val();
 			input.val( mutable_history[new_current] );
 			self.current = new_current;
-			
-			// Move the cursor to the end of the input box if we can
-			if ( input[0].setSelectionRange )
-			{
-				len = mutable_history[new_current].length;
-				input[0].setSelectionRange( len, len );
-			}
 		}
 	},
 	
