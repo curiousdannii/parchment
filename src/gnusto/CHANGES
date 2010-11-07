@@ -1,5 +1,15 @@
 Change log started July 2009.
 
+November 2010
+================================================================================
+Fixed some ZSCII/ASCII conversion errors, thanks for spotting Zarf.
+Added support for @parchment and its raw eval() mode function.
+
+August 2010
+================================================================================
+Complies with the Z-Machine 1.1 updates/clarifications.
+Added support for the Z-Machine 1.2 @gestalt opcode (but disabled until full 1.1 support has been added.)
+
 April 2010
 ================================================================================
 Fixed undo support, now with multi-undo support.
