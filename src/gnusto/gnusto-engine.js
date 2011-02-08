@@ -112,6 +112,16 @@ var CHILD_REC = 2;
 
 var CALLED_FROM_INTERRUPT = 0;
 
+// Not everywhere has "window" defined
+window = window || {};
+
+// Temporary variables used in JITspace; they need to be
+// defined for QML, though browser JS would allow them to be
+// properties of the global object.
+var dummy;
+var t;
+var t2;
+
 var PARCHMENT_SECURITY_OVERRIDE = window.PARCHMENT_SECURITY_OVERRIDE;
 
 // Placeholder when decoding arguments for opcodes to indicate that
@@ -2467,7 +2477,7 @@ GnustoEngine.prototype = {
 					// List of arguments to the opcode.
 					var args = [];
 
-					this_instr_pc = this.m_pc;
+					var this_instr_pc = this.m_pc;
 					if (this.m_value_asserts) {
 						if (this_instr_pc == null || this_instr_pc < 0 || this_instr_pc >= this.m_original_memory.length)
 							gnusto_error(206, this_instr_pc);
@@ -3563,7 +3573,7 @@ GnustoEngine.prototype = {
 			}
 
 			while (candidate) {
-					next_along = this._get_sibling(candidate);
+					var next_along = this._get_sibling(candidate);
 					if (next_along==object) {
 							return candidate; // Yay! Got it!
 					}
@@ -4109,7 +4119,7 @@ GnustoEngine.prototype = {
 
 					var bits = this.m_memory[0x11] & 0x03;
 					var changed = bits != this.m_printing_header_bits;
-					effect_parameters = this.m_printing_header_bits;
+					var effect_parameters = this.m_printing_header_bits;
 					this.m_printing_header_bits = bits;
 
 					// OK, so should we bail?

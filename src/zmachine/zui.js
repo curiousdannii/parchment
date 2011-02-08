@@ -8,6 +8,8 @@
  */
 (function($){
 
+var singleSpace = / /g, singleSpaceBetweenWords = /(\S) (\S)/g, backToSpace = /<&>/g;
+
 parchment.lib.ZUI = Object.subClass({
 	// Initiate this ZUI
 	init: function( library, engine, logfunc )
@@ -429,26 +431,17 @@ onRestore: function()
 	        var lines = output.split("\n");
 	        for (var i = 0; i < lines.length; i++) {
 
-	          if (lines[i]) {
-	            var chunk = lines[i].entityify();
+				var chunk = lines[i].entityify();
 
-	            // TODO: This isn't an ideal solution for having breaking
-	            // whitespace while preserving its structure, but it
-	            // deals with the most common case.
-	            var singleSpace = / /g, singleSpaceBetweenWords = /(\S) (\S)/g, backToSpace = /<&>/g;
-	            chunk = chunk.replace(
-	              singleSpaceBetweenWords,
-	              "$1<&>$2"
-	            );
-	            chunk = chunk.replace(singleSpace, '&nbsp;');
-	            chunk = chunk.replace(
-	              backToSpace,
-	              "<span class=\"z-breaking-whitespace\"> </span>"
-	            );
+				// TODO: This isn't an ideal solution for having breaking
+				// whitespace while preserving its structure, but it
+				// deals with the most common case.
+				chunk = chunk.replace( singleSpaceBetweenWords, "$1<&>$2" );
+				chunk = chunk.replace( singleSpace, '&nbsp;' );
+				chunk = chunk.replace( backToSpace, ' ' );
 
-	            chunk = '<span class="' + styles + '">' + chunk + '</span>';
-	            $("#content").append(chunk);
-	          }
+				chunk = '<span class="' + styles + '">' + chunk + '</span>';
+				$("#content").append(chunk);
 
 	          if (i < lines.length - 1)
 	            $("#content").append("<br/>");

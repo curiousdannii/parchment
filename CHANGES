@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+February 2011
+================================================================================
+Fixed issue 155: insert extra spans so that input works even if no prompt printed.
+
 October 2010
 ================================================================================
 Set more header variables.
