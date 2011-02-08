@@ -3,6 +3,7 @@ Change log started August 2009.
 February 2011
 ================================================================================
 Fixed issue 155: insert extra spans so that input works even if no prompt printed.
+Upgraded to jQuery 1.5. The git version was needed as they broke file:. Gah.
 
 October 2010
 ================================================================================
