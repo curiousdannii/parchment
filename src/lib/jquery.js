@@ -11,7 +11,7 @@
  * Copyright 2011, The Dojo Foundation
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Tue Feb  8 08:20:02 2011
+ * Date: Wed Feb  9 22:05:02 2011
  */
 (function( window, undefined ) {
 
@@ -1384,9 +1384,7 @@ jQuery.extend({
 		}
 
 		if ( !cache[ id ] ) {
-			// Use a Function as the cache object instead of an Object on JS objects
-			// as a hack to prevent JSON.stringify from serializing it (#8108)
-			cache[ id ] = isNode ? {} : function () {};
+			cache[ id ] = {};
 		}
 
 		// An object can be passed to jQuery.data instead of a key/value pair; this gets
@@ -2753,6 +2751,12 @@ var withinElement = function( event ) {
 	// Firefox sometimes assigns relatedTarget a XUL element
 	// which we cannot access the parentNode property of
 	try {
+
+		// Chrome does something similar, the parentNode property
+		// can be accessed but is null.
+		if ( parent !== document && !parent.parentNode ) {
+			return;
+		}
 		// Traverse up the tree
 		while ( parent && parent !== this ) {
 			parent = parent.parentNode;
@@ -6404,6 +6408,14 @@ jQuery.extend({
 					return match || null;
 				},
 
+				// Overrides response content-type header
+				overrideMimeType: function( type ) {
+					if ( state === 0 ) {
+						s.mimeType = type;
+					}
+					return this;
+				},
+
 				// Cancel the request
 				abort: function( statusText ) {
 					statusText = statusText || "abort";
@@ -6487,7 +6499,7 @@ jQuery.extend({
 				// We extract error from statusText
 				// then normalize statusText and status for non-aborts
 				error = statusText;
-				if( status ) {
+				if( !statusText || status ) {
 					statusText = "error";
 					if ( status < 0 ) {
 						status = 0;
@@ -6805,7 +6817,7 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 	while( dataTypes[ 0 ] === "*" ) {
 		dataTypes.shift();
 		if ( ct === undefined ) {
-			ct = jqXHR.getResponseHeader( "content-type" );
+			ct = s.mimeType || jqXHR.getResponseHeader( "content-type" );
 		}
 	}
 
@@ -7193,6 +7205,11 @@ if ( jQuery.support.ajax ) {
 						}
 					}
 
+					// Override mime type if needed
+					if ( s.mimeType && xhr.overrideMimeType ) {
+						xhr.overrideMimeType( s.mimeType );
+					}
+
 					// Requested-With header
 					// Not set for crossDomain requests with no content
 					// (see why at http://trac.dojotoolkit.org/ticket/9486)
@@ -7203,9 +7220,9 @@ if ( jQuery.support.ajax ) {
 
 					// Need an extra try/catch for cross domain requests in Firefox 3
 					try {
-						jQuery.each( headers, function( key, value ) {
-							xhr.setRequestHeader( key, value );
-						} );
+						for ( i in headers ) {
+							xhr.setRequestHeader( i, headers[ i ] );
+						}
 					} catch( _ ) {}
 
 					// Do send the request

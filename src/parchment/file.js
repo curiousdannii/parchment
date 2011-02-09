@@ -1,12 +1,33 @@
-// -*- tab-width: 4; -*-
 /*
  * File functions and classes
  *
- * Copyright (c) 2003-2010 The Parchment Contributors
- * Licenced under the GPL v2
+ * Copyright (c) 2008-2011 The Parchment Contributors
+ * Licenced under the BSD
  * http://code.google.com/p/parchment
  */
+
+/*
+
+TODO:
+	Consider whether it's worth having cross domain requests to things other than the proxy
+	
+	Add transport for XDR
+	
+	Access buffer if possible (don't change encodings)
+	Use VBScript if needed (don't change encodings)
+	
+	Is the native base64_decode function still useful?
+	If such a time comes when everyone has native atob(), then always expose the decoded text in process_binary_XHR()
+	
+	If we know we have a string which is latin1 (say from atob()), would it be faster to have a separate text_to_array() that doesn't need to &0xFF?
+
+*/
+ 
 (function(window, $){
+
+var rurldomain = /^(file:|(\w+:)?\/\/[^\/?#]+)/,
+rchrome = /chrome\/(\d+)/i,
+chrome = rchrome.exec( navigator.userAgent );
 
 // Text to byte array and vice versa
 function text_to_array(text, array)
@@ -117,200 +138,116 @@ else
 var xhr = jQuery.ajaxSettings.xhr(),
 support = {
 	// Unfortunately in Opera < 10.5 overrideMimeType() doesn't work
-	binary: xhr.overrideMimeType !== undefined && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ),
-	cross_origin: xhr.withCredentials !== undefined
+	binary: xhr.overrideMimeType && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ) ? 'charset' : 0
+},
+
+// Process a binary XHR
+process_binary_XHR = function( data, textStatus, jqXHR )
+{
+	var array, buffer, text;
+
+	// Decode base64
+	if ( jqXHR.base64 )
+	{
+		// Expose the decoded text if we have native decoding
+		if ( window.atob )
+		{
+			text = atob( $.trim( data ) );
+			array = text_to_array( text );
+		}
+		else
+		{
+			array = base64_decode( $.trim( data ) );
+		}
+	}
+	
+	// Erase responseText as it's not safe
+	else
+	{
+		array = text_to_array( $.trim( data ) );
+	}
+	
+	jqXHR.responseArray = array;
+	jqXHR.responseText = text;
 };
 
-// Clean-up
+// Clean-up the temp XHR used above
 xhr = null;
+
+// Prefilters for binary ajax
+$.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
+{
+	// Chrome > 4 doesn't allow file:// to file:// XHR
+	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
+	var binary = options.isLocal && !options.crossDomain && chrome && parseInt( chrome[1] ) > 4 ? 0 : support.binary;
+	
+	// Set up the options and jqXHR
+	options.binary = binary;
+	jqXHR.done( process_binary_XHR );
+	
+	// Load a legacy file
+	if ( options.url.slice( -3 ).toLowerCase() == '.js' )
+	{
+		return 'legacy';
+	}
+	
+	// Binary support and same domain: use a normal text handler
+	// Encoding stuff is done in the text prefilter below
+	if ( binary && !options.crossDomain )
+	{
+		return 'text';
+	}
+	
+	// Use a backup legacy file if provided
+	if ( options.legacy )
+	{
+		options.url = options.legacy;
+		return 'legacy';
+	}
+	
+	// Use the proxy when no binary support || cross domain request
+	options.data = { url: options.url };
+	options.url = parchment.options.proxy_url;
+	
+	if ( binary && $.support.cors )
+	{
+		return 'text';
+	}
+	
+	options.data.encode = 'base64';
+	options.jsonpCallback = 'pproxy';
+	jqXHR.base64 = 1;
+	return 'jsonp';
+});
+
+// Prefilter for legacy storyfiles
+$.ajaxPrefilter( 'legacy', function( options, originalOptions, jqXHR )
+{
+	options.jsonpCallback = 'processBase64Zcode';
+	jqXHR.base64 = 1;
+	return 'jsonp';
+});
+
+// Set the encoding for binary requests
+$.ajaxPrefilter( 'text', function( options /*, originalOptions, jqXHR*/ )
+{
+	if ( options.binary == 'charset' )
+	{
+		options.mimeType = 'text/plain; charset=x-user-defined';
+	}
+});
+
+// Converters are set in intro.js
 
 // Download a file to a byte array
 function download_to_array( url, callback )
 {
-	// URL regexp
-	var urldomain = /^(file:|(\w+:)?\/\/[^\/?#]+)/,
-	
-	// If url is an array we are being given a binary and a backup 'JSONP' file
-	backup_url;
-	if ( $.isArray( url ) )
-	{
-		backup_url = url[1];
-		url = url[0];
-	}
-	
-	// Test the page and data URLs
-	var page_domain = urldomain.exec(location)[0],
-	data_exec = urldomain.exec(url),
-	data_domain = data_exec ? data_exec[0] : page_domain,
-	
-	// Chrome > 4 doesn't allow file: to file: XHR
-	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	chrome = /chrome\/(.)/i.exec( navigator.userAgent ),
-	binary = data_domain === "file:" && chrome && parseInt( chrome[1] ) > 4 ? 0 : support.binary,
-	
-	options,
-	
-	// Utility function to download a legacy/backup file
-	download_legacy = function( url )
-	{
-		window['processBase64Zcode'] = function( data )
+	// Request the file with the binary type
+	$.ajax( url, { dataType: 'binary' } )
+		.success(function( data, textStatus, jqXHR )
 		{
-			callback( base64_decode( data ));
-			window.processBase64Zcode = null;
-			try { delete window.processBase64Zcode; } catch(e) {}
-		};
-		$.getScript( url );
-	};
-
-	// What are we trying to download here?
-	/*
-		Page	Data	Binary	Backup	#	Action
-		http	file					1	Fail
-		file	file	0		0		2	Fail
-			legacy						3	Load legacy file
-			same		1				4	Load directly
-						0		1		5	Load JSONP backup file directly
-										6	Load from proxy (base64 + JSONP)
-	*/
-
-	// Case #3: Load legacy file
-	if ( url.slice(-3).toLowerCase() == '.js' )
-	{
-		download_legacy( url );
-		return;
-	}
-
-	// Case #1: file: loaded from http:
-	// Case #2: file: with neither binary support nor a backup encoded file
-	if ( data_domain == 'file:' && ( page_domain != data_domain || ( !binary && !backup_url ) ) )
-	{
-		throw "Can't load local files with this browser, sorry!";
-	}
-
-	// Case #4: Local file with binary support
-	if ( binary && page_domain == data_domain )
-	{
-		options = {
-			beforeSend: function ( XMLHttpRequest )
-			{
-				XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
-			},
-			success: function ( data )
-			{
-				// Check to see if this could actually be base64 encoded?
-				callback( text_to_array( $.trim( data )));
-			},
-			url: url
-		};
-	}
-	
-	// Cases #5/6: No binary support
-	else
-	{
-		// Case #5: Load 'JSONP' backup file
-		if ( backup_url )
-		{
-			download_legacy( backup_url );
-			return;
-		}	
-
-		// Case #6: Load from proxy (base64 + JSONP)
-		options = {
-			data: {
-				encode: 'base64',
-				url: url
-			},
-			dataType: 'jsonp',
-			success: function ( data )
-			{
-				callback( base64_decode( $.trim( data )));
-			},
-			url: parchment.options.proxy_url
-		};
-	}
-	
-	// What are we trying to download here?
-	// Old list... will leave here for now, until we add cross origin requests again
-	/*
-		Parchment	Data	Binary	XSS	#	Action
-					file	0			1	Fail
-		http		file				2	Fail
-		legacy							3	Load legacy file
-		file		file	1			4	Load directly
-			same http		1			5	Load directly
-			diff http		1		1	6	Attempt to load directly, fall back to raw proxy if needed
-					http	0		1	7	Load base64 from proxy
-					http	0		0	8	Load base64 from JSONP proxy
-			diff http		1		0	9	Load base64 from JSONP proxy (uses base64 as the escaping required would be bigger still)
-											TODO: investigate options.scriptCharset so #9 can load raw
-	*/
-
-/*
-	// Case #1: file: but no binary support: Fail.
-	// Case #2: file: loaded from http:
-	if ( data_domain == 'file:' && ( !support.binary || page_domain != data_domain ) )
-	{
-		throw "Can't load local files with this browser, sorry!";
-	}
-
-	// Case 3: legacy support
-
-	// Case #4/5: local file with binary support or
-	// Case #6: non-local file with binary and cross origin support: Load directly
-	else if ( support.binary && ( page_domain == data_domain || support.cross_origin ) )
-	{
-		options.beforeSend = function ( XMLHttpRequest )
-		{
-			XMLHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
-		};
-		options.success = function ( data )
-		{
-			// Check to see if this could actually be base64 encoded?
-			callback( text_to_array( data ));
-		};
-		
-		// Case 6: non-local file, with cross origin support
-		if ( support.cross_origin && page_domain != data_domain )
-		{
-			// Do the magic
-		}
-	}
-	
-	// Case #7: no binary but cross origin support or
-	// Case #8/9: cross origin support needed but unavailable: use the proxy server with base64 encoding
-	else
-	{
-		options.data.url = url;
-		options.url = parchment.options.proxy_url;
-		options.success = function ( data )
-		{
-			callback( base64_decode( data ));
-		};
-		
-		// Case #8/9: No cross origin support, so use JSONP (kind of... just use an extra callback function really)
-		// See note above for why case #9 uses base64 encoding
-		if ( !support.cross_origin )
-		{
-			options.dataType = "jsonp";
-		}
-		
-		// Case 7: Explictly request base64
-		else
-		{
-			options.data.encode = 'base64';
-		}
-	}
-*/
-	
-	// Log the options for debugging
-	;;; if ( window.console && console.log ) console.log( '$.ajax() options from download_to_array(): ', options );
-	
-	// Get the file
-	options.error = function ( XMLHttpRequest, textStatus )
-	{
-		throw new FatalError('Error loading story: ' + textStatus);
-	};
-	$.ajax(options);
+			callback( jqXHR.responseArray );
+		});
 }
 
 /*

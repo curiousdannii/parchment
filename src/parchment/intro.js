@@ -2,17 +2,28 @@
  * Parchment
  * Built: BUILDDATE
  *
- * Copyright (c) 2008-2010 The Parchment Contributors
- * Licenced under the GPL v2
+ * Copyright (c) 2008-2011 The Parchment Contributors
+ * Licenced under the BSD
  * http://code.google.com/p/parchment
  */
 
 // Don't append a timestamp to XHR requests
-// Use the Last-Modified/If-Modified-Since headers, but not when loading from a file:
+// Converters for use with the prefilters in file.js
 jQuery.ajaxSetup({
-	cache: true,
-	dataType: 'text',
-	ifModified: location.protocol !== 'file:'
+	cache: 1,
+	converters: {
+		'* binary': true,
+		'* legacy': true
+    }
+});
+
+// Don't use XHR for local files
+jQuery.ajaxPrefilter( 'script', function( options /*, originalOptions, jqXHR*/ )
+{
+	if ( options.isLocal )
+	{
+		options.crossDomain = 1;
+	}
 });
 
 // The home for Parchment to live in
