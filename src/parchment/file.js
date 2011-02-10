@@ -25,9 +25,8 @@ TODO:
  
 (function(window, $){
 
-var rurldomain = /^(file:|(\w+:)?\/\/[^\/?#]+)/,
-rchrome = /chrome\/(\d+)/i,
-chrome = rchrome.exec( navigator.userAgent );
+var chrome = /chrome\/(\d+)/i.exec( navigator.userAgent ),
+chrome_no_file = chrome && parseInt( chrome[1] ) > 4;
 
 // Text to byte array and vice versa
 function text_to_array(text, array)
@@ -179,16 +178,20 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 {
 	// Chrome > 4 doesn't allow file:// to file:// XHR
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	var binary = options.isLocal && !options.crossDomain && chrome && parseInt( chrome[1] ) > 4 ? 0 : support.binary;
+	var binary = options.isLocal && !options.crossDomain && chrome_no_file ? 0 : support.binary;
 	
 	// Set up the options and jqXHR
 	options.binary = binary;
 	jqXHR.done( process_binary_XHR );
+	// Options for jsonp, which may not be used if we redirect to 'text'
+	options.jsonp = false;
+	options.jsonpCallback = 'processBase64Zcode';
+	jqXHR.base64 = 1;
 	
 	// Load a legacy file
 	if ( options.url.slice( -3 ).toLowerCase() == '.js' )
 	{
-		return 'legacy';
+		return 'jsonp';
 	}
 	
 	// Binary support and same domain: use a normal text handler
@@ -202,11 +205,11 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 	if ( options.legacy )
 	{
 		options.url = options.legacy;
-		return 'legacy';
+		return 'jsonp';
 	}
 	
 	// Use the proxy when no binary support || cross domain request
-	options.data = { url: options.url };
+	options.data = 'url=' + options.url;
 	options.url = parchment.options.proxy_url;
 	
 	if ( binary && $.support.cors )
@@ -214,32 +217,27 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 		return 'text';
 	}
 	
-	options.data.encode = 'base64';
+	options.data += '&encode=base64&callback=pproxy';
 	options.jsonpCallback = 'pproxy';
-	jqXHR.base64 = 1;
-	return 'jsonp';
-});
-
-// Prefilter for legacy storyfiles
-$.ajaxPrefilter( 'legacy', function( options, originalOptions, jqXHR )
-{
-	options.jsonpCallback = 'processBase64Zcode';
-	jqXHR.base64 = 1;
 	return 'jsonp';
 });
 
 // Set the encoding for binary requests
-$.ajaxPrefilter( 'text', function( options /*, originalOptions, jqXHR*/ )
+$.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 {
 	if ( options.binary == 'charset' )
 	{
+		jqXHR.base64 = 0;
 		options.mimeType = 'text/plain; charset=x-user-defined';
 	}
 });
 
 // Converters are set in intro.js
 
+/* DEBUG:IF */
+
 // Download a file to a byte array
+// Note: no longer used by library.js
 function download_to_array( url, callback )
 {
 	// Request the file with the binary type
@@ -249,6 +247,8 @@ function download_to_array( url, callback )
 			callback( jqXHR.responseArray );
 		});
 }
+
+/* DEBUG:END */
 
 /*
 	// Images made from byte arrays

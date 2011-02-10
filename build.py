@@ -2,8 +2,8 @@
 
 # Parchment build script
 #
-# Copyright (c) 2008-2010 The Parchment Contributors
-# Licenced under the GPL v2
+# Copyright (c) 2008-2011 The Parchment Contributors
+# BSD licenced
 # http://code.google.com/p/parchment
 
 # Lists of files to combine together
@@ -18,6 +18,7 @@ includes = (
 		'src/parchment/file.js',
 		'src/parchment/ui.js',
 		'src/parchment/library.js',
+		'src/parchment/zvm-gnusto.js',
 		'src/parchment/outro.js',
 	)),
 	('.build/zmachine.js', (

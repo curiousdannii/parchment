@@ -12,12 +12,12 @@
 jQuery.ajaxSetup({
 	cache: 1,
 	converters: {
-		'* binary': true,
-		'* legacy': true
+		'* binary': true
     }
 });
 
 // Don't use XHR for local files
+// Limit to Chrome?
 jQuery.ajaxPrefilter( 'script', function( options /*, originalOptions, jqXHR*/ )
 {
 	if ( options.isLocal )
