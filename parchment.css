@@ -158,6 +158,16 @@ body
 	position: absolute;
 }
 
+/* Front page panels */
+
+/* Load any web story file */
+.panel.url input
+{
+	display: block;
+	margin: 0 auto;
+	width: 50%;
+}
+
 .z-roman {
 }
 

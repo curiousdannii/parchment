@@ -58,6 +58,10 @@ parchment.lib.UI = Object.subClass({
 	init: function( library )
 	{
 		this.library = library;
+		this.panels = {};
+		
+		// Load indicator
+		this.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
 
 	// Stylesheet management
@@ -83,6 +87,20 @@ parchment.lib.UI = Object.subClass({
 			.each( function(){
 				this.disabled = !enable;
 			});
+	},
+	
+	// Load panels for the front page
+	load_panels: function()
+	{
+		var panels = parchment.options.panels;
+		
+		// A form to load any story file
+		if ( panels.indexOf( 'url' ) != -1 )
+		{
+			this.panels.url = $( '<div class="panel url"><form><label for="panel_url">You may use Parchment to play any story file on the internet, simply copy its address here:</label><input id="panel_url" name="story"></form>' );
+		}
+		
+		this.library.container.append( this.panels[ panels[0] ] );
 	}
 
 });

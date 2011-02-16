@@ -152,7 +152,7 @@ parchment.lib.ZUI = Object.subClass({
           if ( !self.hidden_load_indicator )
           {
           	self.hidden_load_indicator = 1;
-          	self.library.load_indicator.detach();
+          	self.library.ui.load_indicator.detach();
           }
           
    	      self._currentCallback = callback;
@@ -172,7 +172,7 @@ parchment.lib.ZUI = Object.subClass({
           if ( !self.hidden_load_indicator )
           {
           	self.hidden_load_indicator = 1;
-          	self.library.load_indicator.detach();
+          	self.library.ui.load_indicator.detach();
           }
           
 	      self.text_input.getChar( callback );

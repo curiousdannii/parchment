@@ -115,7 +115,6 @@ parchment.lib.Story = IFF.subClass({
 	{
 		if (this.zcode)
 			engine.loadStory(this.zcode);
-		//window.document.title = this.title + ' - Parchment';
 	}
 });
 
@@ -140,9 +139,6 @@ Library = Object.subClass({
 		this.container = $( parchment.options.container );
 		
 		this.ui = new parchment.lib.UI( this );
-		
-		// Load indicator
-		this.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
 	
 	// Load a story or savefile
@@ -170,14 +166,14 @@ Library = Object.subClass({
 		// Show the library
 		else
 		{
-			return;
+			return this.ui.load_panels();
 		}
 		
 		// Hide the #about, until we can do something more smart with it
 		$('#about').remove();
 		
 		// Show the load indicator
-		$( 'body' ).append( self.load_indicator );
+		$( 'body' ).append( self.ui.load_indicator );
 		
 		// Normalise the storyfile array
 		if ( !$.isArray( storyfile ) )
