@@ -171,18 +171,21 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 };
 
 // Clean-up the temp XHR used above
-xhr = null;
+xhr = undefined;
 
 // Prefilters for binary ajax
 $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 {
 	// Chrome > 4 doesn't allow file:// to file:// XHR
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	var binary = options.isLocal && !options.crossDomain && chrome_no_file ? 0 : support.binary;
+	var binary = options.isLocal && !options.crossDomain && chrome_no_file ? 0 : support.binary,
+	
+	XHRFactory = options.xhr;
 	
 	// Set up the options and jqXHR
 	options.binary = binary;
 	jqXHR.done( process_binary_XHR );
+	
 	// Options for jsonp, which may not be used if we redirect to 'text'
 	options.jsonp = false;
 	options.jsonpCallback = 'processBase64Zcode';
@@ -281,8 +284,8 @@ window.file = {
 	array_to_text: array_to_text,
 	base64_decode: base64_decode,
 	base64_encode: base64_encode,
-	download_to_array: download_to_array,
 	support: support
 };
+;;; window.file.download_to_array = download_to_array;
 
 })(window, jQuery);

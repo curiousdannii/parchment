@@ -12,7 +12,6 @@ includes = (
 		'src/parchment/intro.js',
 		'src/lib/class.js',
 		'src/lib/iff.js',
-		'src/plugins/querystring.js',
 		'src/plugins/remedial.js',
 		'src/parchment/error-handling.js',
 		'src/parchment/file.js',

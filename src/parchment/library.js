@@ -10,6 +10,9 @@ http://code.google.com/p/parchment
 */
 (function(window, $){
 
+var rquery = /story=([^;&]+)/,
+rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/;
+
 // A story file
 parchment.lib.Story = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
@@ -136,6 +139,8 @@ Library = Object.subClass({
 		// Keep a reference to our container
 		this.container = $( parchment.options.container );
 		
+		this.ui = new parchment.lib.UI( this );
+		
 		// Load indicator
 		this.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
@@ -145,31 +150,45 @@ Library = Object.subClass({
 	{
 		var self = this,
 		
-		options = parchment.options;
+		options = parchment.options,
+		
+		storyfile = rquery.exec( location.search ),
+		url;
+		
+		// Run the default story only
+		if ( options.lock_story )
+		{
+			// Locked to the default story
+			storyfile = options.default_story;
+		}
+		// Load the requested story or the default story
+		else if ( options.default_story || storyfile )
+		{
+			// Load from URL, or the default story
+			storyfile = storyfile && unescape( storyfile[1] ) || options.default_story;
+		}
+		// Show the library
+		else
+		{
+			return;
+		}
+		
+		// Hide the #about, until we can do something more smart with it
+		$('#about').remove();
 		
 		// Show the load indicator
 		$( 'body' ).append( self.load_indicator );
 		
-		if ( options.lock_story )
-		{
-			// Locked to the default story
-			var storyfile = options.default_story;
-		}
-		else
-		{
-			// Load from URL, or the default story
-			var querystring = new Querystring(),
-			storyfile = querystring.get('story', options.default_story);
-		}
+		// Normalise the storyfile array
 		if ( !$.isArray( storyfile ) )
 		{
 			storyfile = [ storyfile, 0 ];
 		}
-		var url = storyfile[0];
+		url = storyfile[0];
 		self.url = url;
 
-		storyName = url.slice( url.lastIndexOf("/") + 1 );
-		storyName = storyName ? storyName + " - Parchment" : "Parchment";
+		storyName = rtitle.exec( url );
+		storyName = storyName ? storyName[1] + " - Parchment" : "Parchment";
 		
 		// Change the page title
 		if ( options.page_title )
@@ -178,12 +197,12 @@ Library = Object.subClass({
 		}
 		
 		// Check the story cache first
-		if ( self.stories.url[url] )
-			var story = self.stories.url[url];
+		//if ( self.stories.url[url] )
+		//	var story = self.stories.url[url];
 
 		// We will have to download it
-		else
-		{
+		//else
+		//{
 			// When Glulx support is added we will need to sniff the filename to decide which to launch
 			try
 			{
@@ -193,42 +212,44 @@ Library = Object.subClass({
 			{
 				throw new FatalError( e );
 			}
-		}
+		//}
 	},
 	
 	// Get all the required files and launch the VM
 	launch: function( vm, storyfile )
 	{
 		var self = this,
-		scripts = [], when = [];
 		
 		// Load the story file
-		when.push( $.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
-		
-			// Attach the library for the launcher to use (yay for chaining)
-			.done( function( data, textStatus, jqXHR )
-			{
-				jqXHR.library = self;
-			})
+		actions = [
 			
-		);
+			$.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
+				// Attach the library for the launcher to use (yay for chaining)
+				.done( function( data, textStatus, jqXHR )
+				{
+					jqXHR.library = self;
+				})
+			
+		],
 		
 		// Get the scripts if they haven't been loaded already
+		scripts = [],
+		i = 0;
 		if ( !vm.loaded )
 		{
 			vm.loaded = 1;
 			
-			$.each( vm.files, function( i, value )
+			while ( i < vm.files.length )
 			{
-				scripts.push( $.getScript( parchment.options.lib_path + value ) );
-			});
+				scripts.push( $.getScript( parchment.options.lib_path + vm.files[i++] ) );
+			}
 			
 			// Use jQuery.when() to get a promise for all of the scripts
-			when.push( $.when.apply( 1, scripts ) );
+			actions[1] = $.when.apply( 1, scripts );
 		}
 		
 		// Add the launcher callback
-		$.when.apply( 1, when )
+		$.when.apply( 1, actions )
 			.done( vm.launcher );
 	},
 

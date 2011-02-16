@@ -1,14 +1,18 @@
 /*!
- * Parchment
- * Built: BUILDDATE
- *
- * Copyright (c) 2008-2011 The Parchment Contributors
- * Licenced under the BSD
- * http://code.google.com/p/parchment
- */
+
+Parchment
+=========
+
+Built: BUILDDATE
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
 
 // Don't append a timestamp to XHR requests
-// Converters for use with the prefilters in file.js
+// Converter for use with the binary dataType prefilter in file.js
 jQuery.ajaxSetup({
 	cache: 1,
 	converters: {
@@ -35,12 +39,13 @@ var parchment = {
 		container: '#parchment',
 		
 		// Should no ?story= be given, run this
-		default_story: 'stories/troll.z5.js',
+		// May be an array, in which case [0] is the .z5/.zblorb and [1] is a backup legacy .js file
+		default_story: [ 'stories/troll.z5', 'stories/troll.z5.js' ],
 		
 		// Where shall we find the lib .js files?
 		lib_path: 'lib/',
 		
-		// Lock Parchment so it will only run the default story
+		// Lock Parchment so it will only run the default story, which must be provided!
 		lock_story: 0,
 		
 		// Set to 0 if you don't want Parchment to overwrite your <title>		

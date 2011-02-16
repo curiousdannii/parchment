@@ -11,16 +11,16 @@ http://code.google.com/p/parchment
 
 parchment.vms.push({
 	// Files to load
-	files: /* DEBUG:IF */ [
+	files: /* DEBUG */ [
 			'../src/gnusto/gnusto-engine.js',
 			'../src/plugins/quetzal.js',
 			'../src/zmachine/runner.js',
 			'../src/zmachine/console.js',
 			'../src/zmachine/zui.js'
-		] /* DEBUG:ELSE [
+		] /* ELSEDEBUG [
 			'gnusto.min.js',
 			'zmachine.min.js'
-		] /* DEBUG:END */ ,
+		] /* ENDDEBUG */ ,
 	
 	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
 	launcher: function( story )

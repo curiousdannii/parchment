@@ -6,6 +6,7 @@ Fixed issue 155: insert extra spans so that input works even if no prompt printe
 Upgraded to jQuery 1.5. The git version was needed as they broke file:. Gah.
 Used the awesome new 1.5 features to add a custom binary dataType.
 Used jQuery.when() to rewrite the launcher, which is now extensible.
+Get stuff ready for iplayif.com... scrap querystring.js.
 
 October 2010
 ================================================================================

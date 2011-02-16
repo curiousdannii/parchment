@@ -1,16 +1,20 @@
 /*
- * Parchment UI
- *
- * Copyright (c) 2008-2010 The Parchment Contributors
- * Licenced under the GPL v2
- * http://code.google.com/p/parchment
- */
+
+Parchment UI
+============
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
 (function($){
 
 var window = this,
 
 // Wrap document
 doc = $( document ),
+body = $( 'body' ),
 
 // Cached regexs
 rmobileua = /iPhone|iPod|iPad|Android/i,
@@ -22,7 +26,7 @@ scrollByPages = window.scrollByPages || function( pages )
 	// From Mozilla's nsGfxScrollFrame.cpp
 	// delta = viewportHeight - Min( 10%, lineHeight * 2 )
 	var height = doc[0].documentElement.clientHeight,
-	delta = height - Math.min( height / 10, parseInt( $( 'body' ).css( 'line-height' ) ) * 2 );
+	delta = height - Math.min( height / 10, parseInt( body.css( 'line-height' ) ) * 2 );
 	scrollBy( 0, delta * pages );
 },
 
@@ -51,6 +55,10 @@ if ( $.browser.msie && parseInt($.browser.version) < 7 )
 
 // The main UI class
 parchment.lib.UI = Object.subClass({
+	init: function( library )
+	{
+		this.library = library;
+	},
 
 	// Stylesheet management
 	// Add some stylesheets, disabled at first
@@ -71,7 +79,7 @@ parchment.lib.UI = Object.subClass({
 	// Switch on/off a stylesheet
 	stylesheet_switch: function( title, enable )
 	{
-		$( 'link[rel*=stylesheet][title=' + title + ']' )
+		$( 'link[rel*="stylesheet"][title="' + title + '"]' )
 			.each( function(){
 				this.disabled = !enable;
 			});
