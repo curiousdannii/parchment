@@ -1,8 +1,0 @@
-# DryDrop site.yaml for routing to parchment.html
-handlers:
-- url: '/(index.*)?'
-  static_files: 'parchment.html'
-  upload: '.*'
-
-- url: '/'
-  static_dir: '/'

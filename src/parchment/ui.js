@@ -33,7 +33,12 @@ scrollByPages = window.scrollByPages || function( pages )
 // getSelection compatibility-ish. We only care about the text value of a selection
 selection = window.getSelection ||
 	( document.selection && function() { return document.selection.createRange().text; } ) ||
-	function() { return ''; };
+	function() { return ''; },
+
+// Map results callback
+map_results_callback = function( story ){
+	return '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/' + story.path + '">' + story.desc.entityify() + '</a></p>';
+};
 
 window.gIsIphone = rmobileua.test( navigator.userAgent );
 
@@ -92,15 +97,47 @@ parchment.lib.UI = Object.subClass({
 	// Load panels for the front page
 	load_panels: function()
 	{
-		var panels = parchment.options.panels;
+		var panels = parchment.options.panels || [],
+		search_input, search_results,
+		i = 0;
+		
+		// A search box
+		if ( panels.indexOf( 'search' ) != -1 )
+		{
+			this.panels.search = $( '<div class="panel search"><lavel for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search><div></div></div>' );
+			
+			search_input = this.panels.search.find( 'input' );
+			search_results = search_input.next();
+				
+			// Load the archive json file
+			search_input.bind( 'keydown.search', function(){
+				search_input.unbind( '.search' );
+				$.getJSON( 'stories/if-archive.json' )
+					.done(function( data ){
+						// Attach the real handler once the archive's been downloaded
+						search_input.keydown(function(){
+							// Filter the archive
+							var key = RegExp( search_input.val().replace( ' ', '( )?' ), 'i' ),
+							results = $.grep( data, function( story ){
+								return key.test( story.path + story.desc );
+							});
+							// Limit to 30 results
+							results = results.slice( 0, 30 );
+							// Fill the results div
+							search_results.html( $.map( results, map_results_callback ).join('') );
+						});
+					});
+			});
+		}
 		
 		// A form to load any story file
 		if ( panels.indexOf( 'url' ) != -1 )
 		{
-			this.panels.url = $( '<div class="panel url"><form><label for="panel_url">You may use Parchment to play any story file on the internet, simply copy its address here:</label><input id="panel_url" name="story"></form>' );
+			this.panels.url = $( '<form class="panel url"><label for="panel_url">You may use Parchment to play any story file on the internet, simply copy its address here:</label><input id="panel_url" name="story"></form>' );
 		}
 		
 		this.library.container.append( this.panels[ panels[0] ] );
+		this.panels.active = panels[0];
 	}
 
 });

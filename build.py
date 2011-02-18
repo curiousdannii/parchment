@@ -43,7 +43,7 @@ import re
 today = str(datetime.date.today())
 
 # regex for debug lines
-debug = re.compile(';;;.+$', re.M)
+debug = re.compile('(;;;.+$)|(/\* DEBUG \*/[\s\S]+?(/\* ELSEDEBUG|/\* ENDDEBUG \*/))', re.M)
 
 # Create .build directory if needed
 if not os.path.isdir('.build'):

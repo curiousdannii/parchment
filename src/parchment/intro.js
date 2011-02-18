@@ -52,7 +52,7 @@ var parchment = {
 		page_title: 1,
 		
 		// Front page panels to display if no default story
-		panels: [ 'url', 'about' ],
+		panels: [ 'search', 'url', 'about' ],
 		
 		// URL of proxy server to use for files we can't directly load
 		proxy_url: 'http://zcode.appspot.com/proxy/'

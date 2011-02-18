@@ -161,7 +161,7 @@ body
 /* Front page panels */
 
 /* Load any web story file */
-.panel.url input
+.panel input
 {
 	display: block;
 	margin: 0 auto;

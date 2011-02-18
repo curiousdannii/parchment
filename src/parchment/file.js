@@ -20,6 +20,8 @@ TODO:
 	If such a time comes when everyone has native atob(), then always expose the decoded text in process_binary_XHR()
 	
 	If we know we have a string which is latin1 (say from atob()), would it be faster to have a separate text_to_array() that doesn't need to &0xFF?
+	
+	Consider combining the eNs together first, then shifting to get the cNs (for the base64 decoder)
 
 */
  
@@ -71,7 +73,6 @@ if (window.atob)
 }
 
 // Unfortunately we will have to use pure Javascript functions
-// TODO: Consider combining the eNs together first, then shifting to get the cNs (for the decoder)
 else
 {
 	var encoder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -237,7 +238,7 @@ $.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 
 // Converters are set in intro.js
 
-/* DEBUG:IF */
+/* DEBUG */
 
 // Download a file to a byte array
 // Note: no longer used by library.js
@@ -251,7 +252,7 @@ function download_to_array( url, callback )
 		});
 }
 
-/* DEBUG:END */
+/* ENDDEBUG */
 
 /*
 	// Images made from byte arrays

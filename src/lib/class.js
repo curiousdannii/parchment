@@ -1,4 +1,4 @@
-/*!
+/*
  * Simple JavaScript Inheritance
  * http://ejohn.org/blog/simple-javascript-inheritance/
  *
