@@ -113,7 +113,10 @@ var CHILD_REC = 2;
 var CALLED_FROM_INTERRUPT = 0;
 
 // Not everywhere has "window" defined
-window = window || {};
+if ( !window )
+{
+	this.window = {};
+}
 
 // Temporary variables used in JITspace; they need to be
 // defined for QML, though browser JS would allow them to be
@@ -2477,11 +2480,11 @@ GnustoEngine.prototype = {
 					// List of arguments to the opcode.
 					var args = [];
 
+					/* DEBUG */
 					var this_instr_pc = this.m_pc;
-					if (this.m_value_asserts) {
-						if (this_instr_pc == null || this_instr_pc < 0 || this_instr_pc >= this.m_original_memory.length)
-							gnusto_error(206, this_instr_pc);
-					}
+					if ( this_instr_pc == null || this_instr_pc < 0 || this_instr_pc >= this.m_original_memory.length )
+						gnusto_error(206, this_instr_pc);
+					/* ENDDEBUG */
 
 					// Add the touch (see bug 4687). This lets us track progress simply.
 //				touch() has a huge overhead and without tracing there's no need for it. Whether this replacement is even useful is a good question...
@@ -4119,7 +4122,7 @@ GnustoEngine.prototype = {
 
 					var bits = this.m_memory[0x11] & 0x03;
 					var changed = bits != this.m_printing_header_bits;
-					var effect_parameters = this.m_printing_header_bits;
+					//var effect_parameters = this.m_printing_header_bits;
 					this.m_printing_header_bits = bits;
 
 					// OK, so should we bail?
@@ -4661,7 +4664,7 @@ GnustoEngine.prototype = {
   // |this_instr_pc| is the address of the start of the current instruction.
 	// during compilation. This is not identical to |m_pc|, because that
 	// can point to addresses within the middles of instructions.
-  m_this_instr_pc: 0,
+  //m_this_instr_pc: 0,
 
   // |dict_start| is the address of the dictionary in the Z-machine's memory.
   m_dict_start: 0,
