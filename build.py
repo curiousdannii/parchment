@@ -17,20 +17,20 @@ includes = (
 		'src/parchment/file.js',
 		'src/parchment/ui.js',
 		'src/parchment/library.js',
-		'src/parchment/zvm-gnusto.js',
+		'src/parchment/gnusto.js',
 		'src/parchment/outro.js',
 	)),
 	('.build/zmachine.js', (
-		'src/zmachine/zui.js',
+		'src/gnusto/runner/zui.js',
 		'src/plugins/quetzal.js',
-		'src/zmachine/runner.js',
-		'src/zmachine/console.js',
+		'src/gnusto/runner/runner.js',
+		'src/gnusto/runner/console.js',
 	)),
 )
 
 # List of files to compress (with debug code removed)
 compress = (
-	('src/gnusto/gnusto-engine.js', 'lib/gnusto.min.js'),
+	('src/gnusto/engine/gnusto-engine.js', 'lib/gnusto.min.js'),
 	('.build/parchment.js', 'lib/parchment.min.js'),
 	('.build/zmachine.js', 'lib/zmachine.min.js'),
 )

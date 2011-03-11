@@ -19,9 +19,13 @@ FatalError.prototype = {
   var message = e.message;
   if (typeof e.message == "string")
     message = message.entityify();
-  $("#content").append('<div class="error">An error occurred:<br/>' +
+  $( '#parchment' ).append('<div class="error">An error occurred:<br/>' +
                        '<pre>' + message + '\n\n' + e.traceback +
                        '</pre></div>');
+	if ( window.console )
+	{
+		console.error( message );
+	}
 },
 
   _makeTraceback: function(procs) {

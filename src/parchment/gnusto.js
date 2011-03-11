@@ -9,14 +9,17 @@ http://code.google.com/p/parchment
 
 */
 
-parchment.vms.push({
+parchment.vms.gnusto = {
+	// File pattern
+	match: /.z([1-8]|blorb)(.js)?$/,
+	
 	// Files to load
 	files: /* DEBUG */ [
-			'../src/gnusto/gnusto-engine.js',
+			'../src/gnusto/engine/gnusto-engine.js',
 			'../src/plugins/quetzal.js',
-			'../src/zmachine/runner.js',
-			'../src/zmachine/console.js',
-			'../src/zmachine/zui.js'
+			'../src/gnusto/runner/runner.js',
+			'../src/gnusto/runner/console.js',
+			'../src/gnusto/runner/zui.js'
 		] /* ELSEDEBUG [
 			'gnusto.min.js',
 			'zmachine.min.js'
@@ -46,4 +49,5 @@ parchment.vms.push({
 
 		runner.run();
 	}
-});
+};
+parchment.vms.push( parchment.vms.gnusto );

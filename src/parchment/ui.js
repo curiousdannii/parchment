@@ -36,8 +36,10 @@ selection = window.getSelection ||
 	function() { return ''; },
 
 // Map results callback
-map_results_callback = function( story ){
-	return '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/' + story.path + '">' + story.desc.entityify() + '</a></p>';
+results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
+map_results_callback = function( story )
+{
+	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
 };
 
 window.gIsIphone = rmobileua.test( navigator.userAgent );
@@ -98,24 +100,23 @@ parchment.lib.UI = Object.subClass({
 	load_panels: function()
 	{
 		var panels = parchment.options.panels || [],
-		search_input, search_results,
-		i = 0;
+		search_input, search_results;
 		
 		// A search box
 		if ( panels.indexOf( 'search' ) != -1 )
 		{
-			this.panels.search = $( '<div class="panel search"><lavel for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search><div></div></div>' );
+			this.panels.search = $( '<div class="panel search"><lavel for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search"><div></div></div>' );
 			
 			search_input = this.panels.search.find( 'input' );
 			search_results = search_input.next();
 				
 			// Load the archive json file
-			search_input.bind( 'keydown.search', function(){
-				search_input.unbind( '.search' );
+			search_input.bind( 'keydown', function(){
+				search_input.unbind( 'keydown' );
 				$.getJSON( 'stories/if-archive.json' )
 					.done(function( data ){
 						// Attach the real handler once the archive's been downloaded
-						search_input.keydown(function(){
+						search_input.keyup(function(){
 							// Filter the archive
 							var key = RegExp( search_input.val().replace( ' ', '( )?' ), 'i' ),
 							results = $.grep( data, function( story ){
