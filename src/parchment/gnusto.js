@@ -1,7 +1,7 @@
 /*
 
-Z-Machine definition (Gnusto)
-=============================
+Gnusto definition
+=================
 
 Copyright (c) 2008-2011 The Parchment Contributors
 BSD licenced
@@ -10,8 +10,10 @@ http://code.google.com/p/parchment
 */
 
 parchment.vms.gnusto = {
+	id: 'gnusto',
+	
 	// File pattern
-	match: /.z([1-8]|blorb)(.js)?$/,
+	match: /(z[1-8]|zlb|(z|zcode.+)(blorb|blb))(.js)?$/i,
 	
 	// Files to load
 	files: /* DEBUG */ [

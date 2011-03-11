@@ -17,6 +17,7 @@ includes = (
 		'src/parchment/file.js',
 		'src/parchment/ui.js',
 		'src/parchment/library.js',
+		'src/parchment/quixe.js',
 		'src/parchment/gnusto.js',
 		'src/parchment/outro.js',
 	)),

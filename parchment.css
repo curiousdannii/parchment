@@ -11,6 +11,14 @@ body
 	text-align: center;
 }
 
+#gameport
+{
+	line-height: 1.4;
+	margin: 0 auto;
+	text-align: left;
+	width: 80%;
+}
+
 .fg-default {
     color: black;
 }

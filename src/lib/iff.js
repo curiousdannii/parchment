@@ -1,10 +1,13 @@
 /*
- * Interchange File Format library
- *
- * Copyright (c) 2008-2010 The Gnusto Contributors
- * Licenced under the GPL v2
- * http://github.com/curiousdannii/gnusto
- */
+
+Interchange File Format library
+===============================
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
 (function(){
 
 // Get a 32 bit number from a byte array, and vice versa
@@ -21,8 +24,7 @@ function num_to_word(n)
 // Get a 4 byte string ID from a byte array, and vice versa
 function text_from(s, offset)
 {
-	var fromCharCode = String.fromCharCode;
-	return fromCharCode(s[offset]) + fromCharCode(s[offset + 1]) + fromCharCode(s[offset + 2]) + fromCharCode(s[offset + 3]);
+	return String.fromCharCode( s[offset], s[offset + 1], s[offset + 2], s[offset + 3] );
 }
 
 function text_to_word(t)

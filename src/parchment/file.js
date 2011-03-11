@@ -46,15 +46,8 @@ function text_to_array(text, array)
 
 function array_to_text(array, text)
 {
-	var text = text || '', i = 0, l, fromCharCode = String.fromCharCode;;
-	for (l = array.length % 8; i < l; ++i)
-		text += fromCharCode(array[i]);
-	for (l = array.length; i < l;)
-		text += (fromCharCode(array[i++]) + fromCharCode(array[i++]) +
-		fromCharCode(array[i++]) + fromCharCode(array[i++]) +
-		fromCharCode(array[i++]) + fromCharCode(array[i++]) +
-		fromCharCode(array[i++]) + fromCharCode(array[i++]));
-	return text;
+	// String.fromCharCode can be given an array of numbers if we call apply on it!
+	return ( text || '' ) + String.fromCharCode.apply( 1, array );
 }
 
 // Base64 encoding and decoding

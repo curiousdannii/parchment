@@ -21,6 +21,7 @@ TODO:
 var rqueryurl = /story=([^;&]+)/,
 rqueryvm = /vm=(\w+)/,
 rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
+rjs = /\.js$/,
 
 // Callback to show an error if a VM's dependant scripts could be successfully loaded
 story_get_fail = function(){
@@ -277,14 +278,26 @@ Library = Object.subClass({
 		
 		// Get the scripts if they haven't been loaded already
 		scripts = [],
-		i = 0;
+		i = 0,
+		dependency;
+		
 		if ( !vm.loaded )
 		{
 			vm.loaded = 1;
 			
 			while ( i < vm.files.length )
 			{
-				scripts.push( $.getScript( parchment.options.lib_path + vm.files[i++] ) );
+				dependency = parchment.options.lib_path + vm.files[i++];
+				// JS
+				if ( rjs.test( dependency ) )
+				{
+					scripts.push( $.getScript( dependency ) );
+				}
+				// CSS
+				else
+				{
+					this.ui.stylesheet_add( vm.id, dependency );
+				}
 			}
 			
 			// Use jQuery.when() to get a promise for all of the scripts
