@@ -30,7 +30,8 @@ parchment.vms.gnusto = {
 	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
 	launcher: function( story )
 	{
-		var logfunc = window.console && window.console.log || function(){},
+		// Chrome is silly and doesn't let us simply reference console.log()
+		var logfunc = window.console && window.console.log ? function() { console.log.apply( console, arguments ); } : function(){},
 		jqXHR = story[2],
 
 		engine = new GnustoEngine( logfunc ),

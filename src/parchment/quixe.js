@@ -40,10 +40,12 @@ parchment.vms.quixe = {
 			jQuery('.load').detach();
 		}
 		
-		GiLoad.load_run( {
+		// Load it up!
+		window.game_options = {
 			inspacing: 0,     // gap between windows
 			outspacing: 0     // gap between windows and edge of gameport
-		}, jqXHR.responseArray, 'array' );
+		};
+		GiLoad.load_run( 0, jqXHR.responseArray, 'array' );
 	}
 };
 parchment.vms.push( parchment.vms.quixe );
