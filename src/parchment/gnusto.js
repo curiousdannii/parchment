@@ -31,7 +31,8 @@ parchment.vms.gnusto = {
 	launcher: function( story )
 	{
 		// Chrome is silly and doesn't let us simply reference console.log()
-		var logfunc = window.console && window.console.log ? function() { console.log.apply( console, arguments ); } : function(){},
+		// PLUS Only supports a single argument :(
+		var logfunc = window.console && function( msg ) { console.log( msg ); } || function(){},
 		jqXHR = story[2],
 
 		engine = new GnustoEngine( logfunc ),

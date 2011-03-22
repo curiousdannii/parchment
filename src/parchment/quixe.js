@@ -42,8 +42,9 @@ parchment.vms.quixe = {
 		
 		// Load it up!
 		window.game_options = {
-			inspacing: 0,     // gap between windows
-			outspacing: 0     // gap between windows and edge of gameport
+			inspacing: 0, // gap between windows
+			outspacing: 0, // gap between windows and edge of gameport
+			use_query_story: 0 // Needed here or else GiLoad will try to download the storyfile twice
 		};
 		GiLoad.load_run( 0, jqXHR.responseArray, 'array' );
 	}
