@@ -27,6 +27,16 @@ includes = (
 		'src/gnusto/runner/runner.js',
 		'src/gnusto/runner/console.js',
 	)),
+	('.build/quixe.js', (
+		'src/quixe/quixe/quixe.js',
+		'src/quixe/quixe/gi_dispa.js',
+		'src/quixe/quixe/gi_load.js',
+	)),
+	('.build/glkote.js', (
+		'src/quixe/glkote/glkote.js',
+		'src/quixe/glkote/dialog.js',
+		'src/quixe/glkote/glkapi.js',
+	)),
 )
 
 # List of files to compress (with debug code removed)
@@ -34,6 +44,8 @@ compress = (
 	('src/gnusto/engine/gnusto-engine.js', 'lib/gnusto.min.js'),
 	('.build/parchment.js', 'lib/parchment.min.js'),
 	('.build/zmachine.js', 'lib/zmachine.min.js'),
+	('.build/glkote.js', 'lib/glkote.min.js'),
+	('.build/quixe.js', 'lib/quixe.min.js'),
 )
 
 import datetime

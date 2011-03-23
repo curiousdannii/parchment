@@ -69,8 +69,9 @@ GiLoad = function() {
    defined in the HTML file. */
 var all_options = {
     spacing: 4,      // default spacing between windows
-    vm: Quixe,       // default game engine
-    io: Glk,         // default display layer
+	// The following two may not be loaded by the time we run this code, so set in load_run
+    //vm: Quixe,       // default game engine
+    //io: Glk,         // default display layer
     use_query_story: true, // use the ?story= URL parameter (if provided)
     default_story: null,   // story URL to use if not otherwise set
     set_page_title: true,  // set the window title to the game name
@@ -85,6 +86,11 @@ var metadata = {}; /* Title, author, etc -- loaded from Blorb */
    file is available.
 */
 function load_run(optobj, image, image_format) {
+
+	// Set defaults that depend on other files, must be loaded by here
+	all_options.vm = Quixe;
+	all_options.io = Glk;
+	
     if (!optobj)
         optobj = window.game_options;
     if (optobj)

@@ -793,7 +793,16 @@ if (localStorage == null) {
     }
 }
 
-Event.observe(window, 'storage', evhan_storage_changed); // prototype-ism
+// Attach storage events with jQuery
+if ( jQuery )
+{
+	jQuery( window ).bind( 'storage', evhan_storage_changed );
+}
+// Or assume Prototype
+else
+{
+	Event.observe(window, 'storage', evhan_storage_changed);
+}
 
 /* End of Dialog namespace function. Return the object which will
    become the Dialog global. */

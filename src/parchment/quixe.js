@@ -17,7 +17,19 @@ parchment.vms.quixe = {
 	
 	// Files to load
 	files: [
-			'quixe.min.js',
+			/* DEBUG */
+				'../src/quixe/prototype-1.6.1.js',
+				'../src/quixe/glkote/glkote.js',
+				'../src/quixe/glkote/dialog.js',
+				'../src/quixe/glkote/glkapi.js',
+				'../src/quixe/quixe/quixe.js',
+				'../src/quixe/quixe/gi_dispa.js',
+				'../src/quixe/quixe/gi_load.js',
+			/* ELSEDEBUG
+				'prototype.min.js',
+				'glkote.min.js',
+				'quixe.min.js',
+			/* ENDDEBUG */
 			'../src/quixe/media/i7-glkote.css',
 			'../src/quixe/media/dialog.css'
 		],
