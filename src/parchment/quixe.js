@@ -24,7 +24,6 @@ parchment.vms.quixe = {
 				'../src/quixe/glkote/glkapi.js',
 				'../src/quixe/quixe/quixe.js',
 				'../src/quixe/quixe/gi_dispa.js',
-				'../src/quixe/quixe/gi_load.js',
 			/* ELSEDEBUG
 				'prototype.min.js',
 				'glkote.min.js',
@@ -38,7 +37,18 @@ parchment.vms.quixe = {
 	launcher: function( story )
 	{
 		var jqXHR = story[2],
-		library = jqXHR.library;
+		library = jqXHR.library,
+		
+		// De-blorbify
+		mystory = new parchment.lib.Story( jqXHR.responseArray, storyName ),
+		
+		// GlkOte settings
+		game_options = {
+			inspacing: 0, // gap between windows
+			outspacing: 0, // gap between windows and edge of gameport
+			vm: Quixe, // default game engine
+			//io: Glk, // default display layer
+		};
 		
 		// Switch on the styles
 		library.ui.stylesheet_switch( 'quixe', 1 );
@@ -53,12 +63,8 @@ parchment.vms.quixe = {
 		}
 		
 		// Load it up!
-		window.game_options = {
-			inspacing: 0, // gap between windows
-			outspacing: 0, // gap between windows and edge of gameport
-			use_query_story: 0 // Needed here or else GiLoad will try to download the storyfile twice
-		};
-		GiLoad.load_run( 0, jqXHR.responseArray, 'array' );
+		Quixe.prepare( mystory.glulx, game_options );
+		Glk.init( game_options );
 	}
 };
 parchment.vms.push( parchment.vms.quixe );

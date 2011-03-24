@@ -46,7 +46,7 @@ parchment.lib.Story = IFF.subClass({
 		// some of the other fields as well for sanity-checking.
 		if (data[0] < 9)
 		{
-			this.filetype = 'ok story naked zcode';
+			//this.filetype = 'zcode';
 			this._super();
 			this.chunks.push({
 				type: 'ZCOD',
@@ -54,6 +54,19 @@ parchment.lib.Story = IFF.subClass({
 			});
 			this.zcode = data;
 		}
+		
+		// Check for naked glulx
+		else if (IFF.text_from(data, 0) == 'Glul')
+		{
+			//this.filetype = 'glulx';
+			this._super();
+			this.chunks.push({
+				type: 'GLUL',
+				data: data
+			});
+			this.glulx = data;
+		}
+		
 		// Check for potential zblorb
 		else if (IFF.text_from(data, 0) == 'FORM')
 		{
@@ -78,10 +91,16 @@ parchment.lib.Story = IFF.subClass({
 								start: IFF.num_from(this.chunks[i].data, 12 + j * 12)
 							});
 */
-					if (type == 'ZCOD' && !this.zcode)
-						// Parchment uses the first ZCOD chunk it finds, but the Blorb spec says the RIdx chunk should be used
+					// Parchment uses the first ZCOD/GLUL chunk it finds, but the Blorb spec says the RIdx chunk should be used
+					if ( type == 'ZCOD' && !this.zcode )
+					{
 						this.zcode = this.chunks[i].data;
-
+					}
+					else if ( type == 'GLUL' && !this.glulx )
+					{
+						this.glulx = this.chunks[i].data;
+					}
+						
 					else if (type == 'IFmd')
 					{
 						// Treaty of Babel metadata
@@ -115,21 +134,21 @@ parchment.lib.Story = IFF.subClass({
 */
 				}
 
-				if (this.zcode)
+/*				if (this.zcode)
 					this.filetype = 'ok story blorbed zcode';
 				else
 					this.filetype = 'error: no zcode in blorb';
-			}
-			// Not a blorb
+*/			}
+/*			// Not a blorb
 			else if (this.type == 'IFZS')
 				this.filetype = 'error: trying to load a Quetzal savefile';
 			else
 				this.filetype = 'error unknown iff';
-		}
-		else
+*/		}
+/*		else
 			// Not a story file
 			this.filetype = 'error unknown general';
-	},
+*/	},
 
 	// Load zcode into engine
 	load: function loadIntoEngine(engine)

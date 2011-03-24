@@ -30,7 +30,6 @@ includes = (
 	('.build/quixe.js', (
 		'src/quixe/quixe/quixe.js',
 		'src/quixe/quixe/gi_dispa.js',
-		'src/quixe/quixe/gi_load.js',
 	)),
 	('.build/glkote.js', (
 		'src/quixe/glkote/glkote.js',
