@@ -20,7 +20,8 @@ TODO:
 
 var window = this,
 
-// Wrap document
+// Wrap window, document and body
+$window = $( window ),
 doc = $( document ),
 body = $( 'body' ),
 
@@ -250,11 +251,12 @@ parchment.lib.TextInput = Object.subClass({
 		})
 			.append( lineInput );
 		
-		// Focus clicks in the container (only)
-		// To focus document clicks use UI.addTextInput()
-		container.bind( 'click.TextInput', function() {
+		// Focus document clicks and keydowns
+		doc.bind( 'click.TextInput keydown.TextInput', function() {
+			
 			// Don't do anything if the user is selecting some text
-			if ( selection() == '' )
+			// OR if the cursor is too far below the viewport
+			if ( selection() == '' && $window.scrollTop() + $window.height() - lineInput.offset().top > -60 )
 			{
 				if ( $( '.LineInput' ).length )
 				{
@@ -280,7 +282,7 @@ parchment.lib.TextInput = Object.subClass({
 	// Cleanup so we can deconstruct
 	die: function()
 	{
-		this.container.unbind( '.TextInput' );
+		doc.unbind( '.TextInput' );
 	},
 	
 	// Get some input
@@ -288,7 +290,8 @@ parchment.lib.TextInput = Object.subClass({
 	{
 		var self = this,
 		prompt = self.stream.children().last(),
-		input = self.lineInput;
+		input = self.lineInput,
+		lastinput = $( '.finished-input' ).get( -1 );
 		
 		self.callback = callback || $.noop;
 		
@@ -301,15 +304,19 @@ parchment.lib.TextInput = Object.subClass({
 		self.style = style || '';
 		
 		// Adjust the input's width and ensure it's empty
+		// -1 because it seems slightly too wide in FF4
 		input
-			.width( self.stream.width() - prompt.width() )
+			.width( self.stream.width() - prompt.width() - 1 )
 			.val( '' )
 			.addClass( self.style );
 		
 		prompt.append( self.form );
-		setTimeout( function(){
-			input.focus();
-		}, 1 );
+		
+		// Scroll to the beginning of the last set of output
+		if ( lastinput )
+		{
+			$( '.finished-input' ).get( -1 ).scrollIntoView();
+		}
 	},
 	
 	// Submit the input data
