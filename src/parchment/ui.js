@@ -212,6 +212,9 @@ parchment.lib.TextInput = Object.subClass({
 					cancel = 1;
 				}
 				
+				// Don't propagate the event
+				event.stopPropagation();
+				
 				// Don't do the default browser action
 				// (For example in Mac OS pressing up will force the cursor to the beginning of a line)
 				if ( cancel )
@@ -252,20 +255,15 @@ parchment.lib.TextInput = Object.subClass({
 			.append( lineInput );
 		
 		// Focus document clicks and keydowns
-		doc.bind( 'click.TextInput keydown.TextInput', function() {
+		doc.bind( 'click.TextInput keydown.TextInput', function( ev ) {
 			
 			// Don't do anything if the user is selecting some text
 			// OR if the cursor is too far below the viewport
 			if ( selection() == '' && $window.scrollTop() + $window.height() - lineInput.offset().top > -60 )
 			{
-				if ( $( '.LineInput' ).length )
-				{
-					lineInput.focus();
-				}
-				if ( $( '.CharInput' ).length )
-				{
-					charInput.focus();
-				}
+				$( '.LineInput input, .CharInput' )
+					.focus()
+					.trigger( ev );
 			}
 		});
 		
@@ -315,7 +313,7 @@ parchment.lib.TextInput = Object.subClass({
 		// Scroll to the beginning of the last set of output
 		if ( lastinput )
 		{
-			$( '.finished-input' ).get( -1 ).scrollIntoView();
+			lastinput.scrollIntoView();
 		}
 	},
 	
