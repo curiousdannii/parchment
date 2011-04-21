@@ -131,33 +131,52 @@ else
 var xhr = jQuery.ajaxSettings.xhr(),
 support = {
 	// Unfortunately in Opera < 10.5 overrideMimeType() doesn't work
-	binary: xhr.overrideMimeType && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ) ? 'charset' : 0
+	binary:
+		xhr.overrideMimeType && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ) ? 'charset' :
+		xhr.responseBody ? 'responseBody' :
+		0
 },
 
 // Process a binary XHR
 process_binary_XHR = function( data, textStatus, jqXHR )
 {
 	var array, buffer, text;
-
+	
+	data = $.trim( data );
+	
 	// Decode base64
-	if ( jqXHR.base64 )
+	if ( jqXHR.mode == 'base64' )
 	{
 		// Expose the decoded text if we have native decoding
 		if ( window.atob )
 		{
-			text = atob( $.trim( data ) );
+			text = atob( data );
 			array = text_to_array( text );
 		}
 		else
 		{
-			array = base64_decode( $.trim( data ) );
+			array = base64_decode( data );
 		}
 	}
 	
-	// Erase responseText as it's not safe
+	// Binary support through charset=x-user-defined
+	else if ( jqXHR.mode == 'charset' )
+	{
+		array = text_to_array( data );
+	}
+	
+	// Access responseBody
 	else
 	{
-		array = text_to_array( $.trim( data ) );
+		// VBArray doesn't work in IE < 9, and I can't find a way to test whether it will work ahead of time
+		try
+		{
+			array = new VBArray( jqXHR.xhr.responseBody ).toArray();
+		}
+		// A work around using a little VB script
+		catch (e)
+		{
+		}
 	}
 	
 	jqXHR.responseArray = array;
@@ -174,7 +193,12 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
 	var binary = options.isLocal && !options.crossDomain && chrome_no_file ? 0 : support.binary,
 	
+	// Expose the real XHR object onto the jqXHR
 	XHRFactory = options.xhr;
+	options.xhr = function()
+	{
+		return jqXHR.xhr = XHRFactory.apply( options );
+	};
 	
 	// Set up the options and jqXHR
 	options.binary = binary;
@@ -183,7 +207,7 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 	// Options for jsonp, which may not be used if we redirect to 'text'
 	options.jsonp = false;
 	options.jsonpCallback = 'processBase64Zcode';
-	jqXHR.base64 = 1;
+	jqXHR.mode = 'base64';
 	
 	// Load a legacy file
 	if ( options.url.slice( -3 ).toLowerCase() == '.js' )
@@ -219,12 +243,13 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 	return 'jsonp';
 });
 
-// Set the encoding for binary requests
+// Set options for binary requests
 $.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 {
-	if ( options.binary == 'charset' )
+	jqXHR.mode = options.binary;
+	
+	if ( jqXHR.mode == 'charset' )
 	{
-		jqXHR.base64 = 0;
 		options.mimeType = 'text/plain; charset=x-user-defined';
 	}
 });

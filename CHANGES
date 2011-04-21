@@ -3,6 +3,7 @@ Change log started August 2009.
 April 2011
 ================================================================================
 Smallish changes to the text input class.
+Support responseBody in IE.
 
 March 2011
 ================================================================================
