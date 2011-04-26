@@ -14,7 +14,6 @@ TODO:
 	Add transport for XDR
 	
 	Access buffer if possible (don't change encodings)
-	Use VBScript if needed (don't change encodings)
 	
 	Is the native base64_decode function still useful?
 	If such a time comes when everyone has native atob(), then always expose the decoded text in process_binary_XHR()
@@ -27,11 +26,38 @@ TODO:
  
 (function(window, $){
 
+// VBScript code
+if ( window.execScript )
+{
+	execScript(
+		
+		// Idea from http://stackoverflow.com/questions/1919972/#3050364
+		
+		// Convert a byte array (xhr.responseBody) into a 16-bit characters string
+		// Javascript code will separate the characters back into 8-bit numbers again
+		'Function VBCStr(x)\n' +
+			'VBCStr=CStr(x)\n' +
+		'End Function\n' +
+		
+		// If the byte array has an odd length, this function is needed to get the last byte
+		'Function VBLastAsc(x)\n' +
+			'Dim l\n' +
+			'l=LenB(x)\n' +
+			'If l mod 2 Then\n' +
+				'VBLastAsc=AscB(MidB(x,l,1))\n' +
+			'Else\n' +
+				'VBLastAsc=-1\n' +
+			'End If\n' +
+		'End Function'
+	
+	, 'VBScript' );
+}
+
 var chrome = /chrome\/(\d+)/i.exec( navigator.userAgent ),
-chrome_no_file = chrome && parseInt( chrome[1] ) > 4;
+chrome_no_file = chrome && parseInt( chrome[1] ) > 4,
 
 // Text to byte array and vice versa
-function text_to_array(text, array)
+text_to_array = function(text, array)
 {
 	var array = array || [], i = 0, l;
 	for (l = text.length % 8; i < l; ++i)
@@ -42,98 +68,130 @@ function text_to_array(text, array)
 		array.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
 			text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff);
 	return array;
-}
+},
 
-function array_to_text(array, text)
+array_to_text = function(array, text)
 {
 	// String.fromCharCode can be given an array of numbers if we call apply on it!
 	return ( text || '' ) + String.fromCharCode.apply( 1, array );
-}
+},
 
 // Base64 encoding and decoding
 // Use the native base64 functions if available
-if (window.atob)
+
+// Run this little function to build the decoder array
+encoder = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+decoder = (function()
 {
-	var base64_decode = function(data, out)
-	{
-		return text_to_array(atob(data), out);
-	},
+	var out = [], i = 0;
+	for (; i < encoder.length; i++)
+		out[encoder.charAt(i)] = i;
+	return out;
+})(),
 
-	base64_encode = function(data, out)
-	{
-		return btoa(array_to_text(data, out));
-	};
-}
-
-// Unfortunately we will have to use pure Javascript functions
-else
+base64_decode = function(data, out)
 {
-	var encoder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-	// Run this little function to build the decoder array
-	decoder = (function()
+	if ( window.atob )
 	{
-		var out = [], i = 0;
-		for (; i < encoder.length; i++)
-			out[encoder.charAt(i)] = i;
-		return out;
-	})(),
-
-	base64_decode = function(data, out)
+		return text_to_array( atob( data ), out );
+	}
+	
+	var out = out || [],
+	c1, c2, c3, e1, e2, e3, e4,
+	i = 0, l = data.length;
+	while (i < l)
 	{
-	    var out = out || [],
-	    c1, c2, c3, e1, e2, e3, e4,
-	    i = 0, l = data.length;
-	    while (i < l)
-	    {
-	        e1 = decoder[data.charAt(i++)];
-	        e2 = decoder[data.charAt(i++)];
-	        e3 = decoder[data.charAt(i++)];
-	        e4 = decoder[data.charAt(i++)];
-	        c1 = (e1 << 2) + (e2 >> 4);
-	        c2 = ((e2 & 15) << 4) + (e3 >> 2);
-	        c3 = ((e3 & 3) << 6) + e4;
-	        out.push(c1, c2, c3);
-	    }
-	    if (e4 == 64)
-	        out.pop();
-	    if (e3 == 64)
-	        out.pop();
-	    return out;
-	},
+		e1 = decoder[data.charAt(i++)];
+		e2 = decoder[data.charAt(i++)];
+		e3 = decoder[data.charAt(i++)];
+		e4 = decoder[data.charAt(i++)];
+		c1 = (e1 << 2) + (e2 >> 4);
+		c2 = ((e2 & 15) << 4) + (e3 >> 2);
+		c3 = ((e3 & 3) << 6) + e4;
+		out.push(c1, c2, c3);
+	}
+	if (e4 == 64)
+		out.pop();
+	if (e3 == 64)
+		out.pop();
+	return out;
+},
 
-	base64_encode = function(data, out)
+base64_encode = function(data, out)
+{
+	if ( window.btoa )
 	{
-	    var out = out || '',
-	    c1, c2, c3, e1, e2, e3, e4,
-	    i = 0, l = data.length;
-		while (i < l)
-		{
-			c1 = data[i++];
-			c2 = data[i++];
-			c3 = data[i++];
-			e1 = c1 >> 2;
-			e2 = ((c1 & 3) << 4) + (c2 >> 4);
-			e3 = ((c2 & 15) << 2) + (c3 >> 6);
-			e4 = c3 & 63;
+		return btoa( array_to_text( data, out ) );
+	}
+	
+	var out = out || '',
+	c1, c2, c3, e1, e2, e3, e4,
+	i = 0, l = data.length;
+	while (i < l)
+	{
+		c1 = data[i++];
+		c2 = data[i++];
+		c3 = data[i++];
+		e1 = c1 >> 2;
+		e2 = ((c1 & 3) << 4) + (c2 >> 4);
+		e3 = ((c2 & 15) << 2) + (c3 >> 6);
+		e4 = c3 & 63;
 
-			// Consider other string concatenation methods?
-			out += (encoder.charAt(e1) + encoder.charAt(e2) + encoder.charAt(e3) + encoder.charAt(e4));
-		}
-		if (isNaN(c2))
-			out = out.slice(0, -2) + '==';
-		else if (isNaN(c3))
-			out = out.slice(0, -1) + '=';
-		return out;
-	};
-}
+		// Consider other string concatenation methods?
+		out += (encoder.charAt(e1) + encoder.charAt(e2) + encoder.charAt(e3) + encoder.charAt(e4));
+	}
+	if (isNaN(c2))
+		out = out.slice(0, -2) + '==';
+	else if (isNaN(c3))
+		out = out.slice(0, -1) + '=';
+	return out;
+},
+
+// Convert IE's byte array to an array we can use
+bytearray_to_array = function( bytearray )
+{
+	// VBCStr will convert the byte array into a string, with two bytes combined into one character
+	var text = VBCStr( bytearray ),
+	// VBLastAsc will return the last character, if the string is of odd length
+	last = VBLastAsc( bytearray ),
+	result = [],
+	i = 0,
+	l = text.length % 4,
+	thischar;
+	
+	while ( i < l )
+	{
+		result.push(
+			( thischar = text.charCodeAt(i++) ) & 0xff, thischar >> 8
+		);
+	}
+	
+	l = text.length;
+	while ( i < l )
+	{
+		result.push(
+			( thischar = text.charCodeAt(i++) ) & 0xff, thischar >> 8,
+			( thischar = text.charCodeAt(i++) ) & 0xff, thischar >> 8,
+			( thischar = text.charCodeAt(i++) ) & 0xff, thischar >> 8,
+			( thischar = text.charCodeAt(i++) ) & 0xff, thischar >> 8
+		);
+	}
+	
+	if ( last > -1 )
+	{
+		result.push( last );
+	}
+	
+	return result;
+},
 
 // XMLHttpRequest feature support
-var xhr = jQuery.ajaxSettings.xhr(),
+xhr = jQuery.ajaxSettings.xhr(),
 support = {
 	// Unfortunately in Opera < 10.5 overrideMimeType() doesn't work
 	binary:
 		xhr.overrideMimeType && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ) ? 'charset' :
-		xhr.responseBody ? 'responseBody' :
+		'responseBody' in xhr ? 'responseBody' :
 		0
 },
 
@@ -168,15 +226,7 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 	// Access responseBody
 	else
 	{
-		// VBArray doesn't work in IE < 9, and I can't find a way to test whether it will work ahead of time
-		try
-		{
-			array = new VBArray( jqXHR.xhr.responseBody ).toArray();
-		}
-		// A work around using a little VB script
-		catch (e)
-		{
-		}
+		array = bytearray_to_array( jqXHR.xhr.responseBody );
 	}
 	
 	jqXHR.responseArray = array;
