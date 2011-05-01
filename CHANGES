@@ -1,5 +1,10 @@
 Change log started August 2009.
 
+May 2011
+================================================================================
+Added parchment.options.width to specify the width in characters.
+Allow options to be overriden with query string ?options=
+
 April 2011
 ================================================================================
 Smallish changes to the text input class.

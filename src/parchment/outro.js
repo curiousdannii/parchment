@@ -15,14 +15,24 @@ var parchment = window.parchment;
 // Load Parchment, start it all up!
 $(function()
 {
+	var queryoptions = /options=([^;&]+)/.exec( location.search ),
+	library;
+	
 	// Check for any customised options
 	if ( window.parchment_options )
 	{
 		$.extend( parchment.options, parchment_options );
 	}
 	
+	// Load additional options from the query string
+	// Is a try/catch needed?
+	if ( !parchment.options.lock_options && queryoptions )
+	{
+		$.extend( parchment.options, $.parseJSON( unescape( queryoptions[1] ) ) );
+	}
+	
 	// Load the library
-	var library = new parchment.lib.Library();
+	library = new parchment.lib.Library();
 	parchment.library = library;
 	library.load();
 

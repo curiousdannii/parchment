@@ -45,6 +45,9 @@ var parchment = {
 		// Where shall we find the lib .js files?
 		lib_path: 'lib/',
 		
+		// Don't allow people to specify additional options in the query string
+		//lock_options: 0,
+		
 		// Lock Parchment so it will only run the default story, which must be provided!
 		//lock_story: 0,
 		
@@ -55,7 +58,11 @@ var parchment = {
 		panels: [ 'search', 'url', 'about' ],
 		
 		// URL of proxy server to use for files we can't directly load
-		proxy_url: 'http://zcode.appspot.com/proxy/'
+		proxy_url: 'http://zcode.appspot.com/proxy/',
+		
+		// Output width in characters
+		// NOTE: this is not guaranteed to be a stable API option
+		width: 80
 	},
 
 	// Classes etc
