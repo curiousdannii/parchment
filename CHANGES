@@ -4,6 +4,7 @@ May 2011
 ================================================================================
 Added parchment.options.width to specify the width in characters.
 Allow options to be overriden with query string ?options=
+Rewrote the scroll-to-top-of-response code to work in iframes.
 
 April 2011
 ================================================================================

@@ -174,10 +174,11 @@ parchment.lib.TextInput = Object.subClass({
 	// Set up the text inputs with a container and stream
 	// container is the greatest domain for which this instance should control input
 	// stream is the element which the line <input> will actually be inserted into
-	init: function( container, stream )
+	init: function( container, stream, topwindow )
 	{
 		var self = this,
 		container = $( container ),
+		stream = $( stream ),
 		
 		// The line input element
 		lineInput = $( '<input>', {
@@ -243,7 +244,7 @@ parchment.lib.TextInput = Object.subClass({
 			}
 		});
 		
-		// A form to contain it
+		// A form to contain the line input
 		self.form = $( '<form>', {
 			'class': 'LineInput',	
 			submit: function()
@@ -257,9 +258,14 @@ parchment.lib.TextInput = Object.subClass({
 		// Focus document clicks and keydowns
 		doc.bind( 'click.TextInput keydown.TextInput', function( ev ) {
 			
+			// Only intercept things that aren't inputs
+			if ( ev.target.nodeName != 'INPUT' &&
+			
 			// Don't do anything if the user is selecting some text
-			// OR if the cursor is too far below the viewport
-			if ( selection() == '' && $window.scrollTop() + $window.height() - lineInput.offset().top > -60 )
+				selection() == '' &&
+				
+			// Or if the cursor is too far below the viewport
+				$window.scrollTop() + $window.height() - lineInput.offset().top > -60 )
 			{
 				$( '.LineInput input, .CharInput' )
 					.focus()
@@ -271,8 +277,21 @@ parchment.lib.TextInput = Object.subClass({
 		self.history = [];
 		// current and mutable_history are set in .get()
 		
+		// Find the element which we calculate scroll offsets from
+		stream.parents()
+			.each( function(){
+				var $this = $( this ),
+				overflow = $this.css( 'overflow-y' );
+				if ( overflow == 'scroll' || overflow == 'auto' )
+				{
+					self.scrollParent = $this;
+					return false;
+				}
+			});
+		
 		self.container = container;
-		self.stream = $( stream );
+		self.stream = stream;
+		self.topwindow = $( topwindow );
 		self.lineInput = lineInput;
 		self.charInput = charInput;
 	},
@@ -289,7 +308,8 @@ parchment.lib.TextInput = Object.subClass({
 		var self = this,
 		prompt = self.stream.children().last(),
 		input = self.lineInput,
-		lastinput = $( '.finished-input' ).get( -1 );
+		lastInput = $( '.finished-input' ).last(),
+		scrollParent = self.scrollParent;
 		
 		self.callback = callback || $.noop;
 		
@@ -311,9 +331,18 @@ parchment.lib.TextInput = Object.subClass({
 		prompt.append( self.form );
 		
 		// Scroll to the beginning of the last set of output
-		if ( lastinput )
+		if ( lastInput.length )
 		{
-			lastinput.scrollIntoView();
+			scrollParent.scrollTop(
+				// The last input relative to document
+				lastInput.offset().top
+				// Minus the scroll parent relative to document
+				- scrollParent.offset().top - scrollParent.scrollTop()
+				// Minus the height of the top window
+				- this.topwindow.height()
+				// Minus a little bit more
+				- 10
+			);
 		}
 	},
 	

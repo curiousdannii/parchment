@@ -43,7 +43,7 @@ parchment.lib.ZUI = Object.subClass({
 			
 			bottom: $("#bottom"),
 			current_input: $("#current-input"),
-			text_input: new parchment.lib.TextInput( '#parchment', '#content' ),
+			text_input: new parchment.lib.TextInput( '#parchment', '#content', '#top-window' ),
 			
 			_log: logfunc || $.noop,
 			
