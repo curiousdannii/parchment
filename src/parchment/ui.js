@@ -23,7 +23,7 @@ var window = this,
 // Wrap window, document and body
 $window = $( window ),
 doc = $( document ),
-body = $( 'body' ),
+body, // Set below
 
 // Cached regexs
 rmobileua = /iPhone|iPod|iPad|Android/i,
@@ -50,6 +50,11 @@ map_results_callback = function( story )
 {
 	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
 };
+
+// Set the body variable once the document is loaded
+$(function(){
+	body = $( 'body' );
+});
 
 window.gIsIphone = rmobileua.test( navigator.userAgent );
 
@@ -177,8 +182,6 @@ parchment.lib.TextInput = Object.subClass({
 	init: function( container, stream, topwindow )
 	{
 		var self = this,
-		container = $( container ),
-		stream = $( stream ),
 		
 		// The line input element
 		lineInput = $( '<input>', {
@@ -277,23 +280,16 @@ parchment.lib.TextInput = Object.subClass({
 		self.history = [];
 		// current and mutable_history are set in .get()
 		
-		// Find the element which we calculate scroll offsets from
-		stream.parents()
-			.each( function(){
-				var $this = $( this ),
-				overflow = $this.css( 'overflow-y' );
-				if ( overflow == 'scroll' || overflow == 'auto' )
-				{
-					self.scrollParent = $this;
-					return false;
-				}
-			});
-		
-		self.container = container;
-		self.stream = stream;
-		self.topwindow = $( topwindow );
 		self.lineInput = lineInput;
 		self.charInput = charInput;
+		
+		self.container = $( container );
+		self.stream = $( stream );
+		self.topwindow = $( topwindow );
+		
+		// Find the element which we calculate scroll offsets from
+		// For now just decide by browser
+		self.scrollParent = $.browser.webkit ? body : $( 'html' );
 	},
 	
 	// Cleanup so we can deconstruct
@@ -334,14 +330,12 @@ parchment.lib.TextInput = Object.subClass({
 		if ( lastInput.length )
 		{
 			scrollParent.scrollTop(
-				// The last input relative to document
+				// The last input relative to the top of the document
 				lastInput.offset().top
-				// Minus the scroll parent relative to document
-				- scrollParent.offset().top - scrollParent.scrollTop()
 				// Minus the height of the top window
 				- this.topwindow.height()
-				// Minus a little bit more
-				- 10
+				// Minus one further line
+				- lastInput.height()
 			);
 		}
 	},
