@@ -437,7 +437,7 @@ onRestore: function()
 						'styles': styles 
 					}
 				}
-	      );
+	      ); 
 	      
 	      if (self._activeWindow == 0) {
 	        var lines = output.split("\n");
