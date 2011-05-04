@@ -426,7 +426,19 @@ onRestore: function()
 
 	      self._log("print wind: " + self._activeWindow + " output: " +
 	                output.quote() + " style: " + styles);
-
+	      
+	      // Trigger for text output 
+	      $( document ).trigger(
+				{
+					type: 'TextOutput',
+					output: { 
+						'window': self._activeWindow, 
+						'text': output, 
+						'styles': styles 
+					}
+				}
+	      );
+	      
 	      if (self._activeWindow == 0) {
 	        var lines = output.split("\n");
 	        for (var i = 0; i < lines.length; i++) {
