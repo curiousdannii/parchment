@@ -251,9 +251,12 @@ onRestore: function()
 	    },
 
 	    onFlagsChanged: function(isToTranscript, isFixedWidth) {
-	      if (isToTranscript)
-	        // TODO: Deal with isToTranscript.
-	        throw new FatalError("To transcript not yet implemented!");
+	      if (isToTranscript) {
+	    	  this.onPrint( "This story does not support saving transcripts manually.\n\n" );
+	    	  // Inform prints the "Start of a transcript of" + version information
+	    	  // automatically. It should be removed, but this is still better than
+	    	  // just halting the game.
+	      }
 	      this._isFixedWidth = isFixedWidth;
 	    },
 
