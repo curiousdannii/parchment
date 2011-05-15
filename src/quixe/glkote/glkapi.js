@@ -220,6 +220,12 @@ function handle_char_input(disprock, input) {
             charval = Const.keycode_Unknown;
     }
 
+	// Trigger for plugins
+	jQuery( document ).trigger({
+		type: 'CharInput',
+		input: { keyCode: charval }
+	}); 
+
     gli_selectref.set_field(0, Const.evtype_CharInput);
     gli_selectref.set_field(1, win);
     gli_selectref.set_field(2, charval);
@@ -263,6 +269,12 @@ function handle_line_input(disprock, input, termkey) {
         if (win.echostr)
             glk_put_jstring_stream(win.echostr, "\n");
     }
+    
+	// Trigger a custom event for anyone listening in for commands
+	jQuery( document ).trigger({
+		type: 'LineInput',
+		input: input
+	});
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);

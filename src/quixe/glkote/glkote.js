@@ -305,6 +305,13 @@ function glkote_update(arg) {
     accept_contentset(arg.content);
   if (arg.input != null)
     accept_inputset(arg.input);
+  
+  // Trigger for plugins
+  jQuery( document ).trigger({
+	type: 'GlkOutput',
+	output: arg.content
+  });
+  
 
   /* Any buffer windows that have changed need to be scrolled down.
      Then, we take the opportunity to update topunseen. (If a buffer
