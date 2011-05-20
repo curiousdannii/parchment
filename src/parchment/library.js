@@ -261,7 +261,12 @@ Library = Object.subClass({
 			// Raise an error if we have no VM
 			if ( !vm )
 			{
-				throw new FatalError( 'File type is not supported!' );
+				if( url == '' ) {
+					throw new FatalError( 'Story file not specified' );
+				}
+				else {
+					throw new FatalError( 'File type is not supported!' );
+				}
 			}
 			
 			// Launch the story with the VM
