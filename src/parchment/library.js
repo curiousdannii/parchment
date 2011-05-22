@@ -198,6 +198,10 @@ Library = Object.subClass({
 		{
 			// Locked to the default story
 			storyfile = options.default_story;
+
+			if( storyfile == '' ) {
+				throw new FatalError( 'Story file not specified' );
+			}
 		}
 		// Load the requested story or the default story
 		else if ( options.default_story || storyfile )
@@ -261,12 +265,7 @@ Library = Object.subClass({
 			// Raise an error if we have no VM
 			if ( !vm )
 			{
-				if( url == '' ) {
-					throw new FatalError( 'Story file not specified' );
-				}
-				else {
-					throw new FatalError( 'File type is not supported!' );
-				}
+				throw new FatalError( 'File type is not supported!' );
 			}
 			
 			// Launch the story with the VM
