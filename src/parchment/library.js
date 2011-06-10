@@ -182,7 +182,7 @@ Library = Object.subClass({
 	},
 	
 	// Load a story or savefile
-	load: function(id)
+	load: function( id )
 	{
 		var self = this,
 		
@@ -199,7 +199,8 @@ Library = Object.subClass({
 			// Locked to the default story
 			storyfile = options.default_story;
 
-			if( storyfile == '' ) {
+			if ( !storyfile )
+			{
 				throw new FatalError( 'Story file not specified' );
 			}
 		}
