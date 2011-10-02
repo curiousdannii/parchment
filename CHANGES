@@ -1,5 +1,9 @@
 Change log started August 2009.
 
+October 2011
+================================================================================
+Added the ifvms.js ZVM engine.
+
 May 2011
 ================================================================================
 Added parchment.options.width to specify the width in characters.

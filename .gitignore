@@ -1,3 +1,6 @@
 .build
 *~
 *.pyc
+*.z*
+src/ifvms.js/test/gameinfo.dbg
+src/ifvms.js/test/jquery.js

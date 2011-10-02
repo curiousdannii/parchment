@@ -1,0 +1,2 @@
+If jresig's class system doesn't perform well enough we should be able implement our own, without using _super. Instead do a similar thing with write() as is done with post(). Opcode.write() would return this.postwrite( this.label() etc );
+- Actually the likely problem is the constructor instead.
