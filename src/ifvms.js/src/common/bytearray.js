@@ -1,10 +1,13 @@
 /*
- * ByteArray classes, using Typed Arrays if possible
- *
- * Copyright (c) 2011 The ifvms.js team
- * Licenced under the BSD
- * http://github.com/curiousdannii/ifvms.js
- */
+
+ByteArray classes, using Typed Arrays if possible
+=================================================
+
+Copyright (c) 2011 The ifvms.js team
+BSD licenced
+http://github.com/curiousdannii/ifvms.js
+
+*/
  
 /*
 
@@ -12,6 +15,7 @@ Todo:
 	consider whether direct array access would help (what did i mean by this???)
 	is signed access needed?
 	add a system for guards, to run callbacks if certain addresses were written to
+	check whether returning the set values is bad for perf
 
 */
 
@@ -41,10 +45,16 @@ ByteArray = native_bytearrays ?
 				getUint8: function( index ) { return data[index]; },
 				getUint16: function( index ) { return data[index] << 8 | data[index + 1]; },
 				getBuffer: function( start, length ) { return data.slice( start, start + length ); },
-				setUint8: function( index, value ) { data[index] = value & 0xFF; },
-				setUint16: function( index, value ) { data[index] = (value >> 8) & 0xFF; data[index + 1] = value & 0xFF; },
-				setBuffer: function( index, buffer )
+				setUint8: function( index, value ) { return data[index] = value & 0xFF; },
+				setUint16: function( index, value ) { data[index] = (value >> 8) & 0xFF; data[index + 1] = value & 0xFF; return value & 0xFFFF; },
+				setBuffer: function( index, buffer, safe )
 				{
+					// If we know the buffer is an array of bytes we can concat
+					if ( safe )
+					{
+						return data = data.slice( 0, index ).concat( buffer, data.slice( index + buffer.length ) );
+					}
+					
 					for ( var i = 0; i < buffer.length; i++ )
 					{
 						data[index + i] = buffer[i] & 0xFF;

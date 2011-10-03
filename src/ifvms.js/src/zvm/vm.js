@@ -19,6 +19,12 @@ TODO:
 
 // The VM itself!
 var ZVM_core = {
+	init: function()
+	{
+		// Create this here so that it won't be cleared on restart
+		this.jit = {};
+	},
+	
 	load: function( data )
 	{
 		this.data = data;
@@ -40,9 +46,7 @@ var ZVM_core = {
 			s: [],
 			l: [],
 			call_stack: [],
-
-			// JIT stuff
-			jit: {},
+			undo: [],
 			
 			// IO stuff
 			orders: [],
@@ -99,6 +103,7 @@ var ZVM_core = {
 			
 			// Or if more than five seconds has passed
 			// What's the best time for this?
+			// Or maybe count iterations instead?
 			if ( (Date.now() - now) > 5000 )
 			{
 				this.act( 'tick' );
@@ -135,7 +140,7 @@ var ZVM_core = {
 	act: function( code, options )
 	{
 		var oldstyles,
-		buffer = this.buffer,
+		buffer = this.ui.buffer,
 		options = options || {};
 		
 		// If we have a buffer transfer it to the orders
@@ -147,7 +152,7 @@ var ZVM_core = {
 				css: oldstyles,
 				text: buffer
 			});
-			this.buffer = '';
+			this.ui.buffer = '';
 		}
 		
 		options.code = code;
@@ -165,7 +170,7 @@ var ZVM_core = {
 		if ( data.code == 'read' )
 		{
 			// Store the terminating character
-			this.store( data.storer, data.terminator );
+			this.variable( data.storer, data.terminator );
 			
 			// Check if the response is too long, and then set its length
 			response = data.response;
@@ -182,6 +187,48 @@ var ZVM_core = {
 			{
 				// Tokenise the response
 				this.text.tokenise( response, data.parse );
+			}
+			
+			// Echo the response (7.1.1.1)
+			this.print( response + '\n' );
+		}
+	},
+	
+	// Read or write a variable
+	variable: function( variable, value )
+	{
+		var havevalue = typeof value != 'undefined';
+		if ( variable == 0 )
+		{
+			if ( havevalue )
+			{
+				this.s.push( value );
+			}
+			else
+			{
+				return this.s.pop();
+			}
+		}
+		else if ( variable < 16 )
+		{
+			if ( havevalue )
+			{
+				this.l[variable - 1] = value;
+			}
+			else
+			{
+				return this.l[variable - 1];
+			}
+		}
+		else
+		{
+			if ( havevalue )
+			{
+				this.m.setUint16( this.globals + ( variable - 16 ) * 2, value );
+			}
+			else
+			{
+				this.m.getUint16( this.globals + ( variable - 16 ) * 2 );
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /*
 
 The ifvms.js ZVM definition
-================
+===========================
 
 Copyright (c) 2008-2011 The Parchment Contributors
 BSD licenced
@@ -21,6 +21,7 @@ parchment.vms.zvm = {
 				'../src/ifvms.js/src/zvm/intro.js',
 				'../src/ifvms.js/src/common/bytearray.js',
 				'../src/ifvms.js/src/common/ast.js',
+				'../src/ifvms.js/src/zvm/quetzal.js',
 				'../src/ifvms.js/src/zvm/text.js',
 				'../src/ifvms.js/src/zvm/ui.js',
 				'../src/ifvms.js/src/zvm/opcodes.js',

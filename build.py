@@ -44,6 +44,7 @@ includes = (
 		'src/ifvms.js/src/zvm/intro.js',
 		'src/ifvms.js/src/common/bytearray.js',
 		'src/ifvms.js/src/common/ast.js',
+		'src/ifvms.js/src/zvm/quetzal.js',
 		'src/ifvms.js/src/zvm/text.js',
 		'src/ifvms.js/src/zvm/ui.js',
 		'src/ifvms.js/src/zvm/opcodes.js',
@@ -55,6 +56,12 @@ includes = (
 	)),
 )
 
+# regex for debug lines
+import re
+debug = re.compile('(;;;.+$)|(/\*\s*DEBUG\s*\*/[\s\S]+?(/\*\s*ELSEDEBUG|/\*\s*ENDDEBUG\s*\*/))', re.M)
+debuggvm = re.compile('(/\*\s*ZVM\s*\*/[\s\S]+?/\*\s*ENDZVM\s*\*/)|(/\* GVM \*/\s*if\s*\(\s*GVM\s*\)\s*\{)|(\}\s*/\*\s*ENDGVM\s*\*/)', re.M)
+debugzvm = re.compile('(/\*\s*GVM\s*\*/[\s\S]+?/\*\s*ENDGVM\s*\*/)|(/\* ZVM \*/\s*if\s*\(\s*ZVM\s*\)\s*\{)|(\}\s*/\*\s*ENDZVM\s*\*/)', re.M)
+
 # List of files to compress (with debug code removed)
 compress = (
 	('.build/gnusto.js', 'lib/gnusto.min.js'),
@@ -62,19 +69,15 @@ compress = (
 	('.build/zmachine.js', 'lib/zmachine.min.js'),
 	('.build/glkote.js', 'lib/glkote.min.js'),
 	('.build/quixe.js', 'lib/quixe.min.js'),
-	('.build/zvm.js', 'lib/zvm.min.js', 'src/ifvms.js/src/zvm/header.txt'),
+	('.build/zvm.js', 'lib/zvm.min.js', 'src/ifvms.js/src/zvm/header.txt', debugzvm),
 )
 
 import datetime
 import os
-import re
 import time
 
 # Today's date
 today = str(datetime.date.today())
-
-# regex for debug lines
-debug = re.compile('(;;;.+$)|(/\* DEBUG \*/[\s\S]+?(/\* ELSEDEBUG|/\* ENDDEBUG \*/))', re.M)
 
 # Create .build directory if needed
 if not os.path.isdir('.build'):
@@ -107,9 +110,11 @@ for package in compress:
 	
 	print 'Compressing file: ' + package[1]
 	
-	# Strip out debug lines beginning with ;;;
+	# Strip out debug code
 	data = file(package[0]).read()
 	data = debug.sub('', data)
+	if len(package) > 3:
+		data = package[3].sub('', data)
 	
 	# Write to a temp file
 	output = open('.build/temp', 'w')
@@ -122,7 +127,7 @@ for package in compress:
 	data = file('.build/temp').read()
 	
 	# Add a header if needed
-	if len(package) == 3:
+	if len(package) > 2:
 		data = file(package[2]).read() + data
 		
 	# Set the date

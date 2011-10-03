@@ -17,6 +17,11 @@ TODO:
 
 var runtime = {
 	
+	art_shift: function( number, places )
+	{
+		return places > 0 ? number << places : number >> -places;
+	},
+	
 	// Call a routine
 	call: function( addr, storer, next, args )
 	{
@@ -131,21 +136,42 @@ var runtime = {
 	},
 	
 	// Quick hack for @inc/@dec
+	// It would be possible to do this with AST nodes but it would be very messy
 	incdec: function( varnum, change )
 	{
+		var result, offset;
 		if ( varnum == 0 )
 		{
-			this.s.push( this.s.pop() + change );
+			result = this.S2U( this.s.pop() + change );
+			this.s.push( result );
+			return result;
 		}
 		if ( varnum < 16 )
 		{
-			this.l[varnum - 1] += change;
+			return this.l[varnum - 1] = this.S2U( this.l[varnum - 1] + change );
 		}
 		else
 		{
-			var offset = this.globals + ( varnum - 16 ) * 2;
-			this.m.setUint16( offset, this.m.setUint16( offset ) + change );
+			offset = this.globals + ( varnum - 16 ) * 2;
+			return this.m.setUint16( offset, this.m.getUint16( offset ) + change );
 		}
+	},
+	
+	// Indirect variables
+	indirect: function( variable, value )
+	{
+		if ( variable == 0 )
+		{
+			if ( arguments.length > 1 )
+			{
+				return this.s[this.s.length - 1] = value;
+			}
+			else
+			{
+				return this.s[this.s.length - 1];
+			}
+		}
+		return this.variable( variable, value );
 	},
 	
 	// @jeq
@@ -169,6 +195,11 @@ var runtime = {
 		return this.m.getUint16( this.objects + 14 * ( child - 1 ) + 6 ) == parent;
 	},
 	
+	log_shift: function( number, places )
+	{
+		return places > 0 ? number << places : number >>> -places;
+	},
+	
 	// Request line input
 	read: function( text, parse, time, routine, storer )
 	{
@@ -190,6 +221,22 @@ var runtime = {
 			storer: storer
 		});
 	},
+
+	restore_undo: function()
+	{
+		if ( this.undo.length == 0 )
+		{
+			return 0;
+		}
+		var state = this.undo.pop();
+		this.pc = state[0];
+		this.m.setBuffer( 0, state[2], 1 );
+		this.l = state[3];
+		this.s = state[4];
+		this.call_stack = state[5];
+		this.variable( state[1], 2 );
+		return 1;
+	},
 	
 	// Return from a routine
 	ret: function( result )
@@ -205,25 +252,28 @@ var runtime = {
 		// Store the result if there is one
 		if ( storer >= 0 )
 		{
-			this.store( storer, result );
+			this.variable( storer, result );
 		}
 	},
 	
-	// Store a variable
-	store: function( variable, value )
+	// Print text
+	// Is this function needed? Replace with a direct call to ui.print()?
+	print: function( text )
 	{
-		if ( variable == 0 )
-		{
-			this.s.push( value );
-		}
-		else if ( variable < 16 )
-		{
-			this.l[variable - 1] = value;
-		}
-		else
-		{
-			this.m.setUint16( this.globals + ( variable - 16 ) * 2, value );
-		}
+		this.ui.print( text );
+	},
+	
+	save_undo: function( pc, variable )
+	{
+		this.undo.push( [
+			pc,
+			variable,
+			this.m.getBuffer( 0, this.staticmem ),
+			this.l.slice(),
+			this.s.slice(),
+			this.call_stack.slice()
+		] );
+		return 1;
 	},
 	
 	test_attr: function( object, attribute )

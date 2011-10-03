@@ -52,45 +52,45 @@ function run( engine )
 {
 	var order, i, response;
 
-	while (1)
+	engine.run();
+	
+	// Process the orders
+	for ( i = 0; i < engine.orders.length; i++ )
 	{
-		engine.run();
+		order = engine.orders[i];
 		
-		// Process the orders
-		for ( i = 0; i < engine.orders.length; i++ )
+		// Text output
+		// [ 'print', styles, text ]
+		if ( order.code == 'print' )
 		{
-			order = engine.orders[i];
+			$( '<span>' )
+				.css( order.css )
+				.html( order.text.replace( /\n/g, '<br>' ) )
+				.appendTo( '#output' );
+		}
+		
+		// Line input
+		if ( order.code == 'read' )
+		{
+			// Get the input
+			response = prompt( 'Text input' ) || '';
+			// Don't append, it is the interpreter's responsibility to send the response back
+			//$( '#output' ).append( response + '<br>' );
 			
-			// Text output
-			// [ 'print', styles, text ]
-			if ( order.code == 'print' )
-			{
-				$( '<span>' )
-					.css( order.css )
-					.html( order.text.replace( /\n/g, '<br>' ) )
-					.appendTo( '#output' );
-			}
-			
-			// Line input
-			if ( order.code == 'read' )
-			{
-				// Get the input, and append
-				response = prompt( 'Text input' ) || '';
-				$( '#output' ).append( response + '<br>' );
-				
-				// Return the input to the VM
-				order.response = response;
-				order.terminator = 10;
-				engine.event( order );
-			}
-			
-			// Quit
-			if ( order.code == 'quit' )
-			{
-				return;
-			}
+			// Return the input to the VM
+			order.response = response;
+			order.terminator = 10;
+			engine.event( order );
+		}
+		
+		// Quit
+		if ( order.code == 'quit' )
+		{
+			return;
 		}
 	}
+	
+	setTimeout( function(){ run(engine); }, 1 );
 }
 
 // Bootstrap ZVM with a given story URL

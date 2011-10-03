@@ -54,6 +54,8 @@ Variable = Operand.subClass({
 	write: function( value )
 	{
 		var variable = this.v,
+		havevalue = arguments.length,
+		
 		// We may have already evaluated the value's write(), for example in Storer.write()
 		value = value && value.write ? value.write() : value,
 		offset = this.e.globals + (variable - 16) * 2;
@@ -62,32 +64,18 @@ Variable = Operand.subClass({
 		if ( variable == 0 )
 		{
 			// If we've been passed a value we're setting a variable
-			if ( value )
-			{
-				return 's.push(' + value + ')';
-			}
-			else
-			{
-				return 's.pop()';
-			}
+			return havevalue ? 's.push(' + value + ')' : 's.pop()';
 		}
 		// Locals
 		else if ( variable < 16 )
 		{
 			variable--;
-			if ( value )
-			{
-				return 'l[' + variable + ']=' + value;
-			}
-			else
-			{
-				return 'l[' + variable + ']';
-			}
+			return 'l[' + variable + ']' + ( havevalue ? '=' + value : '' );
 		}
 		// Globals
 		else
 		{
-			if ( value )
+			if ( havevalue )
 			{
 				return 'm.setUint16(' + offset + ',' + value + ')';
 			}

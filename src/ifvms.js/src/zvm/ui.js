@@ -16,28 +16,33 @@ var UI = Object.subClass({
 	init: function( engine )
 	{
 		this.e = engine;
-		engine.buffer = [];
 	},
 	
+	buffer: '',
 	styles: {},
+	
+	// Print text!
+	print: function( text )
+	{
+		this.buffer += text;
+	},
 	
 	// Set styles
 	set_style: function( stylebyte )
 	{
 		var styles = this.styles,
-		buffer = this.e.buffer,
 		oldstyles;
 		
 		// If we have a buffer transfer it to the orders
-		if ( buffer != '' )
+		if ( this.buffer != '' )
 		{
 			oldstyles = extend( {}, this.styles );
 			this.e.orders.push({
 				code: 'print',
 				css: oldstyles,
-				text: buffer
+				text: this.buffer
 			});
-			this.e.buffer = '';
+			this.buffer = '';
 		}
 		
 		// Setting the style to Roman will clear the others
