@@ -19,6 +19,7 @@ TODO:
 
 // The VM itself!
 var ZVM_core = {
+	
 	init: function()
 	{
 		// Create this here so that it won't be cleared on restart
@@ -54,7 +55,6 @@ var ZVM_core = {
 			// Get some header variables
 			version: version,
 			pc: memory.getUint16( 0x06 ),
-			dictionary: memory.getUint16( 0x08 ),
 			property_defaults: property_defaults,
 			objects: property_defaults + 126,
 			globals: memory.getUint16( 0x0C ),
@@ -139,21 +139,10 @@ var ZVM_core = {
 	// Return control to the ZVM runner to perform some action
 	act: function( code, options )
 	{
-		var oldstyles,
-		buffer = this.ui.buffer,
-		options = options || {};
+		var options = options || {};
 		
-		// If we have a buffer transfer it to the orders
-		if ( buffer != '' )
-		{
-			oldstyles = extend( {}, this.ui.styles );
-			this.orders.push({
-				code: 'print',
-				css: oldstyles,
-				text: buffer
-			});
-			this.ui.buffer = '';
-		}
+		// Flush the buffer, 0x10 will ensure the styles are unchanged
+		this.ui.set_style( 0x10 );
 		
 		options.code = code;
 		this.orders.push( options );
@@ -181,7 +170,7 @@ var ZVM_core = {
 			memory.setUint8( data.text + 1, response.length );
 			
 			// Store the response in the buffer
-			memory.setBuffer( data.text + 2, this.text.text_to_array( response ) );
+			memory.setBuffer( data.text + 2, this.text.text_to_zscii( response ) );
 			
 			if ( data.parse )
 			{
@@ -191,45 +180,6 @@ var ZVM_core = {
 			
 			// Echo the response (7.1.1.1)
 			this.print( response + '\n' );
-		}
-	},
-	
-	// Read or write a variable
-	variable: function( variable, value )
-	{
-		var havevalue = typeof value != 'undefined';
-		if ( variable == 0 )
-		{
-			if ( havevalue )
-			{
-				this.s.push( value );
-			}
-			else
-			{
-				return this.s.pop();
-			}
-		}
-		else if ( variable < 16 )
-		{
-			if ( havevalue )
-			{
-				this.l[variable - 1] = value;
-			}
-			else
-			{
-				return this.l[variable - 1];
-			}
-		}
-		else
-		{
-			if ( havevalue )
-			{
-				this.m.setUint16( this.globals + ( variable - 16 ) * 2, value );
-			}
-			else
-			{
-				this.m.getUint16( this.globals + ( variable - 16 ) * 2 );
-			}
 		}
 	}
 };

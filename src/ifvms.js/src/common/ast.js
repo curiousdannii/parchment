@@ -104,10 +104,6 @@ Opcode = Object.subClass({
 		this.pc = pc;
 		this.next = next;
 		this.operands = operands;
-
-		// Pre-if statements
-		// Currently only for @test ??
-		this.pre = [];
 		
 		// Post-init function (so that they don't all have to call _super)
 		if ( this.post )
@@ -123,14 +119,14 @@ Opcode = Object.subClass({
 	},
 	
 	// Return a string of the operands separated by commas
-	var_args: function( array )
+	var_args: function()
 	{
 		var i = 0,
 		new_array = [];
 		
-		while ( i < array.length )
+		while ( i < this.operands.length )
 		{
-			new_array.push( array[i++].write() );
+			new_array.push( this.operands[i++].write() );
 		}
 		return new_array.join();
 	},
@@ -190,7 +186,6 @@ Brancher = Opcode.subClass({
 			if ( /* prev instanceof Brancher && */ prev.offset == offset )
 			{
 				// Goes to same offset so reuse the Brancher arrays
-				this.pre = prev.pre;
 				this.ops = prev.ops;
 				this.labels = prev.labels;
 			}
@@ -235,10 +230,9 @@ Brancher = Opcode.subClass({
 			this.ops[i++] = ( op.iftrue ? '' : '!(' ) + op.func.apply( op, op.operands ) + ( op.iftrue ? '' : ')' );
 		}
 		
-		// Print out a label for all included branches, all pre-if statements and the branch itself
-		this.pre.push( '' );
-		return '/* ' + this.labels.join() + ' */ ' + this.pre.join( ';' ) +
-		( this.invert ? 'if (!(' : 'if (' ) + this.ops.join( '||' ) + ( this.invert ? ')) {' : ') {' ) + result + '}';
+		// Print out a label for all included branches and the branch itself
+		return '/* ' + this.labels.join() + ' */ ' + ( this.invert ? 'if (!(' : 'if (' ) +
+			this.ops.join( '||' ) + ( this.invert ? ')) {' : ') {' ) + result + '}';
 	}
 }),
 

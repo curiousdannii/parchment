@@ -9,12 +9,16 @@
 /*
 	
 TODO:
-	Proper ZSCII->ASCII transcoding
+	Abbreviations
+	Custom unicode table
 	
 */
 
 var rnewline = /\n/g,
+rformfeed = /\r/g,
 rdoublequote = /"/g,
+rzsciiundefined = /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g,
+rzsciiextras = /[\x9B-\xFB]/g,
 
 // Standard alphabets
 standard_alphabets = (function(a){
@@ -25,7 +29,22 @@ standard_alphabets = (function(a){
 		b[parseInt( i / 26 )][i % 26] = a.charCodeAt( i++ );
 	}
 	return b;
-})( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*\n0123456789.,!?_#\'"/\\-:()' ),
+})( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*\r0123456789.,!?_#\'"/\\-:()' ),
+
+// Default unicode tables
+reverse_unicode_table = { 10: 13 }, // New line conversion
+default_unicode_table = (function( data )
+{
+	var table = {},
+	temp,
+	i = 0;
+	while ( i < 69 )
+	{
+		table[i + 155] = temp = data.charCodeAt( i );
+		reverse_unicode_table[temp] = 155 + i++;
+	}
+	return table;
+})( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ) ),
 
 // A class for managing everything text
 Text = Object.subClass({
@@ -55,9 +74,14 @@ Text = Object.subClass({
 		}
 		this.alphabets = alphabets;
 		
+		// Unicode tables
+		this.unicode_table = default_unicode_table;
+		this.reverse_unicode_table = reverse_unicode_table;
+		
 		// Parse the standard dictionary
 		this.dictionaries = {};
-		this.parse_dict( this.e.dictionary );
+		this.dict = memory.getUint16( 0x08 );
+		this.parse_dict( this.dict );
 	},
 	
 	// Decode Z-chars into Unicode
@@ -136,7 +160,7 @@ Text = Object.subClass({
 		}
 		
 		// Cache and return
-		result = [ this.array_to_text( result ), addr - start_addr ];
+		result = [ this.zscii_to_text( result ), addr - start_addr ];
 		this.e.jit[start_addr] = result;
 		if ( start_addr < this.e.staticmem )
 		{
@@ -151,18 +175,38 @@ Text = Object.subClass({
 		return text.replace( rnewline, '\\n' ).replace( rdoublequote, '\\"' );
 	},
 	
-	array_to_text: function( array )
+	// In these two functions zscii means an array of ZSCII codes and text means a regular Javascript unicode string
+	// Are using regex's slower than looping through the array?
+	zscii_to_text: function( array )
 	{
+		var unicode_table = this.unicode_table;
 		// String.fromCharCode can be given an array of numbers if we call apply on it!
-		return String.fromCharCode.apply( 1, array );
+		return String.fromCharCode.apply( this, array )
+			
+			// Now convert the ZSCII to unicode
+			// First remove any undefined codes
+			.replace( rzsciiundefined, '' )
+			
+			// Then convert form feeds to new lines
+			.replace( rformfeed, '\n' )
+			
+			// Then replace the extra characters with the ones from the unicode table, or with '?'
+			.replace( rzsciiextras, function( charr ){ return String.fromCharCode( unicode_table[charr.charCodeAt(0)] || 63 ) } );
 	},
 	
-	text_to_array: function( text )
+	text_to_zscii: function( text )
 	{
-		var array = [], i = 0, l = text.length;
+		var array = [], i = 0, l = text.length, charr;
 		while ( i < l )
 		{
-			array.push( text.charCodeAt( i++ ) & 0xFF );
+			charr = text.charCodeAt( i++ );
+			// Non-safe ZSCII code... check the unicode table!
+			if ( charr != 13 && ( charr < 32 || charr > 126 ) )
+			{
+				// Find it or replace with '?'
+				charr = this.reverse_unicode_table[charr] || 63;
+			}
+			array.push( charr );
 		}
 		return array;
 	},
@@ -181,9 +225,9 @@ Text = Object.subClass({
 		
 		// Get the word separators and generate a RegExp to tokenise with
 		seperators_len = memory.getUint8( addr++ ),
-		separators = this.array_to_text( memory.getBuffer( addr, seperators_len ) );
-		// Match either a separator or something bound by them
-		dict.lexer_pattern = new RegExp( '[' + separators + ']|(^|\\b)\\S+?(?=$|[ ' + separators + '])', 'g' );
+		separators = this.zscii_to_text( memory.getBuffer( addr, seperators_len ) );
+		// Match either a separator or something bound by them (max of 9 characters)
+		dict.lexer_pattern = new RegExp( '[' + separators + ']|\\b\\S{1,9}(?=\\S*?(\\b|[' + separators + ']))', 'g' );
 		addr += seperators_len;
 		
 		// Go through the dictionary and cache its entries
@@ -204,7 +248,7 @@ Text = Object.subClass({
 	tokenise: function( text, buffer, dictionary )
 	{
 		// Use the default dictionary if one wasn't provided
-		dictionary = dictionary || this.e.dictionary;
+		dictionary = dictionary || this.dict;
 		
 		// Parse the dictionary if needed
 		dictionary = this.dictionaries[dictionary] || this.parse_dict( dictionary );

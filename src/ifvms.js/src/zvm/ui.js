@@ -16,15 +16,22 @@ var UI = Object.subClass({
 	init: function( engine )
 	{
 		this.e = engine;
+		this.buffer = '';
+		this.styles = {};
+		this.streams = [ 1, 0, [], 0 ];
 	},
-	
-	buffer: '',
-	styles: {},
 	
 	// Print text!
 	print: function( text )
 	{
-		this.buffer += text;
+		if ( this.streams[2].length )
+		{
+			this.streams[2][0][1] += text;
+		}
+		else if ( this.streams[0] )
+		{
+			this.buffer += text;
+		}
 	},
 	
 	// Set styles
@@ -65,6 +72,31 @@ var UI = Object.subClass({
 		if ( stylebyte & 0x08 )
 		{
 			styles['font-family'] = 'monospace';
+		}
+	},
+	
+	// Manage output streams
+	output_stream: function( stream, addr )
+	{
+		stream = this.e.U2S( stream );
+		if ( stream == 1 )
+		{
+			this.streams[0] = 1;
+		}
+		if ( stream == -1 )
+		{
+			this.streams[0] = 0;
+		}
+		if ( stream == 3 )
+		{
+			this.streams[2].unshift( [ addr, '' ] );
+		}
+		if ( stream == -3 )
+		{
+			var data = this.streams[2].shift(),
+			text = this.e.text.text_to_zscii( data[1] );
+			this.e.m.setUint16( data[0], text.length );
+			this.e.m.setBuffer( data[0] + 2, text );
 		}
 	}
 });

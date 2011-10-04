@@ -200,6 +200,13 @@ var runtime = {
 		return places > 0 ? number << places : number >>> -places;
 	},
 	
+	// Print text
+	// Is this function needed? Replace with a direct call to ui.print()?
+	print: function( text )
+	{
+		this.ui.print( text );
+	},
+	
 	// Request line input
 	read: function( text, parse, time, routine, storer )
 	{
@@ -256,13 +263,6 @@ var runtime = {
 		}
 	},
 	
-	// Print text
-	// Is this function needed? Replace with a direct call to ui.print()?
-	print: function( text )
-	{
-		this.ui.print( text );
-	},
-	
 	save_undo: function( pc, variable )
 	{
 		this.undo.push( [
@@ -276,9 +276,53 @@ var runtime = {
 		return 1;
 	},
 	
+	test: function( bitmap, flag )
+	{
+		return bitmap & flag == flag;
+	},
+	
 	test_attr: function( object, attribute )
 	{
 		return ( this.m.getUint8( this.objects + 14 * ( object - 1 ) + parseInt( attribute / 8 ) ) << ( attribute % 8 ) ) & 128;
+	},
+	
+	// Read or write a variable
+	variable: function( variable, value )
+	{
+		var havevalue = value !== undefined;
+		if ( variable == 0 )
+		{
+			if ( havevalue )
+			{
+				this.s.push( value );
+			}
+			else
+			{
+				return this.s.pop();
+			}
+		}
+		else if ( variable < 16 )
+		{
+			if ( havevalue )
+			{
+				this.l[variable - 1] = value;
+			}
+			else
+			{
+				return this.l[variable - 1];
+			}
+		}
+		else
+		{
+			if ( havevalue )
+			{
+				this.m.setUint16( this.globals + ( variable - 16 ) * 2, value );
+			}
+			else
+			{
+				this.m.getUint16( this.globals + ( variable - 16 ) * 2 );
+			}
+		}
 	},
 	
 	// Utilities for signed arithmetic

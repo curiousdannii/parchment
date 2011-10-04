@@ -17,22 +17,8 @@ TODO:
 	
 */
 
-// If the .write() of an operand generates code to access the stack or the memory (if non-native ByteArray) then don't access it more than once
-// Currently only for @test
-var rUnsafeOperand = native_bytearrays ? /^s/ : /^[sm]/,
-safe_operand = function( opcode, operand )
-{
-	var temp = operand.write();
-	if ( rUnsafeOperand.test( temp ) )
-	{
-		opcode.pre.push( 'var ' + opcode.temp() + '=' + temp );
-		temp = 't' + opcode.pc;
-	}
-	return temp;
-},
-
 // Common functions
-simple_func = function( a ) { return a.write(); },
+var simple_func = function( a ) { return a.write(); },
 
 // Common opcodes
 alwaysbranch = opcode_builder( Brancher, function() { return 1; } ),
@@ -61,7 +47,6 @@ IndirectVariable = Variable.subClass({
 Indirect = Storer.subClass({
 	storer: 0,
 	
-	// Fake a storer operand
 	post: function()
 	{
 		var operands = this.operands;
@@ -84,14 +69,14 @@ Indirect = Storer.subClass({
 
 opcodes = {
 	
-/* je */ 1: opcode_builder( Brancher, function( a, b ) { return arguments.length == 2 ? a.write() + '==' + b.write() : 'e.jeq(' + this.var_args( arguments ) + ')'; } ),
+/* je */ 1: opcode_builder( Brancher, function( a, b ) { return arguments.length == 2 ? a.write() + '==' + b.write() : 'e.jeq(' + this.var_args() + ')'; } ),
 /* jl */ 2: opcode_builder( Brancher, function( a, b ) { return a.U2S() + '<' + b.U2S(); } ),
 /* jg */ 3: opcode_builder( Brancher, function( a, b ) { return a.U2S() + '>' + b.U2S(); } ),
 // Too many U2S/S2U for these...
 /* dec_chk */ 4: opcode_builder( Brancher, function( variable, value ) { return 'e.U2S(e.incdec(' + variable.write() + ',-1))<' + value.U2S(); } ),
 /* inc_chk */ 5: opcode_builder( Brancher, function( variable, value ) { return 'e.U2S(e.incdec(' + variable.write() + ',1))>' + value.U2S(); } ),
 /* jin */ 6: opcode_builder( Brancher, function( a, b ) { return 'e.jin(' + a.write() + ',' + b.write() + ')'; } ),
-/* test */ 7: opcode_builder( Brancher, function( bitmap, flag ) { var temp = safe_operand( this, flag ); return bitmap.write() + '&' + temp + '==' + temp; } ),
+/* test */ 7: opcode_builder( Brancher, function( bitmap, flag ) { return 'e.test(' + bitmap.write() + ',' + flag.write() + ')'; } ),
 /* or */ 8: opcode_builder( Storer, function( a, b ) { return a.write() + '|' + b.write(); } ),
 /* and */ 9: opcode_builder( Storer, function( a, b ) { return a.write() + '&' + b.write(); } ),
 /* test_attr */ 10: opcode_builder( Brancher, function( object, attr ) { return 'e.test_attr(' + object.write() + ',' + attr.write() + ')'; } ),
@@ -105,7 +90,7 @@ opcodes = {
 /* get_prop_addr */ 18: opcode_builder( Storer, function( object, property ) { return 'e.get_prop_addr(' + object.write() + ',' + property.write() + ')'; } ),
 /* get_next_prop */
 /* add */ 20: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.write() + '+' + b.write() + ')'; } ),
-/* sub */ 21: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.write() + '-(' + b.write() + '))'; } ),
+/* sub */ 21: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.write() + '-' + b.write() + ')'; } ),
 /* mul */ 22: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.write() + '*' + b.write() + ')'; } ),
 /* div */ 23: opcode_builder( Storer, function( a, b ) { return 'e.S2U(parseInt(' + a.U2S() + '/' + b.U2S() + '))'; } ),
 /* mod */ 24: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.U2S() + '%' + b.U2S() + ')'; } ),
@@ -146,8 +131,8 @@ opcodes = {
 /* storew */ 225: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint16(' + array.write() + '+2*' + index.U2S() + ',' + value.write() + ')'; } ),
 /* storeb */ 226: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint8(' + array.write() + '+' + index.U2S() + ',' + value.write() + ')'; } ),
 /* put_prop */
-/* aread */ 228: opcode_builder( Stopper, function() { var storer = this.operands.pop(); return 'e.read(' + this.var_args( this.operands ) + ',' + storer.v + ');e.pc=' + this.next; }, { storer: 1 } ),
-/* print_char */ 229: opcode_builder( Opcode, function( a ) { return 'e.print(String.fromCharCode(' + a.write() + '))'; } ), // !!! Needs proper ZSCII transcoding
+/* aread */ 228: opcode_builder( Stopper, function() { var storer = this.operands.pop(); return 'e.read(' + this.var_args() + ',' + storer.v + ');e.pc=' + this.next; }, { storer: 1 } ),
+/* print_char */ 229: opcode_builder( Opcode, function( a ) { return 'e.print(e.text.zscii_to_text([' + a.write() + ']))'; } ), // !!! Needs proper ZSCII transcoding
 /* print_num */ 230: opcode_builder( Opcode, function( a ) { return 'e.print(' + a.U2S() + ')'; } ),
 /* random */
 /* push */ 232: opcode_builder( Storer, simple_func, { post: function() { this.storer = new Variable( this.e, 0 ); }, storer: 0 } ),
@@ -161,7 +146,7 @@ opcodes = {
 /* get_cursor */
 /* set_text_style */ 241: opcode_builder( Opcode, function( stylebyte ) { return 'e.ui.set_style(' + stylebyte.write() + ')'; } ),
 /* buffer_mode */
-/* output_stream */
+/* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.ui.output_stream(' + this.var_args() + ')'; } ),
 /* input_stream */
 /* sound_effect */
 /* read_char */ 246: opcode_builder( Stopper, function() { return 'e.act("quit")'; } ), // !!!
@@ -186,7 +171,7 @@ opcodes = {
 /* check_unicode */
 // Assume we can print and read all unicode characters rather than actually testing
 1012: opcode_builder( Storer, function() { return 3; } ),
-/* gestalt */ 1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.var_args( arguments ) + ')'; } ),
-/* parchment */ 1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.var_args( arguments ) + ')'; } )
+/* gestalt */ 1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.var_args() + ')'; } ),
+/* parchment */ 1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.var_args() + ')'; } )
 	
 };

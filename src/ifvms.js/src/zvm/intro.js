@@ -19,7 +19,7 @@ TODO:
 */
  
 // Wrap all of ZVM in a closure/namespace, and enable strict mode
-(function( window ){ 'use strict';
+(function( window, undefined ){ 'use strict';
 
 // In debug mode close the closure now
 ;;; })();
@@ -30,7 +30,7 @@ TODO:
 // Note: the fromIndex parameter is not supported
 var indexOf = function( array, obj )
 {
-	if ( [].indexOf )
+	if ( array.indexOf )
 	{
 		return array.indexOf( obj );
 	}
@@ -53,19 +53,6 @@ extend = function( old, add )
 		old[name] = add[name];
 	}
 	return old;
-},
-
-// Utility to bind!
-// Instead emulate Function.prototype.bind?
-bind = Function.prototype.bind ? function( obj, func )
-{
-	return func.bind( obj );
-} :
-function( obj, func )
-{
-	return function() {
-		func.apply( obj, arguments );
-	};
 },
 
 // Log wrapper
