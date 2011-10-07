@@ -51,11 +51,11 @@
     }
    
     // The dummy class constructor
-    Class = function() {
+    Class = proto.init ? function() {
       // All construction is actually done in the init method
-      if ( !initializing && this.init )
+      if ( !initializing )
         this.init.apply(this, arguments);
-    };
+    } : function(){};
    
     // Populate our constructed prototype object
     Class.prototype = proto;

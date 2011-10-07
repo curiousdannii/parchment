@@ -60,6 +60,12 @@ Variable = Operand.subClass({
 		value = value && value.write ? value.write() : value,
 		offset = this.e.globals + (variable - 16) * 2;
 		
+		// BrancherStorers need the value
+		if ( this.returnval )
+		{
+			return 'e.variable(' + variable + ',' + value + ')';
+		}
+		
 		// Stack
 		if ( variable == 0 )
 		{
@@ -119,7 +125,7 @@ Opcode = Object.subClass({
 	},
 	
 	// Return a string of the operands separated by commas
-	var_args: function()
+	args: function( joiner )
 	{
 		var i = 0,
 		new_array = [];
@@ -128,7 +134,7 @@ Opcode = Object.subClass({
 		{
 			new_array.push( this.operands[i++].write() );
 		}
-		return new_array.join();
+		return new_array.join( joiner );
 	},
 	
 	// Generate a comment of the pc and code
@@ -236,6 +242,19 @@ Brancher = Opcode.subClass({
 	}
 }),
 
+// Brancher + Storer
+BrancherStorer = Brancher.subClass({
+	storer: 1,
+	
+	// Set aside the storer operand
+	post: function()
+	{
+		this._super();
+		this.storer = this.operands.pop();
+		this.storer.returnval = 1;
+	}
+}),
+
 // Storing opcodes
 Storer = Opcode.subClass({
 	// Flag for the disassembler
@@ -277,9 +296,9 @@ Caller = Stopper.subClass({
 		/* DEBUG */
 			addr = addr.write();
 			var targetname = window.vm_functions && parseInt( addr ) ? ' /* ' + find_func_name( addr * 4 ) + '() */' : '';
-			return this.label() + 'e.call(' + addr + ',' + this.result.v + ',' + this.next + ',[' + this.var_args( this.operands ) + '])' + targetname;
+			return this.label() + 'e.call(' + addr + ',' + this.result.v + ',' + this.next + ',[' + this.args() + '])' + targetname;
 		/* ENDDEBUG */
-		return this.label() + 'e.call(' + addr.write() + ',' + this.result.v + ',' + this.next + ',[' + this.var_args( this.operands ) + '])';
+		return this.label() + 'e.call(' + addr.write() + ',' + this.result.v + ',' + this.next + ',[' + this.args() + '])';
 	}
 }),
 

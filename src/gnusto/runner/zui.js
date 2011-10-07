@@ -109,7 +109,7 @@ parchment.lib.ZUI = Object.subClass({
         if ( !this.hidden_load_indicator )
         {
           this.hidden_load_indicator = 1;
-          this.library.load_indicator.detach();
+		  jQuery('.load').detach();
         }
 	      // A more conservative alternative to the above is:
 	      // $("#buffered-windows").empty();

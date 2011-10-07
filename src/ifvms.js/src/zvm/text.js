@@ -1,16 +1,18 @@
 /*
- * Z-Machine text functions
- *
- * Copyright (c) 2011 The ifvms.js team
- * Licenced under the BSD
- * http://github.com/curiousdannii/ifvms.js
- */
+
+Z-Machine text functions
+========================
+
+Copyright (c) 2011 The ifvms.js team
+BSD licenced
+http://github.com/curiousdannii/ifvms.js
+
+*/
 
 /*
 	
 TODO:
-	Abbreviations
-	Custom unicode table
+	I think the dictionary will fail for long strings finishing with a multi-Zchar
 	
 */
 
@@ -20,32 +22,6 @@ rdoublequote = /"/g,
 rzsciiundefined = /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g,
 rzsciiextras = /[\x9B-\xFB]/g,
 
-// Standard alphabets
-standard_alphabets = (function(a){
-	var b = [[], [], []],
-	i = 0;
-	while ( i < 78 )
-	{
-		b[parseInt( i / 26 )][i % 26] = a.charCodeAt( i++ );
-	}
-	return b;
-})( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*\r0123456789.,!?_#\'"/\\-:()' ),
-
-// Default unicode tables
-reverse_unicode_table = { 10: 13 }, // New line conversion
-default_unicode_table = (function( data )
-{
-	var table = {},
-	temp,
-	i = 0;
-	while ( i < 69 )
-	{
-		table[i + 155] = temp = data.charCodeAt( i );
-		reverse_unicode_table[temp] = 155 + i++;
-	}
-	return table;
-})( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ) ),
-
 // A class for managing everything text
 Text = Object.subClass({
 	init: function( engine )
@@ -53,35 +29,66 @@ Text = Object.subClass({
 		var memory = engine.m,
 		
 		alphabet_addr = memory.getUint16( 0x34 ),
-		i = 0,
-		alphabets;
+		unicode_addr = engine.extension_table( 3 ),
+		unicode_len = unicode_addr && memory.getUint8( unicode_addr++ ),
+		abbreviations,
+		abbr_array = [],
+		i = 0, l = 96;
 		
 		this.e = engine;
 		
 		// Check for custom alphabets
-		if ( alphabet_addr )
+		this.make_alphabet( alphabet_addr ? memory.getBuffer( alphabet_addr, 78 )
+			// Or use the standard alphabet
+			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*\r0123456789.,!?_#\'"/\\-:()' ) );
+		
+		// Check for a custom unicode table
+		this.make_unicode( unicode_addr ? memory.getBuffer16( unicode_addr, unicode_len )
+			// Or use the default
+			: this.text_to_zscii( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ), 1 ) );
+		
+		// Abbreviations
+		abbreviations = memory.getUint16( 0x18 );
+		if ( abbreviations )
 		{
-			alphabets = [[], [], []];
-			while ( i < 78 )
+			while ( i < l )
 			{
-				alphabets[parseInt( i / 26 )][i % 26] = memory.getUint8( alphabet_addr + i++ );
+				abbr_array.push( this.decode( memory.getUint16( abbreviations + 2 * i++ ) * 2 ) );
 			}
 		}
-		// Otherwise use the standard alphabets
-		else
-		{
-			alphabets = standard_alphabets;
-		}
-		this.alphabets = alphabets;
-		
-		// Unicode tables
-		this.unicode_table = default_unicode_table;
-		this.reverse_unicode_table = reverse_unicode_table;
+		this.abbr = abbr_array;
 		
 		// Parse the standard dictionary
 		this.dictionaries = {};
 		this.dict = memory.getUint16( 0x08 );
 		this.parse_dict( this.dict );
+	},
+	
+	// Generate alphabets
+	make_alphabet: function( data )
+	{
+		var alphabets = [[], [], []],
+		i = 0;
+		while ( i < 78 )
+		{
+			alphabets[parseInt( i / 26 )][i % 26] = data[ i++ ];
+		}
+		this.alphabets = alphabets;
+	},
+	
+	// Make the unicode tables
+	make_unicode: function( data )
+	{
+		var table = {},
+		reverse = { 10: 13 }, // New line conversion
+		i = 0;
+		while ( i < data.length )
+		{
+			table[i + 155] = data[i];
+			reverse[data[i]] = 155 + i++;
+		}
+		this.unicode_table = table;
+		this.reverse_unicode_table = reverse;
 	},
 	
 	// Decode Z-chars into Unicode
@@ -104,10 +111,7 @@ Text = Object.subClass({
 		}
 		
 		// Don't go past the end of the file if we haven't been given a final address
-		if ( !finaladdr )
-		{
-			finaladdr = memory.getUint16( 0x1A ) * this.e.packing_multipler;
-		}
+		finaladdr = finaladdr || memory.getUint16( 0x1A ) * this.e.packing_multipler;
 		
 		// Go through until we've reached the end of the text or a stop bit
 		while ( addr < finaladdr )
@@ -115,7 +119,7 @@ Text = Object.subClass({
 			word = memory.getUint16( addr );
 			addr += 2;
 			
-			buffer.push( word >> 10, word >> 5, word );
+			buffer.push( word >> 10 & 0x1F, word >> 5 & 0x1F, word & 0x1F );
 			
 			// Stop bit
 			if ( word & 0x8000 )
@@ -127,7 +131,7 @@ Text = Object.subClass({
 		// Process the Z-chars
 		while ( i < buffer.length )
 		{
-			zchar = buffer[i++] & 0x1F;
+			zchar = buffer[i++];
 			
 			// Special chars
 			// Space
@@ -138,6 +142,7 @@ Text = Object.subClass({
 			// Abbreviations
 			else if ( zchar < 4 )
 			{
+				result = result.concat( this.abbr[ 32 * ( zchar - 1 ) + buffer[i++] ] );
 			}
 			// Shift characters
 			else if ( zchar < 6 )
@@ -147,7 +152,7 @@ Text = Object.subClass({
 			// Check for a 10 bit ZSCII character
 			else if ( alphabet == 2 && zchar == 6 )
 			{
-				result.push( (buffer[i++] & 0x1F) << 5 | (buffer[i++] & 0x1F) );
+				result.push( buffer[i++] << 5 | buffer[i++] );
 			}
 			else
 			{
@@ -159,12 +164,17 @@ Text = Object.subClass({
 			alphabet = alphabet < 4 ? 0 : alphabet - 3;
 		}
 		
-		// Cache and return
-		result = [ this.zscii_to_text( result ), addr - start_addr ];
-		this.e.jit[start_addr] = result;
-		if ( start_addr < this.e.staticmem )
+		// If we haven't finished making the abbreviations table don't convert to text
+		if ( this.abbr )
 		{
-			console.warn( 'Caching a string in dynamic memory: ' + start_addr );
+			// Cache and return. Use String() so that .pc will be preserved
+			result = new String( this.zscii_to_text( result ) );
+			result.pc = addr;
+			this.e.jit[start_addr] = result;
+			if ( start_addr < this.e.staticmem )
+			{
+				console.warn( 'Caching a string in dynamic memory: ' + start_addr );
+			}
 		}
 		return result;
 	},
@@ -194,14 +204,16 @@ Text = Object.subClass({
 			.replace( rzsciiextras, function( charr ){ return String.fromCharCode( unicode_table[charr.charCodeAt(0)] || 63 ) } );
 	},
 	
-	text_to_zscii: function( text )
+	// If the second argument is set then don't use the unicode table
+	text_to_zscii: function( text, notable )
 	{
 		var array = [], i = 0, l = text.length, charr;
+		notable = !notable;
 		while ( i < l )
 		{
 			charr = text.charCodeAt( i++ );
 			// Non-safe ZSCII code... check the unicode table!
-			if ( charr != 13 && ( charr < 32 || charr > 126 ) )
+			if ( notable && charr != 13 && ( charr < 32 || charr > 126 ) )
 			{
 				// Find it or replace with '?'
 				charr = this.reverse_unicode_table[charr] || 63;
@@ -236,7 +248,7 @@ Text = Object.subClass({
 		addr += 2;
 		while ( addr < endaddr )
 		{
-			dict[this.decode( addr, addr + 6 )[0]] = addr;
+			dict[this.decode( addr, addr + 6 )] = addr;
 			addr += entry_len;
 		}
 		this.dictionaries[addr_start] = dict;

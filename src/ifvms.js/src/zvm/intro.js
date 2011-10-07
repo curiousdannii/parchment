@@ -27,28 +27,25 @@ TODO:
 ;;; var ZVM = 1, GVM = 0;
 
 // Array.indexOf compatibility
-// Note: the fromIndex parameter is not supported
-var indexOf = function( array, obj )
+if ( ![].indexOf )
 {
-	if ( array.indexOf )
+	Array.prototype.indexOf = function( obj, fromIndex )
 	{
-		return array.indexOf( obj );
-	}
-	
-	for ( var i = 0, l = array.length; i < l; i++ )
-	{
-		if ( array[i] == obj )
+		for ( var i = fromIndex || 0, l = array.length; i < l; i++ )
 		{
-			return i;
+			if ( array[i] == obj )
+			{
+				return i;
+			}
 		}
-	}
-	return -1;
-},
+		return -1;
+	};
+}
 
 // Utility to extend objects
-extend = function( old, add )
+var extend = function( old, add )
 {
-	for ( name in add )
+	for ( var name in add )
 	{
 		old[name] = add[name];
 	}

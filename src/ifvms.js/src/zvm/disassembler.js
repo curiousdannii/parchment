@@ -160,8 +160,8 @@ var disassemble = function( engine )
 		if ( opcode_class.printer )
 		{
 			temp = engine.text.decode( pc );
-			operands.push( engine.text.escape( temp[0] ) );
-			pc += temp[1];
+			operands.push( engine.text.escape( temp ) );
+			pc = temp.pc;
 		}
 		
 		// Update the engine's pc
@@ -172,7 +172,7 @@ var disassemble = function( engine )
 		
 		// Check for the end of a large if block
 		temp = 0;
-		if ( indexOf( context.targets, pc ) >= 0 )
+		if ( context.targets.indexOf( pc ) >= 0 )
 		{
 			temp = idiom_if_block( context, pc );
 		}

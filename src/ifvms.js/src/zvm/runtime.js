@@ -12,10 +12,16 @@ http://github.com/curiousdannii/ifvms.js
 /*
 	
 TODO:
+	Add a seeded RNG
 	
 */
 
+// When building just create the class directly from runtime.js and vm.js, no need for these vars
+/* DEBUG */
 var runtime = {
+/* ELSEDEBUG
+window.ZVM = Object.subClass( {
+/* ENDDEBUG */
 	
 	art_shift: function( number, places )
 	{
@@ -51,12 +57,136 @@ var runtime = {
 	},
 	
 	// Object model functions
+	clear_attr: function( object, attribute )
+	{
+		var addr = this.objects + 14 * object + parseInt( attribute / 8 );
+		this.m.setUint8( addr, this.m.getUint8( addr ) & ~( 0x80 >> attribute % 8 ) );
+	},
+	
+	// Access the extension table
+	extension_table: function( word, value )
+	{
+		var addr = this.extension;
+		if ( !addr || word > this.extension_count )
+		{
+			return 0;
+		}
+		addr += 2 * word;
+		if ( value == undefined )
+		{
+			return this.m.getUint16( addr );
+		}
+		this.e.setUint16( addr, value );
+	},
+	
+	// Find the address of a property, or given the previous property, the number of the next
+	find_prop: function( object, property, prev )
+	{
+		var memory = this.m,
+		
+		this_property_byte, this_property,
+		last_property = 0,
+		
+		// Get this property table
+		properties = memory.getUint16( this.objects + 14 * object + 12 );
+		properties += memory.getUint8( properties ) * 2 + 1;
+		
+		this_property_byte = memory.getUint8( properties );
+		this_property = this_property_byte & 0x3F;
+		
+		// Simple case: find the first property
+		if ( prev == 0 )
+		{
+			return this_property;
+		}
+		
+		// Run through the properties
+		while (1)
+		{
+			// Found the previous property, so return this one's number
+			if ( last_property == prev )
+			{
+				return this_property;
+			}
+			// Found the property! Return it's address
+			if ( this_property == property )
+			{
+				// Must include the offset
+				return properties + ( this_property_byte & 0x80 ? 2 : 1 );
+			}
+			// Gone past the property
+			if ( this_property < property )
+			{
+				return 0;
+			}
+			
+			// Go to next property
+			last_property = this_property;
+			
+			// Second size byte
+			if ( this_property_byte & 0x80 )
+			{
+				this_property = memory.getUint8( properties + 1 ) & 0x3F;
+				properties += this_property ? this_property + 2 : 66;
+			}
+			else
+			{
+				properties += this_property_byte & 0x40 ? 3 : 2;
+			}
+			
+			this_property_byte = memory.getUint8( properties );
+			this_property = this_property_byte & 0x3F;
+		}
+	},
+	
+	// Get the bigger sister object of an object (the one before it in the tree)
+	get_bigsis: function( obj )
+	{
+		var older = this.get_child( this.get_parent( obj ) ),
+		younger;
+		// Simple case: the object is the first child already
+		if ( older == obj )
+		{
+			return 0;
+		}
+		while (1)
+		{
+			younger = this.get_lilsis( older );
+			if ( younger == obj )
+			{
+				return older;
+			}
+		}
+	},
+	
+	get_child: function( obj )
+	{
+		return this.m.getUint16( this.objects + 14 * obj + 10 );
+	},
+	
+	get_family: function( obj )
+	{
+		var parent = this.get_parent( obj );
+		return parent ? [ parent, this.get_child( parent ), this.get_lilsis( obj ), this.get_bigsis( obj ) ] : [0];
+	},
+	
+	// I.e., get the sibling of this object
+	get_lilsis: function( obj )
+	{
+		return this.m.getUint16( this.objects + 14 * obj + 8 );
+	},
+	
+	get_parent: function( obj )
+	{
+		return this.m.getUint16( this.objects + 14 * obj + 6 );
+	},
+	
 	get_prop: function( object, property )
 	{
 		var memory = this.m,
 		
 		// Try to find the property
-		addr = this.get_prop_addr( object, property );
+		addr = this.find_prop( object, property );
 		
 		// If we have the property
 		if ( addr )
@@ -67,50 +197,7 @@ var runtime = {
 		
 		// Use the default properties table
 		// Remember that properties are 1-indexed
-		return memory.getUint16( this.property_defaults + 2 * ( property - 1 ) );
-	},
-	
-	get_prop_addr: function( object, property )
-	{
-		var memory = this.m,
-		
-		this_property,
-		
-		// Get this property table
-		properties = memory.getUint16( this.objects + 14 * ( object - 1 ) + 12 );
-		properties += memory.getUint8( properties ) * 2 + 1;
-		
-		// Run through the properties
-		while (1)
-		{
-			this_property = memory.getUint8( properties );
-			
-			// Found the property!
-			if ( ( this_property & 0x3F ) == property )
-			{
-				// Must include the offset
-				return properties + ( this_property & 0x80 ? 2 : 1 );
-			}
-			// Gone past the property
-			if ( ( this_property & 0x3F ) < property )
-			{
-				return 0;
-			}
-			// Go to next property
-			else
-			{
-				// Second size byte
-				if ( this_property & 0x80 )
-				{
-					this_property = memory.getUint8( properties + 1 ) & 0x3F;
-					properties += this_property ? this_property + 2 : 66;
-				}
-				else
-				{
-					properties += this_property & 0x40 ? 3 : 2;
-				}
-			}
-		}
+		return memory.getUint16( this.properties + 2 * ( property - 1 ) );
 	},
 	
 	// Get the length of a property
@@ -174,6 +261,14 @@ var runtime = {
 		return this.variable( variable, value );
 	},
 	
+	insert_obj: function( obj, dest )
+	{
+		// First remove the obj from wherever it was
+		this.remove_obj( obj );
+		// Now add it to the destination
+		this.set_family( obj, dest, dest, obj, obj, this.get_child( dest ) );
+	},
+	
 	// @jeq
 	jeq: function()
 	{	
@@ -192,7 +287,7 @@ var runtime = {
 	
 	jin: function( child, parent )
 	{
-		return this.m.getUint16( this.objects + 14 * ( child - 1 ) + 6 ) == parent;
+		return this.get_parent( child ) == parent;
 	},
 	
 	log_shift: function( number, places )
@@ -205,6 +300,46 @@ var runtime = {
 	print: function( text )
 	{
 		this.ui.print( text );
+	},
+	
+	put_prop: function( object, property, value )
+	{
+		var memory = this.m,
+		
+		// Try to find the property
+		addr = this.find_prop( object, property );
+		
+		( memory.getUint8( addr - 1 ) & 0x40 ? memory.setUint16 : memory.setUint8 )( addr, value );
+	},
+	
+	random: function( range )
+	{
+		var rand;
+		
+		if ( range < 1 )
+		{
+			this.random_state = Math.abs( range );
+			this.random_seq = 0;
+			return 0;
+		}
+		
+		// Pure randomness
+		if ( this.random_state == 0 )
+		{
+			return parseInt( Math.random() * range ) + 1;
+		}
+		// How can we best seed the RNG?
+		
+		// Predictable seed algorithm from the standard's remarks
+		else
+		{
+			this.random_seq++;
+			if ( this.random_seq > this.random_state )
+			{
+				this.random_seq = 1;
+			}
+			return this.random_seq % range;
+		}
 	},
 	
 	// Request line input
@@ -228,7 +363,29 @@ var runtime = {
 			storer: storer
 		});
 	},
-
+	
+	remove_obj: function( obj )
+	{
+		var family = this.get_family( obj );
+		
+		// No parent, do nothing
+		if ( family[0] == 0 )
+		{
+			return;
+		}
+		
+		// obj is first child
+		if ( family[1] == obj )
+		{
+			this.set_family( obj, 0, family[0], family[2] );
+		}
+		// obj isn't first child, so fix the bigsis
+		else
+		{
+			this.set_family( obj, 0, 0, 0, family[3], family[2] );
+		}
+	},
+	
 	restore_undo: function()
 	{
 		if ( this.undo.length == 0 )
@@ -237,7 +394,7 @@ var runtime = {
 		}
 		var state = this.undo.pop();
 		this.pc = state[0];
-		this.m.setBuffer( 0, state[2], 1 );
+		this.m.setBuffer( 0, state[2] );
 		this.l = state[3];
 		this.s = state[4];
 		this.call_stack = state[5];
@@ -276,6 +433,28 @@ var runtime = {
 		return 1;
 	},
 	
+	set_attr: function( object, attribute )
+	{
+		var addr = this.objects + 14 * object + parseInt( attribute / 8 );
+		this.m.setUint8( addr, this.m.getUint8( addr ) | 0x80 >> attribute % 8 );
+	},
+	
+	set_family: function( obj, newparent, parent, child, bigsis, lilsis )
+	{
+		// Set the new parent of the obj
+		this.m.setUint16( this.objects + 14 * obj + 6, newparent );
+		// Update the a parent's first child if needed
+		if ( parent )
+		{
+			this.m.setUint16( this.objects + 14 * parent + 10, child );
+		}
+		// Update the little sister of a big sister
+		if ( bigsis )
+		{
+			this.m.setUint16( this.objects + 14 * bigsis + 8, lilsis );
+		}
+	},
+	
 	test: function( bitmap, flag )
 	{
 		return bitmap & flag == flag;
@@ -283,7 +462,7 @@ var runtime = {
 	
 	test_attr: function( object, attribute )
 	{
-		return ( this.m.getUint8( this.objects + 14 * ( object - 1 ) + parseInt( attribute / 8 ) ) << ( attribute % 8 ) ) & 128;
+		return ( this.m.getUint8( this.objects + 14 * object + parseInt( attribute / 8 ) ) << attribute % 8 ) & 0x80;
 	},
 	
 	// Read or write a variable
@@ -323,10 +502,15 @@ var runtime = {
 				this.m.getUint16( this.globals + ( variable - 16 ) * 2 );
 			}
 		}
+		return value;
 	},
 	
 	// Utilities for signed arithmetic
 	U2S: U2S,
 	S2U: S2U
-	
+
+/* DEBUG */
 };
+/* ELSEDEBUG
+,
+/* ENDDEBUG */
