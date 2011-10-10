@@ -122,7 +122,7 @@ for package in compress:
 	output.close()
 	
 	# Compress!
-	command = 'java -jar tools/yuicompressor-2.4.2.jar --type js .build/temp -o .build/temp'
+	command = 'java -jar tools/yuicompressor-2.4.2.jar --type ' + (package[1].endswith('.js') and 'js' or 'css' ) + ' .build/temp -o .build/temp'
 	os.system(command)
 	data = file('.build/temp').read()
 	

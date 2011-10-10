@@ -156,9 +156,12 @@ window.ZVM = Object.subClass( {
 			{
 				return older;
 			}
+			older = younger;
 		}
 	},
 	
+	
+	// Get the first child of an object
 	get_child: function( obj )
 	{
 		return this.m.getUint16( this.objects + 14 * obj + 10 );
@@ -316,6 +319,7 @@ window.ZVM = Object.subClass( {
 	{
 		var rand;
 		
+		// Switch to a seeded RNG (or switch off if range == 0)
 		if ( range < 1 )
 		{
 			this.random_state = Math.abs( range );
@@ -366,6 +370,7 @@ window.ZVM = Object.subClass( {
 	
 	remove_obj: function( obj )
 	{
+		// Is this the only call to get_family? Fold in here?
 		var family = this.get_family( obj );
 		
 		// No parent, do nothing
@@ -394,6 +399,8 @@ window.ZVM = Object.subClass( {
 		}
 		var state = this.undo.pop();
 		this.pc = state[0];
+		// Preserve flags 2
+		state[2][0x11] = this.m.getUint8( 0x11 );
 		this.m.setBuffer( 0, state[2] );
 		this.l = state[3];
 		this.s = state[4];

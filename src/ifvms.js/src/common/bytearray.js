@@ -15,6 +15,7 @@ Todo:
 	consider whether direct array access would help (what did i mean by this???)
 	is signed access needed?
 	add a system for guards, to run callbacks if certain addresses were written to
+		Needed for: @storew, @storeb, @output_stream?, @encode_text, @copy_table, @restore, @restore_undo
 	check whether returning the set values is bad for perf
 	consider generic funcs for set/get: get=Uint8(0), set=Uint8(0,0)
 

@@ -16,6 +16,7 @@ Note:
 
 TODO:
 	implement proper errors for missing opcodes
+	If we diassessemble part of what we already have before, can we just copy/slice the context?
 	
 */
 
@@ -160,7 +161,7 @@ var disassemble = function( engine )
 		if ( opcode_class.printer )
 		{
 			temp = engine.text.decode( pc );
-			operands.push( engine.text.escape( temp ) );
+			operands.push( JITescape( temp ) );
 			pc = temp.pc;
 		}
 		

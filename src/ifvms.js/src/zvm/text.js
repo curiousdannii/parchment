@@ -22,6 +22,12 @@ rdoublequote = /"/g,
 rzsciiundefined = /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g,
 rzsciiextras = /[\x9B-\xFB]/g,
 
+// Escape text for JITing
+JITescape = function( text )
+{
+	return text.replace( rnewline, '\\n' ).replace( rdoublequote, '\\"' );
+},
+
 // A class for managing everything text
 Text = Object.subClass({
 	init: function( engine )
@@ -177,12 +183,6 @@ Text = Object.subClass({
 			}
 		}
 		return result;
-	},
-	
-	// Escape text for JITing
-	escape: function( text )
-	{
-		return text.replace( rnewline, '\\n' ).replace( rdoublequote, '\\"' );
 	},
 	
 	// In these two functions zscii means an array of ZSCII codes and text means a regular Javascript unicode string

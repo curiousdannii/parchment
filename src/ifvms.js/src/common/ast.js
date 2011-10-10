@@ -154,6 +154,8 @@ Brancher = Opcode.subClass({
 	// Flag for the disassembler
 	brancher: 1,
 	
+	keyword: 'if',
+	
 	// Process the branch result now
 	post: function()
 	{
@@ -237,7 +239,7 @@ Brancher = Opcode.subClass({
 		}
 		
 		// Print out a label for all included branches and the branch itself
-		return '/* ' + this.labels.join() + ' */ ' + ( this.invert ? 'if (!(' : 'if (' ) +
+		return '/* ' + this.labels.join() + ' */ ' + this.keyword + ( this.invert ? '(!(' : '(' ) +
 			this.ops.join( '||' ) + ( this.invert ? ')) {' : ') {' ) + result + '}';
 	}
 }),

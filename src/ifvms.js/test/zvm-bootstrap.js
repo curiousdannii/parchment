@@ -79,7 +79,7 @@ function run( engine )
 			
 			// Return the input to the VM
 			order.response = response;
-			order.terminator = 10;
+			order.terminator = 13; // 1.1 spec
 			engine.event( order );
 		}
 		

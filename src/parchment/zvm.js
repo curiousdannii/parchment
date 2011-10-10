@@ -33,7 +33,7 @@ parchment.vms.zvm = {
 			/* ELSEDEBUG
 				'zvm.min.js',
 			/* ENDDEBUG */
-			'../src/ifvms.js/test/zvm-bootstrap.js'
+			'../src/structio/api.js'
 		],
 	
 	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument

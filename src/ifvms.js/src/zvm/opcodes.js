@@ -96,7 +96,7 @@ opcodes = {
 /* mod */ 24: opcode_builder( Storer, function( a, b ) { return 'e.S2U(' + a.U2S() + '%' + b.U2S() + ')'; } ),
 /* call_2s */ 25: CallerStorer,
 /* call_2n */ 26: Caller,
-/* set_colour */
+/* set_colour */ 27: opcode_builder( Opcode, function() { return 'e.ui.set_colour(' + this.args() + ')'; } ),
 /* throw */
 /* jz */ 128: opcode_builder( Brancher, function( a ) { return a.write() + '==0'; } ),
 /* get_sibling */ 129: opcode_builder( BrancherStorer, function( obj ) { return this.storer.write( 'e.get_lilsis(' + obj.write() + ')' ); } ),
@@ -145,11 +145,11 @@ opcodes = {
 /* set_cursor */
 /* get_cursor */
 /* set_text_style */ 241: opcode_builder( Opcode, function( stylebyte ) { return 'e.ui.set_style(' + stylebyte.write() + ')'; } ),
-/* buffer_mode */
+/* buffer_mode */ 242: Opcode, // We don't support non-buffered output
 /* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.ui.output_stream(' + this.args() + ')'; } ),
 /* input_stream */
-/* sound_effect */
-/* read_char */ 246: opcode_builder( Stopper, function() { return 'e.act("quit")'; } ), // !!!
+/* sound_effect */ 245: Opcode, // We don't support sounds
+/* read_char */
 /* scan_table */
 /* not */ 248: opcode_builder( Storer, function( a ) { return 'e.S2U(~' + a.write() + ')'; } ),
 /* call_vn */ 249: Caller,
@@ -165,13 +165,13 @@ opcodes = {
 /* art_shift */ 1003: opcode_builder( Storer, function( a, b ) { return 'e.S2U(e.art_shift(' + a.U2S() + ',' + b.U2S() + '))'; } ),
 /* set_font */
 /* save_undo */ 1009: opcode_builder( Storer, function() { return 'e.save_undo(' + this.next + ',' + this.storer.v + ')'; } ),
-// As the standard says calling this without a save point is illegal, we don't need to actually store the result (but it must still be disassembled)
+// As the standard says calling this without a save point is illegal, we don't need to actually store anything (but it must still be disassembled)
 /* restore_undo */ 1010: opcode_builder( Opcode, function() { return 'if(e.restore_undo())return'; }, { storer: 1 } ),
 /* print_unicode */ 1011: opcode_builder( Opcode, function( a ) { return 'e.print(String.fromCharCode(' + a.write() + '))'; } ),
-/* check_unicode */
 // Assume we can print and read all unicode characters rather than actually testing
-1012: opcode_builder( Storer, function() { return 3; } ),
-/* gestalt */ 1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } ),
-/* parchment */ 1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.args() + ')'; } )
+/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } ),
+/* set_true_colour */ //1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
+/* gestalt */ //1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } ),
+/* parchment */ //1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.args() + ')'; } )
 	
 };

@@ -49,6 +49,12 @@ var ZVM_core = {
 			throw new Error( 'Unsupported Z-Machine version: ' + data[0] );
 		}
 		
+		// Preserve flags 2 - the fixed pitch bit is surely the lamest part of the Z-Machine spec!
+		if ( this.m )
+		{
+			memory.setUint8( 0x11, this.m.getUint8( 0x11 ) );
+		}
+		
 		extend( this, {
 			
 			// Memory, locals and stacks of various kinds
@@ -87,11 +93,14 @@ var ZVM_core = {
 		// Flags 1: Set bits 0, 2, 3, 4: typographic styles are OK
 		memory.setUint8( 0x01, 0x1D );
 		// Flags 2: Clear bits 3, 5, 7: no character graphics, mouse or sound effects
-		memory.setUint8( 0x10, memory.getUint8( 0x10 ) & 0x57 );
+		// This is really a word, but we only care about the lower byte
+		memory.setUint8( 0x11, memory.getUint8( 0x11 ) & 0x57 );
 		// Z Machine Spec revision
 		// For now only set 1.2 if PARCHMENT_SECURITY_OVERRIDE is set, still need to finish 1.1 support!
 		memory.setUint8( 0x32, 1 );
 		memory.setUint8( 0x33, PARCHMENT_SECURITY_OVERRIDE ? 2 : 0 );
+		// Clear flags three, we don't support any of that stuff
+		this.extension_table( 4, 0 );
 	},
 	
 	// Run
