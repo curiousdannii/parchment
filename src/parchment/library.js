@@ -294,6 +294,7 @@ Library = Object.subClass({
 				.done( function( data, textStatus, jqXHR )
 				{
 					jqXHR.library = self;
+					jqXHR.vm = vm;
 				})
 				// Some error in downloading
 				.fail( story_get_fail )

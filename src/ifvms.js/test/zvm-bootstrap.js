@@ -90,6 +90,9 @@ function run( engine )
 		}
 	}
 	
+	// Clear the list of orders
+	engine.orders = [];
+	
 	setTimeout( function(){ run(engine); }, 1 );
 }
 

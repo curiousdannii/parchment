@@ -16,16 +16,10 @@ TODO:
 	
 */
 
-var rnewline = /\n/g,
-rformfeed = /\r/g,
-rdoublequote = /"/g,
-rzsciiundefined = /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g,
-rzsciiextras = /[\x9B-\xFB]/g,
-
 // Escape text for JITing
-JITescape = function( text )
+var JITescape = function( text )
 {
-	return text.replace( rnewline, '\\n' ).replace( rdoublequote, '\\"' );
+	return text.replace( /\n/g, '\\n' ).replace( /"/g, '\\"' );
 },
 
 // A class for managing everything text
@@ -95,6 +89,7 @@ Text = Object.subClass({
 		}
 		this.unicode_table = table;
 		this.reverse_unicode_table = reverse;
+		this.unicode_callback = function( charr ) { return String.fromCharCode( table[charr.charCodeAt(0)] || 63 ) };
 	},
 	
 	// Decode Z-chars into Unicode
@@ -189,19 +184,18 @@ Text = Object.subClass({
 	// Are using regex's slower than looping through the array?
 	zscii_to_text: function( array )
 	{
-		var unicode_table = this.unicode_table;
 		// String.fromCharCode can be given an array of numbers if we call apply on it!
 		return String.fromCharCode.apply( this, array )
 			
 			// Now convert the ZSCII to unicode
 			// First remove any undefined codes
-			.replace( rzsciiundefined, '' )
+			.replace( /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g, '' )
 			
 			// Then convert form feeds to new lines
-			.replace( rformfeed, '\n' )
+			.replace( /\r/g, '\n' )
 			
 			// Then replace the extra characters with the ones from the unicode table, or with '?'
-			.replace( rzsciiextras, function( charr ){ return String.fromCharCode( unicode_table[charr.charCodeAt(0)] || 63 ) } );
+			.replace( /[\x9B-\xFB]/g, this.unicode_callback );
 	},
 	
 	// If the second argument is set then don't use the unicode table

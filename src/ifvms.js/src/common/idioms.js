@@ -15,6 +15,7 @@ TODO:
 	loops
 		doesn't work yet because of storers before the branch
 	break (& continue?)
+	when opcodes are removed, if debug then add a comment
 	
 */
 

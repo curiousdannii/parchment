@@ -19,7 +19,7 @@ includes = (
 		'src/parchment/library.js',
 		'src/parchment/quixe.js',
 		'src/parchment/gnusto.js',
-		'src/parchment/zvm.js',
+		'src/parchment/ifvms.js',
 		'src/parchment/outro.js',
 	)),
 	('.build/gnusto.js', (

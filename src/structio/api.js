@@ -6,7 +6,7 @@ StructIO
 Copyright (c) 2011 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
- 
+
 */
 (function( $ ){
 
@@ -43,52 +43,65 @@ $.cssHooks.reverse = {
 	}
 };
 
-// A basic ZVM runner
-function run( engine )
-{
-	var order, i, response;
-
-	engine.run();
+// The public API
+// .input() must be set by whatever uses StructIO
+window.StructIO = Object.subClass({
 	
-	// Process the orders
-	for ( i = 0; i < engine.orders.length; i++ )
+	init: function( element )
 	{
-		order = engine.orders[i];
-		
-		// Text output
-		// [ 'print', styles, text ]
-		if ( order.code == 'print' )
-		{
-			$( order.css.node ? '<' + order.css.node + '>' : '<span>' )
-				.appendTo( '#output' )
-				.css( order.css )
-				.html( order.text.replace( /\n/g, '<br>' ) );
-		}
-		
-		// Line input
-		if ( order.code == 'read' )
-		{
-			// Get the input
-			response = prompt( 'Text input' ) || '';
-			// Don't append, it is the interpreter's responsibility to send the response back
-			//$( '#output' ).append( response + '<br>' );
-			
-			// Return the input to the VM
-			order.response = response;
-			order.terminator = 13; // 1.1 spec
-			engine.event( order );
-		}
-		
-		// Quit
-		if ( order.code == 'quit' )
-		{
-			return;
-		}
-	}
+		this.container = $( element );
+		this.target = this.container;
+		this.TextInput = new TextInput( this.container );
+	},
 	
-	setTimeout( function(){ run(engine); }, 1 );
-}
-
-window.run = run;
+	// Process some output events
+	event: function( orders )
+	{
+		var self = this,
+		order, i, response,
+		stop,
+		target = this.target;
+		
+		// Process the orders
+		for ( i = 0; i < orders.length; i++ )
+		{
+			order = orders[i];
+			
+			// Find a new target element
+			if ( order.code == 'find' )
+			{
+				target = $( '.' + order.name );
+			}
+			
+			// Add a structure
+			if ( order.code == 'addstruct' )
+			{
+				target.append( '<' + ( order.node || 'div' ) + ( order.name ? ' class="' + order.name + '"' : '' ) + '>' );
+			}
+			
+			// Text output
+			if ( order.code == 'print' )
+			{
+				$( order.css.node ? '<' + order.css.node + '>' : '<span>' )
+					.appendTo( target )
+					.css( order.css )
+					.html( order.text.replace( /\n/g, '<br>' ) );
+			}
+			
+			// Line input
+			if ( order.code == 'read' )
+			{
+				this.TextInput.getLine( target, function( response )
+				{
+					order.response = response;
+					order.terminator = 13;
+					self.input( order );
+				} );
+			}
+		}
+		
+		return stop;
+	}
+});
 
 })( jQuery );

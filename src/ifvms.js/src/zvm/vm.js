@@ -28,9 +28,51 @@ var ZVM_core = {
 		this.jit = {};
 	},
 	
-	load: function( data )
+	// An input event, or some other event from the runner
+	inputEvent: function( data )
 	{
-		this.data = data;
+		var memory = this.m,
+		response;
+		
+		// Clear the list of orders
+		this.orders = [];
+		
+		// Load the story file and start the engine
+		if ( data.code == 'load' )
+		{
+			this.data = data.data;
+			this.restart();
+		}
+		
+		// Handle line input
+		if ( data.code == 'read' )
+		{
+			// Store the terminating character
+			this.variable( data.storer, data.terminator );
+			
+			// Check if the response is too long, and then set its length
+			response = data.response;
+			if ( response.length > data.len )
+			{
+				response = response.slice( 0, data.len );
+			}
+			memory.setUint8( data.text + 1, response.length );
+			
+			// Store the response in the buffer
+			memory.setBuffer( data.text + 2, this.text.text_to_zscii( response ) );
+			
+			if ( data.parse )
+			{
+				// Tokenise the response
+				this.text.tokenise( response, data.parse );
+			}
+			
+			// Echo the response (7.1.1.1)
+			this.print( response + '\n' );
+		}
+		
+		// Resume normal operation
+		this.run();
 	},
 	
 	// (Re)start the VM
@@ -109,9 +151,6 @@ var ZVM_core = {
 		var now = Date.now(),
 		pc;
 		
-		// Clear the list of orders
-		this.orders = [];
-		
 		// Stop when ordered to
 		this.stop = 0;
 		while ( !this.stop )
@@ -169,41 +208,9 @@ var ZVM_core = {
 		options.code = code;
 		this.orders.push( options );
 		this.stop = 1;
-	},
-	
-	// Handler for events passed back from the ZVM runner
-	event: function( data )
-	{
-		var memory = this.m,
-		response;
-		
-		// Handle line input
-		if ( data.code == 'read' )
-		{
-			// Store the terminating character
-			this.variable( data.storer, data.terminator );
-			
-			// Check if the response is too long, and then set its length
-			response = data.response;
-			if ( response.length > data.len )
-			{
-				response = response.slice( 0, data.len );
-			}
-			memory.setUint8( data.text + 1, response.length );
-			
-			// Store the response in the buffer
-			memory.setBuffer( data.text + 2, this.text.text_to_zscii( response ) );
-			
-			if ( data.parse )
-			{
-				// Tokenise the response
-				this.text.tokenise( response, data.parse );
-			}
-			
-			// Echo the response (7.1.1.1)
-			this.print( response + '\n' );
-		}
+		this.outputEvent( this.orders );
 	}
+
 /* DEBUG */
 };
 /* ELSEDEBUG

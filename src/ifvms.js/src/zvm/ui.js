@@ -36,9 +36,9 @@ var colours = [
 convert_true_colour = function( colour )
 {
 	// Stretch the five bits per colour out to 8 bits
-	var newcolour = Math.round( ( colour & 0x1F ) * 8.225 ) << 16
-		| Math.round( ( ( colour & 0x03E0 ) >> 5 ) * 8.225 ) << 8
-		| Math.round( ( ( colour & 0x7C00 ) >> 10 ) * 8.225 );
+	var newcolour = Math.round( ( colour & 0x1F ) * 8.226 ) << 16
+		| Math.round( ( ( colour & 0x03E0 ) >> 5 ) * 8.226 ) << 8
+		| Math.round( ( ( colour & 0x7C00 ) >> 10 ) * 8.226 );
 	newcolour = newcolour.toString( 16 );
 	// Ensure the colour is 6 bytes long
 	while ( newcolour.length < 6 )
@@ -56,6 +56,22 @@ UI = Object.subClass({
 		this.styles = {};
 		this.streams = [ 1, 0, [], 0 ];
 		this.fontbit = engine.m.getUint8( 0x11 ) & 0x02;
+		
+		// Construct the basic windows
+		this.e.orders.push(
+			{
+				code: 'addstruct',
+				name: 'status'
+			},
+			{
+				code: 'addstruct',
+				name: 'main'
+			},
+			{
+				code: 'find',
+				name: 'main'
+			}
+		);
 	},
 	
 	// Flush the buffer to the orders

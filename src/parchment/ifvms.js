@@ -1,6 +1,6 @@
 /*
 
-The ifvms.js ZVM definition
+The ifvms.js VM definitions
 ===========================
 
 Copyright (c) 2008-2011 The Parchment Contributors
@@ -8,6 +8,22 @@ BSD licenced
 http://code.google.com/p/parchment
 
 */
+
+// Launcher. Will be run by jQuery.when(). jqXHR is args[2]
+var ifvms_launcher = function( args )
+{
+	var runner,
+	
+	// De-blorbify
+	mystory = new parchment.lib.Story( args[2].responseArray, storyName );
+	
+	// Hide load indicator
+	jQuery( '.load' ).detach();
+	
+	// Load it up!
+	window.engine = new window[args[2].vm.Class]();
+	runner = new Runner( engine, new StructIO( parchment.options.container ), mystory.zcode );
+};
 
 parchment.vms.zvm = {
 	id: 'zvm',
@@ -30,33 +46,16 @@ parchment.vms.zvm = {
 				'../src/ifvms.js/src/zvm/runtime.js',
 				'../src/ifvms.js/src/zvm/vm.js',
 				'../src/ifvms.js/src/zvm/outro.js',
+				'../src/structio/api.js',
+				'../src/structio/input.js',
 			/* ELSEDEBUG
 				'zvm.min.js',
 			/* ENDDEBUG */
-			'../src/structio/api.js'
+			'../src/ifvms.js/src/common/runner.js'
 		],
 	
-	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
-	launcher: function( story )
-	{
-		var jqXHR = story[2],
-		library = jqXHR.library,
-		
-		// De-blorbify
-		mystory = new parchment.lib.Story( jqXHR.responseArray, storyName );
-		
-		// Hide load indicator
-		if ( jQuery('.load').length > 0 )
-		{
-			jQuery('.load').detach();
-		}
-		
-		// Load it up!
-		jQuery( '#parchment' ).html( '<div id="output"></div>' );
-		window.engine = new ZVM();
-		engine.load( mystory.zcode );
-		engine.restart();
-		run( engine );
-	}
+	Class: 'ZVM',
+	
+	launcher: ifvms_launcher
 };
 parchment.vms.push( parchment.vms.zvm );
