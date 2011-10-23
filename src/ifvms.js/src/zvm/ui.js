@@ -60,11 +60,11 @@ UI = Object.subClass({
 		// Construct the basic windows
 		this.e.orders.push(
 			{
-				code: 'addstruct',
+				code: 'stream',
 				name: 'status'
 			},
 			{
-				code: 'addstruct',
+				code: 'stream',
 				name: 'main'
 			},
 			{

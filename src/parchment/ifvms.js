@@ -12,17 +12,15 @@ http://code.google.com/p/parchment
 // Launcher. Will be run by jQuery.when(). jqXHR is args[2]
 var ifvms_launcher = function( args )
 {
-	var runner,
-	
 	// De-blorbify
-	mystory = new parchment.lib.Story( args[2].responseArray, storyName );
+	var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
 	
 	// Hide load indicator
 	jQuery( '.load' ).detach();
 	
 	// Load it up!
 	window.engine = new window[args[2].vm.Class]();
-	runner = new Runner( engine, new StructIO( parchment.options.container ), mystory.zcode );
+	window.runner = new Runner( engine, new StructIO( parchment.options.container ), mystory.zcode );
 };
 
 parchment.vms.zvm = {
@@ -46,12 +44,12 @@ parchment.vms.zvm = {
 				'../src/ifvms.js/src/zvm/runtime.js',
 				'../src/ifvms.js/src/zvm/vm.js',
 				'../src/ifvms.js/src/zvm/outro.js',
-				'../src/structio/api.js',
-				'../src/structio/input.js',
 			/* ELSEDEBUG
 				'zvm.min.js',
 			/* ENDDEBUG */
-			'../src/ifvms.js/src/common/runner.js'
+			'../src/ifvms.js/src/common/runner.js',
+			'../src/structio/api.js',
+			'../src/structio/input.js'
 		],
 	
 	Class: 'ZVM',

@@ -8,6 +8,15 @@ BSD licenced
 http://code.google.com/p/parchment
 
 */
+
+/*
+
+TODO:
+	Timed input
+	input terminators
+
+*/
+
 (function( $ ){
 
 // Subclass jQuery
@@ -52,6 +61,11 @@ window.StructIO = Object.subClass({
 		this.container = $( element );
 		this.target = this.container;
 		this.TextInput = new TextInput( this.container );
+		// Default structures
+		this.structures = {
+			main: 'div',
+			status: 'div'
+		};
 	},
 	
 	// Process some output events
@@ -60,12 +74,21 @@ window.StructIO = Object.subClass({
 		var self = this,
 		order, i, response,
 		stop,
-		target = this.target;
+		target = this.target,
+		text;
 		
 		// Process the orders
 		for ( i = 0; i < orders.length; i++ )
 		{
 			order = orders[i];
+			text = order.text && order.text.replace( /\n/g, '<br>' );
+			
+			// Specify the elements to use for various structures
+			if ( order.code == 'structures' )
+			{
+				order.code = undefined;
+				$.extend( this.structures, order );
+			}
 			
 			// Find a new target element
 			if ( order.code == 'find' )
@@ -74,27 +97,38 @@ window.StructIO = Object.subClass({
 			}
 			
 			// Add a structure
-			if ( order.code == 'addstruct' )
+			if ( order.code == 'stream' )
 			{
-				target.append( '<' + ( order.node || 'div' ) + ( order.name ? ' class="' + order.name + '"' : '' ) + '>' );
+				$( '<' + ( this.structures[order.name] || 'span' ) + '>' )
+					.addClass( order.name )
+					.html( text || '' )
+					.appendTo( target );
 			}
 			
-			// Text output
+			// Old fashioned text output
 			if ( order.code == 'print' )
 			{
 				$( order.css.node ? '<' + order.css.node + '>' : '<span>' )
 					.appendTo( target )
 					.css( order.css )
-					.html( order.text.replace( /\n/g, '<br>' ) );
+					.html( text );
 			}
 			
 			// Line input
 			if ( order.code == 'read' )
 			{
-				this.TextInput.getLine( target, function( response )
-				{
+				this.TextInput.getLine( target, function( response ) {
 					order.response = response;
 					order.terminator = 13;
+					self.input( order );
+				} );
+			}
+			
+			// Character input
+			if ( order.code == 'char' )
+			{
+				this.TextInput.getChar( function( response ) {
+					order.response = response;
 					self.input( order );
 				} );
 			}

@@ -17,9 +17,14 @@ var Runner = Object.subClass({
 		var self = this;
 		this.e = engine;
 		this.io = io;
-		io.input = function( event ) { engine.inputEvent( event ); };
+		
+		// Set the appropriate event handlers
+		this.inputEvent = function( event ) { engine.inputEvent( event ); };
+		io.input = this.inputEvent;
 		engine.outputEvent = function( event ) { self.outputEvent( event ); };
-		engine.inputEvent({
+		
+		// Start it up
+		this.inputEvent({
 			code: 'load',
 			data: data
 		});
@@ -31,6 +36,7 @@ var Runner = Object.subClass({
 		var	engine = this.e,
 		i,
 		orders = data;
+		
 		// Send the orders to StructIO
 		this.io.event( orders );
 		
@@ -46,7 +52,7 @@ var Runner = Object.subClass({
 			// Tick
 			if ( orders[i].code == 'tick' )
 			{
-				engine.inputEvent({});
+				this.inputEvent({});
 			}
 		}
 	}

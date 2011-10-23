@@ -160,8 +160,9 @@ var disassemble = function( engine )
 		// Check for a text literal
 		if ( opcode_class.printer )
 		{
+			// Decode and escape text for JITing
 			temp = engine.text.decode( pc );
-			operands.push( JITescape( temp ) );
+			operands.push( temp.replace( /\n/g, '\\n' ).replace( /"/g, '\\"' ) );
 			pc = temp.pc;
 		}
 		

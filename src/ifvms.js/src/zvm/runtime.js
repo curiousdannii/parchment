@@ -358,7 +358,7 @@ window.ZVM = Object.subClass( {
 	
 		// Add the order
 		this.act( 'read', {
-			text: text, // text-buffer
+			buffer: text, // text-buffer
 			parse: parse, // parse-buffer
 			len: this.m.getUint8( text ),
 			initiallen: this.m.getUint8( text + 1 ),
@@ -368,9 +368,28 @@ window.ZVM = Object.subClass( {
 		});
 	},
 	
+	// Request character input
+	read_char: function( one, time, routine, storer )
+	{
+		// Check if not all operands were used
+		if ( arguments.length == 2 )
+		{
+			storer = time;
+			time = routine = 0;
+		}
+	
+		// Add the order
+		this.act( 'char', {
+			time: time,
+			routine: routine,
+			storer: storer
+		});
+	},
+	
 	remove_obj: function( obj )
 	{
 		// Is this the only call to get_family? Fold in here?
+		// Also get_bigsis is only called from get_family
 		var family = this.get_family( obj );
 		
 		// No parent, do nothing

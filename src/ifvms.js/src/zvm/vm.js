@@ -56,10 +56,10 @@ var ZVM_core = {
 			{
 				response = response.slice( 0, data.len );
 			}
-			memory.setUint8( data.text + 1, response.length );
+			memory.setUint8( data.buffer + 1, response.length );
 			
 			// Store the response in the buffer
-			memory.setBuffer( data.text + 2, this.text.text_to_zscii( response ) );
+			memory.setBuffer( data.buffer + 2, this.text.text_to_zscii( response ) );
 			
 			if ( data.parse )
 			{
@@ -69,6 +69,12 @@ var ZVM_core = {
 			
 			// Echo the response (7.1.1.1)
 			this.print( response + '\n' );
+		}
+		
+		// Handle character input
+		if ( data.code == 'char' )
+		{
+			this.variable( data.storer, this.text.keyinput( data.response ) );
 		}
 		
 		// Resume normal operation

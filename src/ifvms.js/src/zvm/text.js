@@ -16,10 +16,37 @@ TODO:
 	
 */
 
-// Escape text for JITing
-var JITescape = function( text )
-{
-	return text.replace( /\n/g, '\\n' ).replace( /"/g, '\\"' );
+// Key codes accepted by the Z-Machine
+var ZSCII_keyCodes = {
+	8: 8, // delete/backspace
+	13: 13, // enter
+	27: 27, // escape
+	37: 131, // arrow keys
+	38: 129,
+	39: 132,
+	40: 130,
+	96: 145, // keypad
+	97: 146,
+	98: 147,
+	99: 148,
+	100: 149,
+	101: 150,
+	102: 151,
+	103: 152,
+	104: 153,
+	105: 154,
+	112: 133, // function keys
+	113: 134,
+	114: 135,
+	115: 136,
+	116: 137,
+	117: 138,
+	118: 139,
+	119: 140,
+	120: 141,
+	121: 142,
+	122: 143,
+	123: 144
 },
 
 // A class for managing everything text
@@ -45,7 +72,7 @@ Text = Object.subClass({
 		// Check for a custom unicode table
 		this.make_unicode( unicode_addr ? memory.getBuffer16( unicode_addr, unicode_len )
 			// Or use the default
-			: this.text_to_zscii( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ), 1 ) );
+			: this.text_to_zscii( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ), 1 ) );
 		
 		// Abbreviations
 		abbreviations = memory.getUint16( 0x18 );
@@ -280,5 +307,27 @@ Text = Object.subClass({
 		}
 		// Update the number of found words
 		memory.setUint8( buffer + 1, i );
+	},
+	
+	// Handle key input
+	keyinput: function( data )
+	{
+		var charCode = data.charCode,
+		keyCode = data.keyCode;
+		
+		// Handle keyCodes first
+		if ( ZSCII_keyCodes[keyCode] )
+		{
+			return ZSCII_keyCodes[keyCode];
+		}
+		
+		// Standard ASCII
+		if ( charCode > 31 && charCode < 127 )
+		{
+			return charCode;
+		}
+		
+		// Consult the unicode table or return a '?'
+		return this.reverse_unicode_table[charCode] || 63;
 	}
 });

@@ -149,7 +149,7 @@ opcodes = {
 /* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.ui.output_stream(' + this.args() + ')'; } ),
 /* input_stream */
 /* sound_effect */ 245: Opcode, // We don't support sounds
-/* read_char */
+/* read_char */ 246: opcode_builder( Stopper, function() { var storer = this.operands.pop(); return 'e.read_char(' + this.args() + ',' + storer.v + ');e.pc=' + this.next; }, { storer: 1 } ),
 /* scan_table */
 /* not */ 248: opcode_builder( Storer, function( a ) { return 'e.S2U(~' + a.write() + ')'; } ),
 /* call_vn */ 249: Caller,
@@ -169,7 +169,7 @@ opcodes = {
 /* restore_undo */ 1010: opcode_builder( Opcode, function() { return 'if(e.restore_undo())return'; }, { storer: 1 } ),
 /* print_unicode */ 1011: opcode_builder( Opcode, function( a ) { return 'e.print(String.fromCharCode(' + a.write() + '))'; } ),
 // Assume we can print and read all unicode characters rather than actually testing
-/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } ),
+/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } )
 /* set_true_colour */ //1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
 /* gestalt */ //1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } ),
 /* parchment */ //1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.args() + ')'; } )
