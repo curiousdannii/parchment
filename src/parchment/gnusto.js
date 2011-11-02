@@ -23,16 +23,20 @@ parchment.vms.gnusto = {
 			'../src/gnusto/runner/runner.js',
 			'../src/gnusto/runner/console.js',
 			'../src/gnusto/runner/zui.js',
+			//'../src/gnusto/runner/zmachine.css'
 		/* ELSEDEBUG
 			'gnusto.min.js',
 			'zmachine.min.js',
+			//'gnusto.min.css'
 		/* ENDDEBUG */
-		'../src/gnusto/runner/zmachine.css'
 		],
 	
 	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
 	launcher: function( story )
 	{
+		// Switch on the styles
+		//story[2].library.ui.stylesheet_switch( 'gnusto', 1 );
+		
 		// Chrome is silly and doesn't let us simply reference console.log()
 		// PLUS Only supports a single argument :(
 		var logfunc = window.console && function( msg ) { console.log( msg ); } || function(){},

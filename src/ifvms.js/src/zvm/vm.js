@@ -14,6 +14,8 @@ http://github.com/curiousdannii/ifvms.js
 This file represents the public API of the ZVM class, while runtime.js contains most other class functions
 	
 TODO:
+	Is 'use strict' needed for JIT functions too, or do they inherit that status?
+	Move the header setting stuff to a separate function and call it when restoring
 	
 */
 
@@ -26,32 +28,73 @@ var ZVM_core = {
 	{
 		// Create this here so that it won't be cleared on restart
 		this.jit = {};
+		this.env = {
+			width: 80 // Default width of 80 characters
+		};
 	},
 	
 	// An input event, or some other event from the runner
 	inputEvent: function( data )
 	{
 		var memory = this.m,
+		code = data.code,
 		response;
+		
+		// Update environment variables
+		if ( data.env )
+		{
+			extend( this.env, data.env );
+			
+			// Also need to update the header
+			
+			// Stop if there's no code - we're being sent live updates
+			if ( !code )
+			{
+				return;
+			}
+		}
 		
 		// Clear the list of orders
 		this.orders = [];
 		
-		// Load the story file and start the engine
-		if ( data.code == 'load' )
+		// Load the story file
+		if ( code == 'load' )
 		{
 			this.data = data.data;
+			return;
+		}
+		
+		if ( code == 'restart' )
+		{
 			this.restart();
 		}
 		
+		if ( code == 'restore' )
+		{
+			if ( data.data )
+			{
+				this.restore( data.data );
+			}
+			else
+			{
+				this.variable( data.storer, 0 );
+			}
+		}
+		
 		// Handle line input
-		if ( data.code == 'read' )
+		if ( code == 'read' )
 		{
 			// Store the terminating character
 			this.variable( data.storer, data.terminator );
 			
-			// Check if the response is too long, and then set its length
+			// Echo the response (7.1.1.1)
 			response = data.response;
+			this.print( response + '\n' );
+			
+			// Convert the response to lower case and then to ZSCII
+			response = this.text.text_to_zscii( response.toLowerCase() );
+			
+			// Check if the response is too long, and then set its length
 			if ( response.length > data.len )
 			{
 				response = response.slice( 0, data.len );
@@ -59,20 +102,17 @@ var ZVM_core = {
 			memory.setUint8( data.buffer + 1, response.length );
 			
 			// Store the response in the buffer
-			memory.setBuffer( data.buffer + 2, this.text.text_to_zscii( response ) );
+			memory.setBuffer( data.buffer + 2, response );
 			
 			if ( data.parse )
 			{
 				// Tokenise the response
-				this.text.tokenise( response, data.parse );
+				this.text.tokenise( data.buffer, data.parse );
 			}
-			
-			// Echo the response (7.1.1.1)
-			this.print( response + '\n' );
 		}
 		
 		// Handle character input
-		if ( data.code == 'char' )
+		if ( code == 'char' )
 		{
 			this.variable( data.storer, this.text.keyinput( data.response ) );
 		}
@@ -94,7 +134,7 @@ var ZVM_core = {
 		// Check if the version is supported
 		if ( version != 5 && version != 8 )
 		{
-			throw new Error( 'Unsupported Z-Machine version: ' + data[0] );
+			throw new Error( 'Unsupported Z-Machine version: ' + version );
 		}
 		
 		// Preserve flags 2 - the fixed pitch bit is surely the lamest part of the Z-Machine spec!
@@ -111,8 +151,6 @@ var ZVM_core = {
 			l: [],
 			call_stack: [],
 			undo: [],
-			
-			random_state: 0,
 			
 			// IO stuff
 			orders: [],
@@ -137,16 +175,34 @@ var ZVM_core = {
 			text: new Text( this )
 		});
 		
-		// Set some other header variables
+		// Update the header
+		this.update_header();
+	},
+	
+	// Update the header after restarting or restoring
+	update_header: function()
+	{
+		var memory = this.m;
+		
+		// Reset the random state
+		this.random_state = 0;
+		
 		// Flags 1: Set bits 0, 2, 3, 4: typographic styles are OK
-		memory.setUint8( 0x01, 0x1D );
+		// Set bit 7 only if timed input is supported
+		memory.setUint8( 0x01, 0x1D | ( this.env.timed ? 0x80 : 0 ) );
 		// Flags 2: Clear bits 3, 5, 7: no character graphics, mouse or sound effects
 		// This is really a word, but we only care about the lower byte
 		memory.setUint8( 0x11, memory.getUint8( 0x11 ) & 0x57 );
+		// Screen settings
+		memory.setUint8( 0x20, 255 ); // Infinite height
+		memory.setUint8( 0x21, this.env.width );
+		memory.setUint16( 0x22, this.env.width );
+		memory.setUint16( 0x24, 255 );
+		memory.setUint16( 0x26, 0x0101 ); // Font height/width in "units"
 		// Z Machine Spec revision
 		// For now only set 1.2 if PARCHMENT_SECURITY_OVERRIDE is set, still need to finish 1.1 support!
 		memory.setUint8( 0x32, 1 );
-		memory.setUint8( 0x33, PARCHMENT_SECURITY_OVERRIDE ? 2 : 0 );
+		memory.setUint8( 0x33, this.env.PARCHMENT_SECURITY_OVERRIDE ? 2 : 0 );
 		// Clear flags three, we don't support any of that stuff
 		this.extension_table( 4, 0 );
 	},
@@ -187,13 +243,17 @@ var ZVM_core = {
 		
 		// Compile the routine with new Function()
 		/* DEBUG */
-			log( code );
-			this.jit[context.pc] = eval( '(function(e){' + code + '})' );
+			console.log( code );
+			var func = eval( '(function(e){' + code + '})' );
 			
 			// Extra stuff for debugging
-			;;; this.jit[context.pc].context = context;
-			;;; this.jit[context.pc].code = code;
-			;;; if ( context.name ) { this.jit[context.pc].name = context.name; }
+			func.context = context;
+			func.code = code;
+			if ( context.name )
+			{
+				func.name = context.name;
+			}
+			this.jit[context.pc] = func;
 		/* ELSEDEBUG
 			this.jit[context.pc] = new Function( 'e', code );
 		/* ENDDEBUG */
@@ -210,6 +270,18 @@ var ZVM_core = {
 		
 		// Flush the buffer
 		this.ui.flush();
+		
+		// Flush the status if we need to
+		// Should instead it be the first order? Might be better for screen readers etc
+		if ( this.ui.status.length )
+		{
+			this.orders.push({
+				code: 'stream',
+				to: 'status',
+				data: this.ui.status
+			});
+			this.ui.status = [];
+		}
 		
 		options.code = code;
 		this.orders.push( options );

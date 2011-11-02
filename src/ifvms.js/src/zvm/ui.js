@@ -12,6 +12,7 @@ http://github.com/curiousdannii/ifvms.js
 /*
 	
 TODO:
+	default background/foreground colours
 	
 */
 
@@ -55,7 +56,12 @@ UI = Object.subClass({
 		this.buffer = '';
 		this.styles = {};
 		this.streams = [ 1, 0, [], 0 ];
-		this.fontbit = engine.m.getUint8( 0x11 ) & 0x02;
+		// Bit 0 is for @set_style, bit 1 for the header, and bit 2 for @set_font
+		this.mono = engine.m.getUint8( 0x11 ) & 0x02;
+		
+		// Upper window stuff
+		this.currentwin = 0;
+		this.status = []; // Status window orders
 		
 		// Construct the basic windows
 		this.e.orders.push(
@@ -74,22 +80,81 @@ UI = Object.subClass({
 		);
 	},
 	
+	// Actually clear a window, called by the opcode handler below
+	clear_window: function( window )
+	{
+		this.e.orders.push({
+			code: 'clear',
+			name: window ? 'status' : 'main',
+			css: extend( {}, this.styles )
+		});
+	},
+	
+	erase_window: function( window )
+	{
+		this.flush();
+		if ( window == -1 )
+		{
+			this.split_window( 0 );
+			this.clear_window( 0 );
+		}
+		if ( window == -2 )
+		{
+			this.clear_window( 0 );
+			this.clear_window( 1 );
+		}
+		else
+		{
+			this.clear_window( window );
+		}
+	},
+	
 	// Flush the buffer to the orders
 	flush: function()
 	{
-		var oldstyles;
+		var order;
 		
 		// If we have a buffer transfer it to the orders
 		if ( this.buffer != '' )
 		{
-			// Copy the styles object so that we won't be affected by later style changes
-			oldstyles = extend( {}, this.styles );
-			this.e.orders.push({
-				code: 'print',
-				css: oldstyles,
+			order = {
+				code: 'stream',
+				// Copy the styles object so that we won't be affected by later style changes
+				css: extend( {}, this.styles ),
 				text: this.buffer
-			});
+			};
+			if ( this.mono )
+			{
+				order.node = 'tt';
+			}
+			( this.currentwin ? this.status : this.e.orders ).push( order );
 			this.buffer = '';
+		}
+	},
+	
+	// Manage output streams
+	output_stream: function( stream, addr )
+	{
+		stream = U2S( stream );
+		if ( stream == 1 )
+		{
+			this.streams[0] = 1;
+		}
+		if ( stream == -1 )
+		{
+			;;; console.info( 'Disabling stream one - it actually happened!' );
+			this.streams[0] = 0;
+		}
+		if ( stream == 3 )
+		{
+			this.streams[2].unshift( [ addr, '' ] );
+		}
+		if ( stream == -3 )
+		{
+			var data = this.streams[2].shift(),
+			text = this.e.text.text_to_zscii( data[1] );
+			this.e.m.setUint16( data[0], text.length );
+			this.e.m.setBuffer( data[0] + 2, text );
 		}
 	},
 	
@@ -104,14 +169,17 @@ UI = Object.subClass({
 		// Don't print if stream 1 was switched off (why would you do that?!)
 		else if ( this.streams[0] )
 		{
-			// Check if the font bit has changed
+			// Check if the monospace font bit has changed
 			// Unfortunately, even now Inform changes this bit for the font statement, even though the 1.1 standard depreciated it :(
 			var fontbit = this.e.m.getUint8( 0x11 ) & 0x02;
-			if ( fontbit != this.fontbit )
+			if ( fontbit != ( this.mono & 0x02 ) )
 			{
-				this.fontbit = fontbit;
-				this.flush();
-				this.styles.node = this.fontbit ? 'tt' : undefined
+				// Flush if we're actually changing font (ie, the other bits are off)
+				if ( !( this.mono & 0xFD ) )
+				{
+					this.flush();
+				}
+				this.mono ^= 0x02;
 			}
 			this.buffer += text;
 		}
@@ -121,6 +189,22 @@ UI = Object.subClass({
 	set_colour: function( foreground, background )
 	{
 		this.set_true_colour( colours[foreground], colours[background] );
+	},
+	
+	set_font: function( font )
+	{
+		// We only support fonts 1 and 4
+		if ( font != 1 && font != 4 )
+		{
+			return 0;
+		}
+		var returnval = this.mono & 0x04 ? 4 : 1;
+		if ( font != returnval )
+		{
+			this.flush();
+			this.mono ^= 0x04;
+		}
+		return returnval;
 	},
 	
 	// Set styles
@@ -134,7 +218,7 @@ UI = Object.subClass({
 		if ( stylebyte == 0 )
 		{
 			styles.reverse = styles['font-weight'] = styles['font-style'] = undefined;
-			styles.node = this.fontbit ? 'tt' : undefined;
+			this.mono &= 0xFE;
 		}
 		if ( stylebyte & 0x01 )
 		{
@@ -150,7 +234,7 @@ UI = Object.subClass({
 		}
 		if ( stylebyte & 0x08 )
 		{
-			styles.node = 'tt';
+			this.mono |= 0x01;
 		}
 	},
 	
@@ -186,29 +270,22 @@ UI = Object.subClass({
 		styles['background-color'] = newbackground;
 	},
 	
-	// Manage output streams
-	output_stream: function( stream, addr )
+	set_window: function( window )
 	{
-		stream = this.e.U2S( stream );
-		if ( stream == 1 )
-		{
-			this.streams[0] = 1;
-		}
-		if ( stream == -1 )
-		{
-			;;; console.info( 'Disabling stream one - it actually happened!' );
-			this.streams[0] = 0;
-		}
-		if ( stream == 3 )
-		{
-			this.streams[2].unshift( [ addr, '' ] );
-		}
-		if ( stream == -3 )
-		{
-			var data = this.streams[2].shift(),
-			text = this.e.text.text_to_zscii( data[1] );
-			this.e.m.setUint16( data[0], text.length );
-			this.e.m.setBuffer( data[0] + 2, text );
-		}
+		this.flush();
+		this.currentwin = window;
+		this.e.orders.push({
+			code: 'find',
+			name: window ? 'status' : 'main'
+		});
+	},
+	
+	split_window: function( lines )
+	{
+		this.flush();
+		this.status.push({
+			code: "height",
+			lines: lines
+		});
 	}
 });

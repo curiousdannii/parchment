@@ -17,10 +17,18 @@ includes = (
 		'src/parchment/file.js',
 		'src/parchment/ui.js',
 		'src/parchment/library.js',
+		'src/ifvms.js/src/common/runner.js',
+		'src/structio/textgrid.js',
+		'src/structio/api.js',
+		'src/structio/input.js',
 		'src/parchment/quixe.js',
 		'src/parchment/gnusto.js',
 		'src/parchment/ifvms.js',
 		'src/parchment/outro.js',
+	)),
+	('.build/parchment.css', (
+		'src/parchment/parchment.css',
+		'src/structio/structio.css',
 	)),
 	('.build/gnusto.js', (
 		'src/gnusto/engine/gnusto-engine.js',
@@ -30,6 +38,9 @@ includes = (
 		'src/plugins/quetzal.js',
 		'src/gnusto/runner/runner.js',
 		'src/gnusto/runner/console.js',
+	)),
+	('.build/gnusto.css', (
+		'src/gnusto/runner/zmachine.css',
 	)),
 	('.build/quixe.js', (
 		'src/quixe/quixe/quixe.js',
@@ -42,6 +53,7 @@ includes = (
 	)),
 	('.build/zvm.js', (
 		'src/ifvms.js/src/zvm/intro.js',
+		'src/ifvms.js/src/common/util.js',
 		'src/ifvms.js/src/common/bytearray.js',
 		'src/ifvms.js/src/common/ast.js',
 		'src/ifvms.js/src/zvm/quetzal.js',
@@ -64,8 +76,10 @@ debugzvm = re.compile('(/\*\s*GVM\s*\*/[\s\S]+?/\*\s*ENDGVM\s*\*/)|(/\* ZVM \*/\
 
 # List of files to compress (with debug code removed)
 compress = (
-	('.build/gnusto.js', 'lib/gnusto.min.js'),
-	('.build/parchment.js', 'lib/parchment.min.js'),
+	('.build/parchment.js', 'lib/parchment.min.js', 'src/parchment/header.txt'),
+	('.build/parchment.css', 'lib/parchment.min.css', 'src/parchment/header.txt'),
+	('.build/gnusto.js', 'lib/gnusto.min.js', 'src/gnusto/header.txt'),
+	('.build/gnusto.css', 'lib/gnusto.min.css', 'src/gnusto/header.txt'),
 	('.build/zmachine.js', 'lib/zmachine.min.js'),
 	('.build/glkote.js', 'lib/glkote.min.js'),
 	('.build/quixe.js', 'lib/quixe.min.js'),

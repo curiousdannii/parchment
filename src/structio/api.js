@@ -14,10 +14,11 @@ http://code.google.com/p/parchment
 TODO:
 	Timed input
 	input terminators
+	Determine the width properly
 
 */
 
-(function( $ ){
+(function( $, undefined ){
 
 // Subclass jQuery
 // No point until subclasses support their own csshooks
@@ -52,89 +53,115 @@ $.cssHooks.reverse = {
 	}
 };
 
+// Root stream handler. Some structures (like text grids) could have alternative handlers
+var basic_stream_handler = function( e )
+{
+	var order = e.order,
+	struct = e.io.structures[order.name] || { node: 'span' },
+	
+	// Create the new element and set everything that needs to be set
+	elem = $( '<' + ( order.node || struct.node ) + '>' )
+		.appendTo( e.target )
+		.addClass( order.name )
+		.css( order.css || {} );
+	order.text && elem.html( order.text.replace( /\n/g, '<br>' ) );
+	
+	// If we have a custom function to run, do so
+	if ( struct.func )
+	{
+		struct.func( elem, e.io );
+	}
+		
+	return false;
+};
+
 // The public API
 // .input() must be set by whatever uses StructIO
 window.StructIO = Object.subClass({
 	
 	init: function( element )
 	{
-		this.container = $( element );
-		this.target = this.container;
+		element = $( element );
+		this.container = element
+		this.target = element;
+		element.bind( 'stream', basic_stream_handler );
 		this.TextInput = new TextInput( this.container );
 		// Default structures
 		this.structures = {
-			main: 'div',
-			status: 'div'
+			main: {
+				node: 'div'
+			},
+			status: {
+				node: 'div',
+				func: function( elem, io ) { new TextGrid( elem, io ); }
+			}
+		};
+		this.env = {
+			width: 80
 		};
 	},
 	
 	// Process some output events
 	event: function( orders )
 	{
-		var self = this,
-		order, i, response,
-		stop,
+		var order, code, i,
 		target = this.target,
-		text;
+		temp;
 		
 		// Process the orders
 		for ( i = 0; i < orders.length; i++ )
 		{
 			order = orders[i];
-			text = order.text && order.text.replace( /\n/g, '<br>' );
+			code = order.code;
 			
 			// Specify the elements to use for various structures
-			if ( order.code == 'structures' )
+			// All structures must specify at least the node to use
+			if ( code == 'structures' )
 			{
 				order.code = undefined;
 				$.extend( this.structures, order );
 			}
 			
 			// Find a new target element
-			if ( order.code == 'find' )
+			if ( code == 'find' )
 			{
-				target = $( '.' + order.name );
+				this.target = target = $( '.' + order.name );
 			}
 			
 			// Add a structure
-			if ( order.code == 'stream' )
+			if ( code == 'stream' )
 			{
-				$( '<' + ( this.structures[order.name] || 'span' ) + '>' )
-					.addClass( order.name )
-					.html( text || '' )
-					.appendTo( target );
+				// .to will let you temporarily stream to something else
+				( order.to ? $( '.' + order.to ) : target )
+					.trigger({
+						type: 'stream',
+						io: this,
+						order: order
+					});
 			}
 			
-			// Old fashioned text output
-			if ( order.code == 'print' )
+			if ( code == 'clear' )
 			{
-				$( order.css.node ? '<' + order.css.node + '>' : '<span>' )
-					.appendTo( target )
-					.css( order.css )
-					.html( text );
+				( order.name ? $( '.' + order.name ) : target )
+					.empty()
+					.css( 'background-color', order.css && order.css['background-color'] );
 			}
 			
 			// Line input
-			if ( order.code == 'read' )
+			if ( code == 'read' )
 			{
-				this.TextInput.getLine( target, function( response ) {
-					order.response = response;
-					order.terminator = 13;
-					self.input( order );
-				} );
+				order.callback = this.input;
+				order.target = target;
+				this.TextInput.getLine( order );
 			}
 			
 			// Character input
-			if ( order.code == 'char' )
+			if ( code == 'char' )
 			{
-				this.TextInput.getChar( function( response ) {
-					order.response = response;
-					self.input( order );
-				} );
+				order.callback = this.input;
+				this.TextInput.getChar( order );
 			}
 		}
-		
-		return stop;
 	}
 });
 

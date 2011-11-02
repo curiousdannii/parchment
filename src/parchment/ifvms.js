@@ -33,6 +33,7 @@ parchment.vms.zvm = {
 	files: [
 			/* DEBUG */
 				'../src/ifvms.js/src/zvm/intro.js',
+				'../src/ifvms.js/src/common/util.js',
 				'../src/ifvms.js/src/common/bytearray.js',
 				'../src/ifvms.js/src/common/ast.js',
 				'../src/ifvms.js/src/zvm/quetzal.js',
@@ -43,13 +44,10 @@ parchment.vms.zvm = {
 				'../src/ifvms.js/src/zvm/disassembler.js',
 				'../src/ifvms.js/src/zvm/runtime.js',
 				'../src/ifvms.js/src/zvm/vm.js',
-				'../src/ifvms.js/src/zvm/outro.js',
+				'../src/ifvms.js/src/zvm/outro.js'
 			/* ELSEDEBUG
-				'zvm.min.js',
+				'zvm.min.js'
 			/* ENDDEBUG */
-			'../src/ifvms.js/src/common/runner.js',
-			'../src/structio/api.js',
-			'../src/structio/input.js'
 		],
 	
 	Class: 'ZVM',

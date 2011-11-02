@@ -28,32 +28,65 @@ var Runner = Object.subClass({
 			code: 'load',
 			data: data
 		});
+		this.inputEvent({
+			code: 'restart',
+			env: io.env
+		});
 	},
 
 	// Handler for output events from the VM
-	outputEvent: function( data )
+	outputEvent: function( orders )
 	{
 		var	engine = this.e,
-		i,
-		orders = data;
+		i = 0,
+		order, code,
+		sendevent;
 		
 		// Send the orders to StructIO
 		this.io.event( orders );
 		
 		// Go through the orders for anything non-StructIO
-		for ( i = 0; i < orders.length; i++ )
+		for ( ; i < orders.length; i++ )
 		{
-			// Quit
-			if ( orders[i].code == 'quit' )
+			order = orders[i];
+			code = order.code;
+			
+			if ( code == 'quit' )
 			{
 				return;
 			}
 			
-			// Tick
-			if ( orders[i].code == 'tick' )
+			if ( code == 'save' )
 			{
-				this.inputEvent({});
+				// For now just store the save file here
+				// Later we'll want to talk to the Library
+				this.savefile = order.data;
+				sendevent = 1;
 			}
+			
+			if ( code == 'restart' )
+			{
+				// Reset the IO structures
+				this.io.target = this.io.container.empty();
+				sendevent = 1;
+			}
+			
+			if ( code == 'restore' )
+			{
+				order.data = this.savefile;
+				sendevent = 1;
+			}
+			
+			// Tick - ie, do nothing
+			if ( code == 'tick' )
+			{
+				sendevent = 1;
+			}
+		}
+		
+		if ( sendevent )
+		{
+			this.inputEvent( order );
 		}
 	}
 

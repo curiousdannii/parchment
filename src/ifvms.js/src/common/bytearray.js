@@ -21,7 +21,7 @@ Todo:
 
 */
 
-;;; log( 'bytearray.js: ' + ( window.DataView ? 'Native DataView' : 'Emulating DataView' ) );
+;;; console.log( 'bytearray.js: ' + ( window.DataView ? 'Native DataView' : 'Emulating DataView' ) );
 
 var native_bytearrays = window.DataView,
 
@@ -55,16 +55,4 @@ ByteArray = native_bytearrays ?
 		} /* ENDZVM */
 		/* GVM */ if ( GVM ) {
 		} /* ENDGVM */
-	},
-
-// Utility to convert from byte arrays to word arrays
-byte_to_word = function( array )
-{
-	var i = 0, l = array.length,
-	result = [];
-	while ( i < l )
-	{
-		result[i / 2] = array[i++] << 8 | array[i++];
-	}
-	return result;
-};
+	};

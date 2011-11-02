@@ -42,8 +42,7 @@ var disassemble = function( engine )
 	while (1)
 	{		
 		// This instruction
-		pc = engine.pc;
-		offset = pc;
+		offset = pc = engine.pc;
 		code = memory.getUint8( pc++ );
 		
 		// Extended instructions
@@ -89,9 +88,9 @@ var disassemble = function( engine )
 		// TODO: implement proper errors here
 		if ( !opcodes[code] )
 		{
-			log('Missing opcode #' + code + ' at pc=' + offset);
-			engine.stop = 1;
+			console.log('Missing opcode #' + code + ' at pc=' + offset);
 			console.log( context.write() );
+			engine.stop = 1;
 			throw Error;
 		}
 		
@@ -180,7 +179,7 @@ var disassemble = function( engine )
 		}
 		
 		// We can't go any further if we have a final stopper :(
-		if ( opcode_class.stopper && temp == 0 )
+		if ( opcode_class.stopper && !temp )
 		{
 			break;
 		}

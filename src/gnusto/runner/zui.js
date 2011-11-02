@@ -486,7 +486,7 @@ onRestore: function()
 	      row.innerHTML = "<span>" + row.innerHTML + "</span>";
 
 	      $("#buffered-windows").append(row);
-	      self._pixelWidth = $(row).width();
+	      self._pixelWidth = $(row).find('span').width();
 	      if(jQuery.browser.msie &&
 	         (jQuery.browser.version.length == 1 || jQuery.browser.version.charAt(1)=='.') &&
 	         jQuery.browser.version < '7') {

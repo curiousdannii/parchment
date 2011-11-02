@@ -1,0 +1,216 @@
+/* 
+
+General Parchment styles
+========================
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
+
+html
+{
+	overflow-y: scroll;
+	-webkit-text-size-adjust: none;
+}
+
+body
+{
+	background: #FFF;
+	color: #000;
+	font-family: Georgia, Palatino, serif;
+	font-size: 16px;
+	margin: 0 0 8px;
+	text-align: center;
+}
+
+#parchment
+{
+	/* This is to make it easier for .TextGrid.
+	   Do something else, or make it so that the text grid does not actually sit on top of the other */
+	background: inherit;
+	text-align: left;
+}
+
+#gameport
+{
+	line-height: 1.4;
+	margin: 0 auto;
+	text-align: left;
+	width: 80%;
+}
+
+/* General dialogs */
+.dialog
+{
+	background: #fff;
+	border: 3px solid #ddd;
+	border-radius: 10px;
+	-webkit-box-shadow: 5px 5px 10px #777;
+	box-shadow: 5px 5px 10px #777;
+	left: 30%;
+	padding: 0px 20px;
+	position: fixed;
+	top: 20%;
+	width: 40%;
+}
+
+/* Load indicator */
+.load
+{
+	text-align: left;
+}
+
+/* Front page panels */
+
+/* Load any web story file */
+.panel input
+{
+	display: block;
+	margin: 0 auto;
+	width: 50%;
+}
+
+.error {
+    background: red;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+}
+
+/* 
+
+Styles for the Gnusto runner
+============================
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
+.fg-default {
+    color: black;
+}
+
+.fg-default-reversed {
+    color: white;
+}
+
+.fg-black {
+    color: black;
+}
+
+.fg-red {
+    color: red;
+}
+
+.fg-green {
+    color: green;
+}
+
+.fg-yellow {
+    color: yellow;
+}
+
+.fg-blue {
+    color: blue;
+}
+
+.fg-magenta {
+    color: magenta;
+}
+
+.fg-cyan {
+    color: cyan;
+}
+
+.fg-white {
+    color: white;
+}
+
+.bg-default {
+    background: white;
+}
+
+.bg-default-reversed {
+    background: black;
+}
+
+.bg-black {
+    background: black;
+}
+
+.bg-red {
+    background: red;
+}
+
+.bg-green {
+    background: green;
+}
+
+.bg-yellow {
+    background: yellow;
+}
+
+.bg-blue {
+    background: blue;
+}
+
+.bg-magenta {
+    background: magenta;
+}
+
+.bg-cyan {
+    background: cyan;
+}
+
+.bg-white {
+    background: white;
+}
+
+.z-roman {
+}
+
+.z-bold {
+    font-variant: small-caps;
+}
+
+.z-italic {
+    font-style: italic;
+}
+
+.z-fixed-pitch {
+    font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
+    white-space: pre;
+    font-size: 10pt;
+}
+
+.z-breaking-whitespace {
+    white-space: normal;
+}
+
+.buffered-window {
+    text-align: center;
+    margin: 0 auto;
+    font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
+    font-size: 10pt;
+    top: 0px;
+    left: 0px;
+    position: fixed;
+    z-index: 0;
+}
+
+#top-window {
+    z-index: 1;
+}
+
+#content {
+    text-align: left;
+    margin: 0 auto;
+}
+
+#top-window .z-bold {
+    text-decoration: underline;
+    font-variant: normal;
+}

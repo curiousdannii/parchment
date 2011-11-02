@@ -12,6 +12,8 @@ http://code.google.com/p/parchment
 /*
 
 TODO:
+	Insert some zero-width character into .lastinput so that it will have a height
+	Add labels to prompts for screen readers?
 
 */
 
@@ -127,6 +129,10 @@ window.TextInput = Object.subClass({
 		})
 			.append( lineInput );
 		
+		// A marker for the last input
+		self.lastinput = $( '<span class="lastinput"/>' )
+			.appendTo( container );
+		
 		// Focus document clicks and keydowns
 		doc.bind( 'click.TextInput keydown.TextInput', function( ev ) {
 			
@@ -153,7 +159,7 @@ window.TextInput = Object.subClass({
 		self.charInput = charInput;
 		
 		self.container = container;
-		//self.statuswin = $( statuswin );
+		self.statuswin = $( '<div>' );
 		
 		// Find the element which we calculate scroll offsets from
 		// For now just decide by browser
@@ -167,45 +173,45 @@ window.TextInput = Object.subClass({
 	},
 	
 	// Get some input
-	getLine: function( stream, callback, style )
+	getLine: function( order )
 	{
 		var self = this,
-		prompt = stream.children().last(),
+		laststruct = order.target.children().last(),
 		input = self.lineInput,
-		lastInput = $( '.finished-input' ).last(),
-		scrollParent = self.scrollParent;
+		scrollParent = self.scrollParent,
+		prompt;
 		
-		self.callback = callback || $.noop;
+		self.order = order;
 		
 		// Set up the mutable history
 		self.current = 0;
 		self.mutable_history = self.history.slice();
 		self.mutable_history.unshift( '' );
 		
-		// Store the text style
-		self.style = style || '';
+		// Extract the prompt
+		prompt = /^([\s\S]+<br>)(.+?)$/.exec( laststruct.html() );
+		laststruct.html( prompt[1] );
+		prompt = $( '<span>' )
+			.html( prompt[2] )
+			.appendTo( laststruct );
 		
 		// Adjust the input's width and ensure it's empty
-		// -1 because it seems slightly too wide in FF4
+		// -5 because it seems slightly too wide in FF4
 		input
-			//.width( stream.width() - prompt.width() - 1 )
-			.val( '' )
-			.addClass( self.style );
+			.width( order.target.width() - prompt.width() - 5 )
+			.val( '' );
 		
-		prompt.append( self.form );
+		laststruct.append( self.form );
 		
 		// Scroll to the beginning of the last set of output
-		if ( lastInput.length )
-		{
-			scrollParent.scrollTop(
-				// The last input relative to the top of the document
-				lastInput.offset().top
-				// Minus the height of the top window
-				//- this.statuswin.height()
-				// Minus one further line
-				- lastInput.height()
-			);
-		}
+		scrollParent.scrollTop(
+			// The last input relative to the top of the document
+			self.lastinput.offset().top
+			// Minus the height of the top window
+			- this.statuswin.height()
+			// Minus one further line
+			- self.lastinput.height()
+		);
 	},
 	
 	// Submit the input data
@@ -213,10 +219,12 @@ window.TextInput = Object.subClass({
 	{
 		var self = this,
 		command = self.lineInput.val();
-			
-		// Hide the <form>, reset the styles
+		
+		// Attach the last input marker
+		self.lastinput.appendTo( self.form.parent() );
+		
+		// Hide the <form>
 		self.form.detach();
-		self.lineInput.removeClass( self.style );
 		
 		// Add this command to the history, as long as it's not the same as the last, and not blank
 		if ( command != self.history[0] && /\S/.test( command ) )
@@ -226,11 +234,14 @@ window.TextInput = Object.subClass({
 		
 		// Trigger a custom event for anyone listening in for commands
 		doc.trigger({
-			type: 'LineInput',
+			type: 'TextInput',
+			mode: 'line',
 			input: command
 		});
 		
-		self.callback( command );
+		self.order.response = command;
+		self.order.terminator = 13;
+		self.order.callback( self.order );
 	},
 	
 	// Get the previous/next command from history
@@ -253,12 +264,12 @@ window.TextInput = Object.subClass({
 	},
 	
 	// Get some input
-	getChar: function( callback )
+	getChar: function( order )
 	{
 		var self = this,
 		input = self.charInput;
 		
-		self.callback = callback || $.noop;
+		self.order = order;
 		
 		self.keyCode = self.charCode = 0;
 		
@@ -290,11 +301,13 @@ window.TextInput = Object.subClass({
 		
 		// Trigger a custom event for anyone listening in for key strokes
 		doc.trigger({
-			type: 'CharInput',
+			type: 'TextInput',
+			mode: 'char',
 			input: input
 		});
 		
-		self.callback( input );
+		self.order.response = input;
+		self.order.callback( self.order );
 	}
 });
 

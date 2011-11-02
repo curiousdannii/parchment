@@ -1,0 +1,52 @@
+/* 
+
+StructIO styles
+===============
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
+
+/* A generic line input editor */
+.LineInput
+{
+	display: inline;
+}
+
+.LineInput input
+{
+	background: none;
+	border: 0;
+	font: inherit;
+	outline: 0;
+	padding: 0;
+}
+
+/* A generic character input */
+.CharInput
+{
+	left: -99em;
+	position: absolute;
+}
+
+/* Text grid window */
+.TextGrid
+{
+	background: inherit;
+	position: fixed;
+}
+
+/* Reverse styled text. Add a little padding to the left and right ??? */
+/*.reverse
+{
+	padding: 0 2px;
+}*/
+
+tt
+{
+	font-family: monospace;
+	line-height: 1;
+	white-space: pre;
+}

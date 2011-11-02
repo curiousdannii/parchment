@@ -13,6 +13,7 @@ http://github.com/curiousdannii/ifvms.js
 	
 TODO:
 	Add a seeded RNG
+	Check when restoring that it's a savefile for this storyfile
 	
 */
 
@@ -33,6 +34,7 @@ window.ZVM = Object.subClass( {
 	{
 		var i,
 		locals_count,
+		old_locals_count = this.l.length,
 		
 		// Keep the number of provided args for @check_arg_count
 		provided_args = args.length;
@@ -53,14 +55,44 @@ window.ZVM = Object.subClass( {
 		this.l = args.concat( this.l );
 		
 		// Push the call stack (well unshift really)
-		this.call_stack.unshift( [ next, storer, locals_count, this.s.length, provided_args ] );
+		this.call_stack.unshift( [ next, storer, locals_count, this.s.length, provided_args, old_locals_count ] );
 	},
 	
-	// Object model functions
 	clear_attr: function( object, attribute )
 	{
 		var addr = this.objects + 14 * object + parseInt( attribute / 8 );
 		this.m.setUint8( addr, this.m.getUint8( addr ) & ~( 0x80 >> attribute % 8 ) );
+	},
+	
+	copy_table: function( first, second, size )
+	{
+		var memory = this.m,
+		i = 0,
+		allowcorrupt = size < 0,
+		temp;
+		size = Math.abs( size );
+		
+		// Simple case, zeroes
+		if ( second == 0 )
+		{
+			while ( i < size )
+			{
+				memory.setUint8( first + i++, 0 );
+			}
+			return;
+		}
+		
+		temp = memory.getBuffer( first, size );
+		memory.setBuffer( second, temp );
+		if ( !allowcorrupt )
+		{
+			memory.setBuffer( first, temp );
+		}
+	},
+	
+	encode_text: function( zscii, length, from, target )
+	{
+		this.m.setBuffer( target, this.text.encode( this.m.getBuffer( zscii + from, length ) ) );
 	},
 	
 	// Access the extension table
@@ -93,12 +125,6 @@ window.ZVM = Object.subClass( {
 		
 		this_property_byte = memory.getUint8( properties );
 		this_property = this_property_byte & 0x3F;
-		
-		// Simple case: find the first property
-		if ( prev == 0 )
-		{
-			return this_property;
-		}
 		
 		// Run through the properties
 		while (1)
@@ -139,42 +165,13 @@ window.ZVM = Object.subClass( {
 		}
 	},
 	
-	// Get the bigger sister object of an object (the one before it in the tree)
-	get_bigsis: function( obj )
-	{
-		var older = this.get_child( this.get_parent( obj ) ),
-		younger;
-		// Simple case: the object is the first child already
-		if ( older == obj )
-		{
-			return 0;
-		}
-		while (1)
-		{
-			younger = this.get_lilsis( older );
-			if ( younger == obj )
-			{
-				return older;
-			}
-			older = younger;
-		}
-	},
-	
-	
 	// Get the first child of an object
 	get_child: function( obj )
 	{
 		return this.m.getUint16( this.objects + 14 * obj + 10 );
 	},
 	
-	get_family: function( obj )
-	{
-		var parent = this.get_parent( obj );
-		return parent ? [ parent, this.get_child( parent ), this.get_lilsis( obj ), this.get_bigsis( obj ) ] : [0];
-	},
-	
-	// I.e., get the sibling of this object
-	get_lilsis: function( obj )
+	get_sibling: function( obj )
 	{
 		return this.m.getUint16( this.objects + 14 * obj + 8 );
 	},
@@ -232,13 +229,13 @@ window.ZVM = Object.subClass( {
 		var result, offset;
 		if ( varnum == 0 )
 		{
-			result = this.S2U( this.s.pop() + change );
+			result = S2U( this.s.pop() + change );
 			this.s.push( result );
 			return result;
 		}
 		if ( varnum < 16 )
 		{
-			return this.l[varnum - 1] = this.S2U( this.l[varnum - 1] + change );
+			return this.l[varnum - 1] = S2U( this.l[varnum - 1] + change );
 		}
 		else
 		{
@@ -303,6 +300,25 @@ window.ZVM = Object.subClass( {
 	print: function( text )
 	{
 		this.ui.print( text );
+	},
+	
+	print_obj: function( obj )
+	{
+		var proptable = this.m.getUint16( this.objects + 14 * obj + 12 );
+		this.print( this.text.decode( proptable + 1, this.m.getUint8( proptable ) * 2 ) );
+	},
+	
+	print_table: function( zscii, width, height, skip )
+	{
+		height = height || 1;
+		skip = skip || 0;
+		var i = 0;
+		while ( i < height )
+		{
+			this.print( '\n' + this.text.zscii_to_text( this.m.getBuffer( zscii, width ) ) );
+			zscii += width + skip;
+			i++;
+		}
 	},
 	
 	put_prop: function( object, property, value )
@@ -388,26 +404,116 @@ window.ZVM = Object.subClass( {
 	
 	remove_obj: function( obj )
 	{
-		// Is this the only call to get_family? Fold in here?
-		// Also get_bigsis is only called from get_family
-		var family = this.get_family( obj );
+		var parent = this.get_parent( obj ),
+		older_sibling,
+		younger_sibling,
+		temp_younger;
 		
 		// No parent, do nothing
-		if ( family[0] == 0 )
+		if ( parent == 0 )
 		{
 			return;
 		}
 		
+		older_sibling = this.get_child( parent );
+		younger_sibling = this.get_sibling( obj );
+		
 		// obj is first child
-		if ( family[1] == obj )
+		if ( older_sibling == obj )
 		{
-			this.set_family( obj, 0, family[0], family[2] );
+			this.set_family( obj, 0, parent, younger_sibling );
 		}
-		// obj isn't first child, so fix the bigsis
+		// obj isn't first child, so fix the older sibling
 		else
 		{
-			this.set_family( obj, 0, 0, 0, family[3], family[2] );
+			// Go through the tree until we find the older sibling
+			while ( 1 )
+			{
+				temp_younger = this.get_sibling( older_sibling );
+				if ( temp_younger == obj )
+				{
+					break;
+				}
+				older_sibling = temp_younger;
+			}
+			this.set_family( obj, 0, 0, 0, older_sibling, younger_sibling );
 		}
+	},
+	
+	restore: function( data )
+	{
+		var quetzal = new Quetzal( data ),
+		qmem = quetzal.memory,
+		qstacks = quetzal.stacks,
+		pc = quetzal.pc,
+		flags2 = this.m.getUint8( 0x11 ),
+		temp,
+		i = 0, j = 0,
+		call_stack = [],
+		newlocals = [],
+		newstack;
+		
+		// Memory chunk
+		this.m.setBuffer( 0, this.data.slice( 0, this.staticmem ) );
+		if ( quetzal.compressed )
+		{
+			while ( i < qmem.length )
+			{
+				temp = qmem[i++];
+				// Same memory
+				if ( temp == 0 )
+				{
+					j += 1 + qmem[i++];
+				}
+				else
+				{
+					this.m.setUint8( j, temp ^ this.data[j++] );
+				}
+			}
+		}
+		else
+		{
+			this.m.setBuffer( 0, quetzal.memory );
+		}
+		// Preserve flags 1
+		this.m.setUint8( 0x11, flags2 );
+		
+		// Stacks chunk
+		i = 6;
+		// Dummy call frame
+		temp = qstacks[i++] << 8 | qstacks[i++];
+		newstack = byte_to_word( qstacks.slice( i, temp ) );
+		// Regular frames
+		while ( i < qstacks.length )
+		{
+			call_stack.unshift( [
+				qstacks[i++] << 16 | qstacks[i++] << 8 | qstacks[i++], // pc
+				0, 0, newstack.length, 0, newlocals.length
+			] );
+			call_stack[0][1] = qstacks[i] & 0x10 ? -1 : qstacks[i + 1]; // storer
+			call_stack[0][2] = qstacks[i] & 0x0F; // local count
+			i += 2;
+			temp = qstacks[i++];
+			while ( temp )
+			{
+				call_stack[0][4]++; // provided_args - this is a stupid way to store it
+				temp >>= 1;
+			}
+			temp = qstacks[i++] << 8 | qstacks[i++]; // "eval" stack length
+			newlocals = byte_to_word( qstacks.slice( i, i + call_stack[0][2] ) ).concat( newlocals );
+			i += call_stack[0][2] * 2;
+			newstack = newstack.concat( byte_to_word( qstacks.slice( i, temp ) ) );
+		}
+		this.call_stack = call_stack;
+		this.l = newlocals
+		this.s = newstack;
+		
+		// Update the header
+		this.update_header();
+		
+		// Set the our storer
+		this.variable( this.m.getUint8( pc++ ), 2 );
+		this.pc = pc;
 	},
 	
 	restore_undo: function()
@@ -446,6 +552,90 @@ window.ZVM = Object.subClass( {
 		}
 	},
 	
+	// pc must be the address of the storer operand
+	save: function( pc, storer )
+	{
+		var memory = this.m,
+		stack = this.s,
+		locals = this.l,
+		quetzal = new Quetzal(),
+		compressed_mem = [],
+		i, j,
+		abyte,
+		zeroes = 0,
+		call_stack = this.call_stack.reverse(),
+		frame,
+		stack_len,
+		stacks = [ 0, 0, 0, 0, 0, 0 ]; // Dummy call frame
+		
+		// IFhd chunk
+		quetzal.release = memory.getBuffer( 0x02, 2 );
+		quetzal.serial = memory.getBuffer( 0x12, 6 );
+		quetzal.checksum = memory.getBuffer( 0x1C, 2 );
+		quetzal.pc = pc;
+		
+		// Memory chunk
+		quetzal.compressed = 1;
+		for ( i = 0; i < this.staticmem; i++ )
+		{
+			abyte = memory.getUint8( i ) ^ this.data[i];
+			if ( abyte == 0 )
+			{
+				if ( ++zeroes == 256 )
+				{
+					compressed_mem.push( 0, 255 );
+					zeroes = 0;
+				}
+			}
+			else
+			{
+				if ( zeroes )
+				{
+					compressed_mem.push( 0, zeroes - 1 );
+					zeroes = 0;
+				}
+				compressed_mem.push( abyte );
+			}
+		}
+		quetzal.memory = compressed_mem;
+		
+		// Stacks
+		// Finish the dummy call frame
+		stacks.push( call_stack[0][3] >> 8, call_stack[0][3] & 0xFF );
+		for ( j = 0; j < call_stack[0][3]; j++ )
+		{
+			stacks.push( stack[j] >> 8, stack[j] & 0xFF );
+		}
+		for ( i = 0; i < call_stack.length; i++ )
+		{
+			frame = call_stack[i];
+			stack_len = ( call_stack[i + 1] ? call_stack[i + 1][3] : stack.length ) - frame[3];
+			stacks.push(
+				frame[0] >> 16, frame[0] >> 8 & 0xFF, frame[0] & 0xFF, // pc
+				frame[2] | ( frame[1] < 0 ? 0x10 : 0 ), // locals count and flag for no storer
+				frame[1] < 0 ? 0 : frame[1], // storer
+				( 1 << frame[4] ) - 1, // provided args
+				stack_len >> 8, stack_len & 0xFF // this frame's stack length
+			);
+			// Locals
+			for ( j = locals.length - frame[5] - frame[2]; j < locals.length - frame[5]; j++ )
+			{
+				stacks.push( locals[j] >> 8, locals[j] & 0xFF );
+			}
+			// The stack
+			for ( j = frame[3]; j < frame[3] + stack_len; j++ )
+			{
+				stacks.push( stack[j] >> 8, stack[j] & 0xFF );
+			}
+		}
+		call_stack.reverse();
+		quetzal.stacks = stacks;
+		
+		// Set the variable now, the AST can't set it before an output event
+		this.variable( storer, 1 );
+		this.act( 'save', { data: quetzal.write() } );
+	},
+	
 	save_undo: function( pc, variable )
 	{
 		this.undo.push( [
@@ -457,6 +647,24 @@ window.ZVM = Object.subClass( {
 			this.call_stack.slice()
 		] );
 		return 1;
+	},
+	
+	scan_table: function( key, addr, length, form )
+	{
+		form = form || 0x82;
+		var memoryfunc = form & 0x80 ? this.m.getUint16 : this.m.getUint8;
+		form &= 0x7F;
+		length = addr + length * form;
+		
+		while ( addr < length )
+		{
+			if ( memoryfunc( addr ) == key )
+			{
+				return addr;
+			}
+			addr += form;
+		}
+		return 0;
 	},
 	
 	set_attr: function( object, attribute )
