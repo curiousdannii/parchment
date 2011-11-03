@@ -13,6 +13,7 @@ http://github.com/curiousdannii/ifvms.js
 	
 TODO:
 	default background/foreground colours
+	Does set_window really need to send a find command?
 	
 */
 

@@ -14,6 +14,7 @@ http://github.com/curiousdannii/ifvms.js
 TODO:
 	loops
 		doesn't work yet because of storers before the branch
+		Need loops where the condition is at the end -> do {} while ()
 	break (& continue?)
 	when opcodes are removed, if debug then add a comment
 	The @jump check isn't VM independant

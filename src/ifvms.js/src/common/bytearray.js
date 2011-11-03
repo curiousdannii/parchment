@@ -23,7 +23,8 @@ Todo:
 
 ;;; console.log( 'bytearray.js: ' + ( window.DataView ? 'Native DataView' : 'Emulating DataView' ) );
 
-var native_bytearrays = window.DataView,
+//var native_bytearrays = window.DataView,
+var native_bytearrays = 0,
 
 ByteArray = native_bytearrays ?
 	// Converts the data to a buffer and then initiates a DataView on it

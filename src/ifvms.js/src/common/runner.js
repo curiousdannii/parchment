@@ -21,6 +21,7 @@ var Runner = Object.subClass({
 		// Set the appropriate event handlers
 		this.inputEvent = function( event ) { engine.inputEvent( event ); };
 		io.input = this.inputEvent;
+		io.TextInput.callback = io.input;
 		engine.outputEvent = function( event ) { self.outputEvent( event ); };
 		
 		// Start it up

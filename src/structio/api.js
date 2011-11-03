@@ -47,8 +47,7 @@ $.cssHooks.reverse = {
 			$elem.css({
 				color: background,
 				'background-color': foreground
-			})
-				.addClass( 'reverse' );
+			});
 		}
 	}
 };
@@ -150,7 +149,6 @@ window.StructIO = Object.subClass({
 			// Line input
 			if ( code == 'read' )
 			{
-				order.callback = this.input;
 				order.target = target;
 				this.TextInput.getLine( order );
 			}
@@ -158,7 +156,6 @@ window.StructIO = Object.subClass({
 			// Character input
 			if ( code == 'char' )
 			{
-				order.callback = this.input;
 				this.TextInput.getChar( order );
 			}
 		}

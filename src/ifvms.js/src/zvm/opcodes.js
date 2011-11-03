@@ -14,7 +14,6 @@ http://github.com/curiousdannii/ifvms.js
 TODO:
 	Abstract out the signed conversions such that they can be eliminated if possible
 	don't access memory directly
-	@catch
 	@get_cursor
 	@throw
 	
@@ -125,7 +124,7 @@ opcodes = {
 /* nop */ 180: Opcode,
 /* restart */ 183: opcode_builder( Stopper, function() { return 'e.act("restart")'; } ),
 /* ret_popped */ 184: opcode_builder( Stopper, function( a ) { return 'e.ret(' + a.write() + ')'; }, { post: function() { this.operands.push( new Variable( this.e, 0 ) ); } } ),
-/* catch */ //185: opcode_builder( Storer, function() { return 'e.call_stack.length'; } ),
+/* catch */ 185: opcode_builder( Storer, function() { return 'e.call_stack.length'; } ),
 /* quit */ 186: opcode_builder( Stopper, function() { return 'e.act("quit")'; } ),
 /* new_line */ 187: opcode_builder( Opcode, function() { return 'e.print("\\n")'; } ),
 /* verify */ 189: alwaysbranch, // Actually check??

@@ -9,25 +9,21 @@ http://code.google.com/p/parchment
 
 */
 
-/* A generic line input editor */
-.LineInput
-{
-	display: inline;
-}
-
-.LineInput input
+/* Line input */
+.TextInput
 {
 	background: none;
 	border: 0;
+	display: inline;
 	font: inherit;
 	outline: 0;
 	padding: 0;
 }
 
-/* A generic character input */
+/* Character input (to be added to the above) */
 .CharInput
 {
-	left: -99em;
+	left: -999em;
 	position: absolute;
 }
 
@@ -37,12 +33,6 @@ http://code.google.com/p/parchment
 	background: inherit;
 	position: fixed;
 }
-
-/* Reverse styled text. Add a little padding to the left and right ??? */
-/*.reverse
-{
-	padding: 0 2px;
-}*/
 
 tt
 {
