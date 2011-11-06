@@ -14,8 +14,6 @@ http://github.com/curiousdannii/ifvms.js
 TODO:
 	Abstract out the signed conversions such that they can be eliminated if possible
 	don't access memory directly
-	@get_cursor
-	@throw
 	
 */
 
@@ -69,6 +67,23 @@ Indirect = Storer.subClass({
 	func: simple_func
 }),
 
+Incdec = Opcode.subClass({
+	func: function( variable )
+	{
+		var varnum = variable.v - 1,
+		operator = this.code % 2 ? 1 : -1;
+		
+		// Fallback to the runtime function if our variable is a variable operand itself
+		// Or, if it's a global
+		if ( variable instanceof Variable || varnum > 14 )
+		{
+			return 'e.incdec(' + variable.write() + ',' + operator + ')';
+		}
+		
+		return varnum < 0 ? 'e.s[e.s.length]=e.S2U(e.s[e.s.length]+' : ( 'e.l[' + varnum + ']=e.S2U(e.l[' + varnum + ']+' ) + operator + ')';
+	}
+}),
+
 opcodes = {
 	
 /* je */ 1: opcode_builder( Brancher, function() { return arguments.length == 2 ? this.args( '==' ) : 'e.jeq(' + this.args() + ')'; } ),
@@ -99,14 +114,14 @@ opcodes = {
 /* call_2s */ 25: CallerStorer,
 /* call_2n */ 26: Caller,
 /* set_colour */ 27: opcode_builder( Opcode, function() { return 'e.ui.set_colour(' + this.args() + ')'; } ),
-/* throw */
+/* throw */ 28: opcode_builder( Stopper, function( value, cookie ) { return 'while(e.call_stack.length>' + cookie.write() + '){e.call_stack.shift()}e.ret(' + value.write() + ')'; } ),
 /* jz */ 128: opcode_builder( Brancher, function( a ) { return a.write() + '==0'; } ),
 /* get_sibling */ 129: opcode_builder( BrancherStorer, function( obj ) { return this.storer.write( 'e.get_sibling(' + obj.write() + ')' ); } ),
 /* get_child */ 130: opcode_builder( BrancherStorer, function( obj ) { return this.storer.write( 'e.get_child(' + obj.write() + ')' ); } ),
 /* get_parent */ 131: opcode_builder( Storer, function( obj ) { return 'e.get_parent(' + obj.write() + ')'; } ),
 /* get_prop_length */ 132: opcode_builder( Storer, function( a ) { return 'e.get_prop_len(' + a.write() + ')'; } ),
-/* inc */ 133: opcode_builder( Opcode, function( a ) { return 'e.incdec(' + a.write() + ',1)'; } ),
-/* dec */ 134: opcode_builder( Opcode, function( a ) { return 'e.incdec(' + a.write() + ',-1)'; } ),
+/* inc */ 133: Incdec,
+/* dec */ 134: Incdec,
 /* print_addr */ 135: opcode_builder( Opcode, function( addr ) { return 'e.print(e.text.decode(' + addr.write() + '))'; } ),
 /* call_1s */ 136: CallerStorer,
 /* remove_obj */ 137: opcode_builder( Opcode, function( obj ) { return 'e.remove_obj(' + obj.write() + ')'; } ),
@@ -143,12 +158,12 @@ opcodes = {
 /* set_window */ 235: opcode_builder( Opcode, function() { return 'e.ui.set_window(' + this.args() + ')'; } ),
 /* call_vs2 */ 236: CallerStorer,
 /* erase_window */ 237: opcode_builder( Opcode, function( win ) { return 'e.ui.erase_window(' + win.U2S() + ')'; } ),
-/* erase_line */ 238: opcode_builder( Opcode, function() { return 'if(' + this.args() + '){e.ui.flush();e.ui.status.push({code:"eraseline"})}'; } ),
-/* set_cursor */ 239: opcode_builder( Opcode, function() { return 'e.ui.flush();e.ui.status.push({code:"cursor",to:[' + this.args() + ']})'; } ),
-/* get_cursor */
+/* erase_line */ 238: opcode_builder( Opcode, function() { return 'e.ui.erase_line(' + this.args() + ')'; } ),
+/* set_cursor */ 239: opcode_builder( Opcode, function() { return 'e.ui.set_cursor(' + this.args() + ')'; } ),
+/* get_cursor */ 240: opcode_builder( Pauser, function() { return 'e.ui.get_cursor(' + this.args() + ')'; } ),
 /* set_text_style */ 241: opcode_builder( Opcode, function( stylebyte ) { return 'e.ui.set_style(' + stylebyte.write() + ')'; } ),
 /* buffer_mode */ 242: Opcode, // We don't support non-buffered output
-/* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.ui.output_stream(' + this.args() + ')'; } ),
+/* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.output_stream(' + this.args() + ')'; } ),
 /* input_stream */ 244: Opcode, // We don't support changing the input stream
 /* sound_effect */ 245: Opcode, // We don't support sounds
 /* read_char */ 246: opcode_builder( Pauser, function() { return 'e.read_char(' + this.args() + ',' + this.storer.v + ')'; } ),

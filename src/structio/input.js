@@ -16,6 +16,7 @@ TODO:
 	Is an input actually needed for char input? Just listen on the doc?
 		-> mobiles might need one.
 	Page up/down doesn't work in Chrome
+	Support input when some is given already
 
 */
 

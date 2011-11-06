@@ -34,6 +34,14 @@ http://code.google.com/p/parchment
 	position: fixed;
 }
 
+/* Main window */
+.main
+{
+	/* Extra padding in case some serifs stick outside the status window */
+	padding: 0 1px;
+}
+
+/* Monospace text */
 tt
 {
 	font-family: monospace;

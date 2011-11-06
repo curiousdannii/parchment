@@ -18,47 +18,30 @@ parchment.vms.gnusto = {
 	// Files to load
 	files: [
 		/* DEBUG */
+			'../src/ifvms.js/src/zvm/quetzal.js',
 			'../src/gnusto/engine/gnusto-engine.js',
-			'../src/plugins/quetzal.js',
-			'../src/gnusto/runner/runner.js',
-			'../src/gnusto/runner/console.js',
-			'../src/gnusto/runner/zui.js',
-			//'../src/gnusto/runner/zmachine.css'
+			'../src/gnusto/runner.js'
 		/* ELSEDEBUG
-			'gnusto.min.js',
-			'zmachine.min.js',
-			//'gnusto.min.css'
+			'gnusto.min.js'
 		/* ENDDEBUG */
 		],
 	
 	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
-	launcher: function( story )
+	launcher: function( args )
 	{
-		// Switch on the styles
-		//story[2].library.ui.stylesheet_switch( 'gnusto', 1 );
+		// De-blorbify
+		var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
 		
-		// Chrome is silly and doesn't let us simply reference console.log()
-		// PLUS Only supports a single argument :(
-		var logfunc = window.console && function( msg ) { console.log( msg ); } || function(){},
-		jqXHR = story[2],
-
-		engine = new GnustoEngine( logfunc ),
-		zui = new parchment.lib.ZUI( jqXHR.library, engine, logfunc ),
-		runner = new EngineRunner( engine, zui, logfunc ),
-
-		mystory = new parchment.lib.Story( jqXHR.responseArray, storyName ),
-		savefile = location.hash;
+		// Load it up!
+		window.engine = new GnustoEngine( window.console && function() { console.log( msg ); } || function(){} );
+		window.runner = new GnustoRunner( engine, new StructIO( parchment.options.container ), mystory.zcode );
 		
-		logfunc( "Story type: " + mystory.filetype )
-		mystory.load( engine );
-
+		/* savefile = location.hash
 		if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
 		{
 			engine.loadSavedGame( file.base64_decode( savefile.slice(1)));
 			logfunc( 'Loading savefile' );
-		}
-
-		runner.run();
+		}*/
 	}
 };
 parchment.vms.push( parchment.vms.gnusto );

@@ -117,6 +117,13 @@ var ZVM_core = {
 			this.variable( data.storer, this.text.keyinput( data.response ) );
 		}
 		
+		// Write the status window's cursor position
+		if ( code == 'get_cursor' )
+		{
+			memory.setUint16( data.addr, data.pos[0] );
+			memory.setUint16( data.addr + 2, data.pos[1] );
+		}
+		
 		// Resume normal operation
 		this.run();
 	},
@@ -154,6 +161,7 @@ var ZVM_core = {
 			
 			// IO stuff
 			orders: [],
+			streams: [ 1, 0, [], 0 ],
 			
 			// Get some header variables
 			version: version,
@@ -171,7 +179,7 @@ var ZVM_core = {
 		});
 		// These classes rely too much on the above, so add them after
 		extend( this, {
-			ui: new UI( this ),
+			ui: new ZVMUI( this, memory.getUint8( 0x11 ) & 0x02 ),
 			text: new Text( this )
 		});
 		

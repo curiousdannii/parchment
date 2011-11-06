@@ -10,15 +10,30 @@ http://github.com/curiousdannii/ifvms.js
 */
 
 /*
-	
+
+Note: is used by both ZVM and Gnusto. In the case of Gnusto the engine is actually GnustoRunner.
+
 TODO:
 	default background/foreground colours
 	Does set_window really need to send a find command?
+	Either stop setting undefined styles, or change extend() to ignore undefineds?
 	
 */
 
+(function( window, undefined ){
+
+// Utility to extend objects
+var extend = function( old, add )
+{
+	for ( var name in add )
+	{
+		old[name] = add[name];
+	}
+	return old;
+},
+
 // Standard colours
-var colours = [
+colours = [
 	-2,
 	0xFFFF,
 	0x0000,
@@ -48,24 +63,23 @@ convert_true_colour = function( colour )
 		newcolour = '0' + newcolour;
 	}
 	return '#' + newcolour;
-},
+};
 
-UI = Object.subClass({
-	init: function( engine )
+window.ZVMUI = Object.subClass({
+	init: function( engine, headerbit )
 	{
 		this.e = engine;
 		this.buffer = '';
 		this.styles = {};
-		this.streams = [ 1, 0, [], 0 ];
 		// Bit 0 is for @set_style, bit 1 for the header, and bit 2 for @set_font
-		this.mono = engine.m.getUint8( 0x11 ) & 0x02;
+		this.mono = headerbit;
 		
 		// Upper window stuff
 		this.currentwin = 0;
 		this.status = []; // Status window orders
 		
 		// Construct the basic windows
-		this.e.orders.push(
+		engine.orders.push(
 			{
 				code: 'stream',
 				name: 'status'
@@ -89,6 +103,15 @@ UI = Object.subClass({
 			name: window ? 'status' : 'main',
 			css: extend( {}, this.styles )
 		});
+	},
+	
+	erase_line: function( value )
+	{
+		if ( value == 1 )
+		{
+			this.flush();
+			this.status.push( { code: "eraseline" } );
+		}
 	},
 	
 	erase_window: function( window )
@@ -133,63 +156,29 @@ UI = Object.subClass({
 		}
 	},
 	
-	// Manage output streams
-	output_stream: function( stream, addr )
+	get_cursor: function( array )
 	{
-		stream = U2S( stream );
-		if ( stream == 1 )
-		{
-			this.streams[0] = 1;
-		}
-		if ( stream == -1 )
-		{
-			;;; console.info( 'Disabling stream one - it actually happened!' );
-			this.streams[0] = 0;
-		}
-		if ( stream == 3 )
-		{
-			this.streams[2].unshift( [ addr, '' ] );
-		}
-		if ( stream == -3 )
-		{
-			var data = this.streams[2].shift(),
-			text = this.e.text.text_to_zscii( data[1] );
-			this.e.m.setUint16( data[0], text.length );
-			this.e.m.setBuffer( data[0] + 2, text );
-		}
-	},
-	
-	// Print text!
-	print: function( text )
-	{
-		// Stream 3 gets the text first
-		if ( this.streams[2].length )
-		{
-			this.streams[2][0][1] += text;
-		}
-		// Don't print if stream 1 was switched off (why would you do that?!)
-		else if ( this.streams[0] )
-		{
-			// Check if the monospace font bit has changed
-			// Unfortunately, even now Inform changes this bit for the font statement, even though the 1.1 standard depreciated it :(
-			var fontbit = this.e.m.getUint8( 0x11 ) & 0x02;
-			if ( fontbit != ( this.mono & 0x02 ) )
-			{
-				// Flush if we're actually changing font (ie, the other bits are off)
-				if ( !( this.mono & 0xFD ) )
-				{
-					this.flush();
-				}
-				this.mono ^= 0x02;
-			}
-			this.buffer += text;
-		}
+		// act() will flush
+		this.status.push({
+			code: 'get_cursor',
+			addr: array
+		});
+		this.e.act();
 	},
 	
 	// Set basic colours
 	set_colour: function( foreground, background )
 	{
 		this.set_true_colour( colours[foreground], colours[background] );
+	},
+	
+	set_cursor: function( row, col )
+	{
+		this.flush();
+		this.status.push({
+			code: 'cursor',
+			to: [row, col]
+		});
 	},
 	
 	set_font: function( font )
@@ -290,3 +279,5 @@ UI = Object.subClass({
 		});
 	}
 });
+
+})( this );

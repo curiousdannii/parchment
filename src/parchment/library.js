@@ -25,7 +25,12 @@ rjs = /\.js$/,
 
 // Callback to show an error if a VM's dependant scripts could be successfully loaded
 story_get_fail = function(){
-	throw new FatalError( 'Parchment could not load load the story. Check your connection, and that the URL is correct.' );
+	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
+},
+
+hide_load_indicator = function()
+{
+	$( '.load' ).detach();
 };
 
 // Callback to show an error if a VM's dependant scripts could be successfully loaded
@@ -148,14 +153,7 @@ parchment.lib.Story = IFF.subClass({
 /*		else
 			// Not a story file
 			this.filetype = 'error unknown general';
-*/	},
-
-	// Load zcode into engine
-	load: function loadIntoEngine(engine)
-	{
-		if (this.zcode)
-			engine.loadStory(this.zcode);
-	}
+*/	}
 });
 
 // Story file cache
@@ -332,6 +330,7 @@ Library = Object.subClass({
 		
 		// Add the launcher callback
 		$.when.apply( 1, actions )
+			.done( hide_load_indicator )
 			.done( vm.launcher );
 	},
 

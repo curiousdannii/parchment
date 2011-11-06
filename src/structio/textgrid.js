@@ -34,7 +34,7 @@ var TextGrid = Object.subClass({
 		this.io.TextInput.statuswin = this.elem;
 		this.lines = [];
 		this.styles = [];
-		this.cursor = [0, 0];
+		this.cursor = [0, 0]; // row, col
 		this.blankline = Array( this.io.env.width + 1 ).join( ' ' );
 	},
 	
@@ -79,6 +79,12 @@ var TextGrid = Object.subClass({
 			{
 				row = order.to[0] - 1;
 				col = order.to[1] - 1;
+			}
+			
+			if ( code == 'get_cursor' )
+			{
+				order.pos = [row, col];
+				this.io.input( order );
 			}
 			
 			// Add text to the grid

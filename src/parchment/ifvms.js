@@ -15,9 +15,6 @@ var ifvms_launcher = function( args )
 	// De-blorbify
 	var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
 	
-	// Hide load indicator
-	jQuery( '.load' ).detach();
-	
 	// Load it up!
 	window.engine = new window[args[2].vm.Class]();
 	window.runner = new Runner( engine, new StructIO( parchment.options.container ), mystory.zcode );
@@ -38,7 +35,7 @@ parchment.vms.zvm = {
 				'../src/ifvms.js/src/common/ast.js',
 				'../src/ifvms.js/src/zvm/quetzal.js',
 				'../src/ifvms.js/src/zvm/text.js',
-				'../src/ifvms.js/src/zvm/ui.js',
+				//'../src/ifvms.js/src/zvm/ui.js',
 				'../src/ifvms.js/src/zvm/opcodes.js',
 				'../src/ifvms.js/src/common/idioms.js',
 				'../src/ifvms.js/src/zvm/disassembler.js',

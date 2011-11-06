@@ -1,15 +1,15 @@
 /*
 
-ifvms.js VM runner
+StructIO runner
 ==================
 
-Copyright (c) 2011 The ifvms.js team
+Copyright (c) 2011 The Parchment Contributors
 BSD licenced
-http://github.com/curiousdannii/ifvms.js
+http://code.google.com/p/parchment
 
 */
 
-// A basic ifvms.js runner
+// A basic StructIO runner
 var Runner = Object.subClass({
 
 	init: function( engine, io, data )
@@ -20,8 +20,7 @@ var Runner = Object.subClass({
 		
 		// Set the appropriate event handlers
 		this.inputEvent = function( event ) { engine.inputEvent( event ); };
-		io.input = this.inputEvent;
-		io.TextInput.callback = io.input;
+		io.TextInput.callback = this.inputEvent;
 		engine.outputEvent = function( event ) { self.outputEvent( event ); };
 		
 		// Start it up
@@ -34,7 +33,7 @@ var Runner = Object.subClass({
 			env: io.env
 		});
 	},
-
+	
 	// Handler for output events from the VM
 	outputEvent: function( orders )
 	{

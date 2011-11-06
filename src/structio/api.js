@@ -14,7 +14,9 @@ http://code.google.com/p/parchment
 TODO:
 	Timed input
 	input terminators
-	Determine the width properly
+	Listen for the window being resized to smaller than the current width
+	Allow the window to be drag-resized
+	Detect that position: fixed doesn't work
 
 */
 
@@ -95,9 +97,20 @@ window.StructIO = Object.subClass({
 				func: function( elem, io ) { new TextGrid( elem, io ); }
 			}
 		};
+		
+		// Calculate the width we want
+		var charwidthelem = $( '<tt>00000</tt>' )
+			.appendTo( element ),
+		charwidth = charwidthelem.width() / 5,
+		widthinchars = Math.min( Math.floor( element.width() / charwidth ), 80 );
+		charwidthelem.remove();
+		
 		this.env = {
-			width: 80
+			width: widthinchars
 		};
+		this.charwidth = charwidth;
+		this.width = widthinchars * charwidth;
+		element.width( this.width );
 	},
 	
 	// Process some output events
