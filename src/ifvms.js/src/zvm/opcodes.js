@@ -80,7 +80,7 @@ Incdec = Opcode.subClass({
 			return 'e.incdec(' + variable.write() + ',' + operator + ')';
 		}
 		
-		return varnum < 0 ? 'e.s[e.s.length]=e.S2U(e.s[e.s.length]+' : ( 'e.l[' + varnum + ']=e.S2U(e.l[' + varnum + ']+' ) + operator + ')';
+		return ( varnum < 0 ? 'e.s[e.s.length-1]=e.S2U(e.s[e.s.length-1]+' : ( 'e.l[' + varnum + ']=e.S2U(e.l[' + varnum + ']+' ) ) + operator + ')';
 	}
 }),
 

@@ -2,7 +2,7 @@
 // The Gnusto JavaScript Z-machine library.
 // $Header: /cvs/gnusto/src/xpcom/engine/gnusto-engine.js,v 1.116 2005/04/26 01:50:32 naltrexone42 Exp $
 //
-// Copyright (c) 2003-2009 The Gnusto Contributors
+// Copyright (c) 2003-2011 The Gnusto Contributors
 //
 // The latest code is available at http://github.com/curiousdannii/gnusto/
 //
@@ -905,7 +905,7 @@ function handleZ_print_char(engine, a) {
     return engine._handler_zOut('_zscii_char_to_ascii('+a[0]+')',0);
 }
 function handleZ_print_num(engine, a) {
-    return engine._handler_zOut('_unsigned2signed('+a[0]+')',0);
+    return engine._handler_zOut('""+_unsigned2signed('+a[0]+')',0);
 }
 function handleZ_random(engine, a) {
     return engine._storer("_random_number("+a[0]+")");

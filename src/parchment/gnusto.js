@@ -19,6 +19,7 @@ parchment.vms.gnusto = {
 	files: [
 		/* DEBUG */
 			'../src/ifvms.js/src/zvm/quetzal.js',
+			'../src/gnusto/remedial.js',
 			'../src/gnusto/engine/gnusto-engine.js',
 			'../src/gnusto/runner.js'
 		/* ELSEDEBUG

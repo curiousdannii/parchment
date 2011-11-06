@@ -116,7 +116,7 @@ var GnustoRunner = Object.subClass({
 			}
 			if ( effect == GNUSTO_EFFECT_QUIT )
 			{
-				return;
+				stop = 1;
 			}
 			if ( effect == GNUSTO_EFFECT_RESTART )
 			{
