@@ -15,7 +15,6 @@ Note:
 	Nothing is done to check whether an instruction actually has a valid number of operands. Extras will usually be ignored while missing operands may throw errors at either the code building stage or when the JIT code is called.
 
 TODO:
-	implement proper errors for missing opcodes
 	If we diassessemble part of what we already have before, can we just copy/slice the context?
 	
 */
@@ -85,13 +84,11 @@ var disassemble = function( engine )
 		}
 		
 		// Check for missing opcodes
-		// TODO: implement proper errors here
 		if ( !opcodes[code] )
 		{
-			console.log('Missing opcode #' + code + ' at pc=' + offset);
-			console.log( context.write() );
+			;;; console.log( '' + context );
 			engine.stop = 1;
-			throw Error;
+			throw new Error( 'Unknown opcode #' + code + ' at pc=' + offset );
 		}
 		
 		// Variable for quicker access to the opcode flags

@@ -66,6 +66,7 @@ window.ZVM = Object.subClass( {
 	
 	copy_table: function( first, second, size )
 	{
+		size = U2S( size );
 		var memory = this.m,
 		i = 0,
 		allowcorrupt = size < 0,
@@ -82,10 +83,17 @@ window.ZVM = Object.subClass( {
 			return;
 		}
 		
-		temp = memory.getBuffer( first, size );
-		memory.setBuffer( second, temp );
-		if ( !allowcorrupt )
+		if ( allowcorrupt )
 		{
+			while ( i < size )
+			{
+				memory.setUint8( second + i, memory.getUint8( first + i++ ) );
+			}
+		}
+		else
+		{
+			temp = memory.getBuffer( first, size );
+			memory.setBuffer( second, temp );
 			memory.setBuffer( first, temp );
 		}
 	},
@@ -519,7 +527,7 @@ window.ZVM = Object.subClass( {
 		}
 		else
 		{
-			this.m.setBuffer( 0, quetzal.memory );
+			this.m.setBuffer( 0, qmem );
 		}
 		// Preserve flags 1
 		this.m.setUint8( 0x11, flags2 );
@@ -557,7 +565,7 @@ window.ZVM = Object.subClass( {
 		// Update the header
 		this.update_header();
 		
-		// Set the our storer
+		// Set the storer
 		this.variable( this.m.getUint8( pc++ ), 2 );
 		this.pc = pc;
 	},

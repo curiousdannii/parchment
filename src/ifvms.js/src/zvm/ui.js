@@ -15,19 +15,21 @@ Note: is used by both ZVM and Gnusto. In the case of Gnusto the engine is actual
 
 TODO:
 	default background/foreground colours
-	Does set_window really need to send a find command?
-	Either stop setting undefined styles, or change extend() to ignore undefineds?
 	
 */
 
-(function( window, undefined ){
+var ZVMUI = (function( undefined ){
 
 // Utility to extend objects
 var extend = function( old, add )
 {
 	for ( var name in add )
 	{
-		old[name] = add[name];
+		// Don't copy cleared styles
+		if ( add[name] != undefined )
+		{
+			old[name] = add[name];
+		}
 	}
 	return old;
 },
@@ -65,7 +67,7 @@ convert_true_colour = function( colour )
 	return '#' + newcolour;
 };
 
-window.ZVMUI = Object.subClass({
+return Object.subClass({
 	init: function( engine, headerbit )
 	{
 		this.e = engine;
@@ -95,12 +97,12 @@ window.ZVMUI = Object.subClass({
 		);
 	},
 	
-	// Actually clear a window, called by the opcode handler below
-	clear_window: function( window )
+	// Clear the lower window
+	clear_window: function()
 	{
 		this.e.orders.push({
 			code: 'clear',
-			name: window ? 'status' : 'main',
+			name: 'main',
 			css: extend( {}, this.styles )
 		});
 	},
@@ -117,19 +119,17 @@ window.ZVMUI = Object.subClass({
 	erase_window: function( window )
 	{
 		this.flush();
+		if ( window < 1 )
+		{
+			this.clear_window();
+		}
 		if ( window == -1 )
 		{
 			this.split_window( 0 );
-			this.clear_window( 0 );
 		}
-		if ( window == -2 )
+		if ( window == -2 || window == 1 )
 		{
-			this.clear_window( 0 );
-			this.clear_window( 1 );
-		}
-		else
-		{
-			this.clear_window( window );
+			this.status.push( { code: "clear" } );
 		}
 	},
 	
@@ -177,7 +177,7 @@ window.ZVMUI = Object.subClass({
 		this.flush();
 		this.status.push({
 			code: 'cursor',
-			to: [row, col]
+			to: [row - 1, col - 1]
 		});
 	},
 	
@@ -268,6 +268,13 @@ window.ZVMUI = Object.subClass({
 			code: 'find',
 			name: window ? 'status' : 'main'
 		});
+		if ( window )
+		{
+			this.status.push({
+				code: 'cursor',
+				to: [0, 0]
+			});
+		}
 	},
 	
 	split_window: function( lines )
@@ -280,4 +287,4 @@ window.ZVMUI = Object.subClass({
 	}
 });
 
-})( this );
+})();

@@ -9,12 +9,23 @@ http://code.google.com/p/parchment
 
 */
 
+/*
+
+TODO:
+	Support Workers
+	Support errors in the Worker-like protocol
+
+*/
+
 // A basic StructIO runner
 var Runner = Object.subClass({
 
 	init: function( engine, io, data )
 	{
 		var self = this;
+		// engine is only a class, so make an instance now
+		engine = new engine();
+		window.engine = engine;
 		this.e = engine;
 		this.io = io;
 		

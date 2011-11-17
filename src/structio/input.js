@@ -17,6 +17,8 @@ TODO:
 		-> mobiles might need one.
 	Page up/down doesn't work in Chrome
 	Support input when some is given already
+	Adjust styles so that the padding belongs to the input and the window scrolls all the way to the bottom when focused
+	Scroll to sensible place for char input
 
 */
 
@@ -150,6 +152,7 @@ window.TextInput = Object.subClass({
 			// Or if the cursor is too far below the viewport
 				$window.scrollTop() + $window.height() - input.offset().top > -60 )
 			{
+				window.scrollTo( 0, window.scrollMaxY );
 				input.focus()
 					.trigger( ev );
 			}
@@ -196,7 +199,7 @@ window.TextInput = Object.subClass({
 		if ( prompt )
 		{
 			laststruct.html( prompt[1] );
-			prompt = $( '<span>' )
+			prompt = laststruct.clone()
 				.html( prompt[2] )
 				.appendTo( laststruct );
 		}
@@ -206,12 +209,11 @@ window.TextInput = Object.subClass({
 		}
 		
 		// Adjust the input's width and ensure it's empty
-		// -5 because it seems slightly too wide in FF4
-		// Consider the prompt's left offset in case it is only part of the line
 		input
-			.width( order.target.width() - prompt.offset().left - prompt.width() - 5 )
+			.width( 20 )
 			.val( '' )
-			.appendTo( laststruct );
+			.appendTo( prompt )
+			.width( order.target.offset().left + order.target.width() - input.offset().left );
 		
 		// Scroll to the beginning of the last set of output
 		scrollParent.scrollTop(

@@ -22,6 +22,17 @@ TODO:
 
 (function( $, undefined ){
 
+var extend = function( old, add )
+{
+	for ( var name in add )
+	{
+		old[name] = add[name];
+	}
+	return old;
+},
+
+$body = $( 'body' );
+
 // Subclass jQuery
 // No point until subclasses support their own csshooks
 //var $ = originaljQuery.sub();
@@ -40,9 +51,11 @@ $.cssHooks.reverse = {
 			$elem.add( $elem.parents() )
 				.each( function() {
 					var mybackground = $( this ).css( 'background-color' );
-					if ( !background && mybackground && mybackground != 'transparent' && mybackground != 'inherit' )
+					// Check for inherit or transparent, including in the form of an rgba with 0 alpha
+					if ( mybackground && !/inh|tra|(\d+, ?){3}0/.test( mybackground ) )
 					{
 						background = mybackground;
+						return false;
 					}
 				});
 			// Now swap them!
@@ -54,18 +67,35 @@ $.cssHooks.reverse = {
 	}
 };
 
+// Function to replace initial spaces with entities the browsers will respect. &ensp; seems a better width than &nbsp;
+var space_replacer = function( spaces )
+{
+	return '\n' + Array( spaces.length ).join( '&ensp;' );
+},
+
 // Root stream handler. Some structures (like text grids) could have alternative handlers
-var basic_stream_handler = function( e )
+basic_stream_handler = function( e )
 {
 	var order = e.order,
 	struct = e.io.structures[order.name] || { node: 'span' },
+	node = order.node || struct.node,
+	text = order.text,
 	
 	// Create the new element and set everything that needs to be set
-	elem = $( '<' + ( order.node || struct.node ) + '>' )
+	elem = $( '<' + node + '>' )
 		.appendTo( e.target )
 		.addClass( order.name )
 		.css( order.css || {} );
-	order.text && elem.html( order.text.replace( /\n/g, '<br>' ) );
+	// Add the text, if we've been given any
+	if ( text )
+	{
+		// Fix initial spaces, but not for tt (which will actually mess it up)
+		if ( node != 'tt' )
+		{
+			text = text.replace( /\n +(?=\S)/g, space_replacer )
+		}
+		elem.html( text.replace( /\n/g, '<br>' ) );
+	}
 	
 	// If we have a custom function to run, do so
 	if ( struct.func )
@@ -80,13 +110,13 @@ var basic_stream_handler = function( e )
 // .input() must be set by whatever uses StructIO
 window.StructIO = Object.subClass({
 	
-	init: function( element )
+	init: function( element, env )
 	{
 		element = $( element );
 		this.container = element
 		this.target = element;
 		element.bind( 'stream', basic_stream_handler );
-		this.TextInput = new TextInput( this.container );
+		this.TextInput = new TextInput( element );
 		// Default structures
 		this.structures = {
 			main: {
@@ -97,20 +127,23 @@ window.StructIO = Object.subClass({
 				func: function( elem, io ) { new TextGrid( elem, io ); }
 			}
 		};
+		env = extend( {}, env || {} );
+		this.env = env;
 		
 		// Calculate the width we want
-		var charwidthelem = $( '<tt>00000</tt>' )
+		var measureelem = $( '<tt>00000</tt>' )
 			.appendTo( element ),
-		charwidth = charwidthelem.width() / 5,
-		widthinchars = Math.min( Math.floor( element.width() / charwidth ), 80 );
-		charwidthelem.remove();
+		charheight = measureelem.height(),
+		charwidth = measureelem.width() / 5,
+		widthinchars = Math.min( Math.floor( element.width() / charwidth ), env.width || 80 );
+		measureelem.remove();
 		
-		this.env = {
+		extend( env, {
+			charheight: charheight,
+			charwidth: charwidth,
 			width: widthinchars
-		};
-		this.charwidth = charwidth;
-		this.width = widthinchars * charwidth;
-		element.width( this.width );
+		});
+		element.width( widthinchars * charwidth );
 	},
 	
 	// Process some output events
@@ -154,9 +187,14 @@ window.StructIO = Object.subClass({
 			
 			if ( code == 'clear' )
 			{
-				( order.name ? $( '.' + order.name ) : target )
-					.empty()
-					.css( 'background-color', order.css && order.css['background-color'] );
+				var temp = order.name ? $( '.' + order.name ) : target;
+				temp.empty();
+				// Set the background colour
+				// If we're clearing the main window, then change <body> instead
+				if ( order.css && order.css['background-color'] )
+				{
+					( order.name == 'main' ? temp : $body ).css( 'background-color', order.css['background-color'] );
+				}
 			}
 			
 			// Line input

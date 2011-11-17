@@ -21,7 +21,7 @@ TODO:
 	
 */
 
-// Block if statements
+// Block if statements / while loops
 var idiom_if_block = function( context, pc )
 {
 	var i = 0,
@@ -101,6 +101,10 @@ var idiom_if_block = function( context, pc )
 		}
 		i++;
 	}
+},
+
+idiom_do_while = function( context )
+{
 };
 
 /* DEBUG */

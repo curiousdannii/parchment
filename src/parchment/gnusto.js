@@ -21,6 +21,7 @@ parchment.vms.gnusto = {
 			'../src/ifvms.js/src/zvm/quetzal.js',
 			'../src/gnusto/remedial.js',
 			'../src/gnusto/engine/gnusto-engine.js',
+			'../src/ifvms.js/src/zvm/ui.js',
 			'../src/gnusto/runner.js'
 		/* ELSEDEBUG
 			'gnusto.min.js'

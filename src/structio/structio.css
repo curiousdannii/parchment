@@ -32,6 +32,14 @@ http://code.google.com/p/parchment
 {
 	background: inherit;
 	position: fixed;
+	z-index: 2;
+}
+
+/* Floating boxes */
+.box
+{
+	position: absolute;
+	z-index: 1;
 }
 
 /* Main window */

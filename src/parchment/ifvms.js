@@ -16,8 +16,7 @@ var ifvms_launcher = function( args )
 	var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
 	
 	// Load it up!
-	window.engine = new window[args[2].vm.Class]();
-	window.runner = new Runner( engine, new StructIO( parchment.options.container ), mystory.zcode );
+	window.runner = new Runner( window[args[2].vm.Class], new StructIO( parchment.options.container ), mystory.zcode );
 };
 
 parchment.vms.zvm = {
@@ -28,24 +27,24 @@ parchment.vms.zvm = {
 	
 	// Files to load
 	files: [
-			/* DEBUG */
-				'../src/ifvms.js/src/zvm/intro.js',
-				'../src/ifvms.js/src/common/util.js',
-				'../src/ifvms.js/src/common/bytearray.js',
-				'../src/ifvms.js/src/common/ast.js',
-				'../src/ifvms.js/src/zvm/quetzal.js',
-				'../src/ifvms.js/src/zvm/text.js',
-				//'../src/ifvms.js/src/zvm/ui.js',
-				'../src/ifvms.js/src/zvm/opcodes.js',
-				'../src/ifvms.js/src/common/idioms.js',
-				'../src/ifvms.js/src/zvm/disassembler.js',
-				'../src/ifvms.js/src/zvm/runtime.js',
-				'../src/ifvms.js/src/zvm/vm.js',
-				'../src/ifvms.js/src/zvm/outro.js'
-			/* ELSEDEBUG
-				'zvm.min.js'
-			/* ENDDEBUG */
-		],
+		/* DEBUG */
+			'../src/ifvms.js/src/zvm/intro.js',
+			'../src/ifvms.js/src/common/util.js',
+			'../src/ifvms.js/src/common/bytearray.js',
+			'../src/ifvms.js/src/common/ast.js',
+			'../src/ifvms.js/src/zvm/quetzal.js',
+			'../src/ifvms.js/src/zvm/text.js',
+			'../src/ifvms.js/src/zvm/ui.js',
+			'../src/ifvms.js/src/zvm/opcodes.js',
+			'../src/ifvms.js/src/common/idioms.js',
+			'../src/ifvms.js/src/zvm/disassembler.js',
+			'../src/ifvms.js/src/zvm/runtime.js',
+			'../src/ifvms.js/src/zvm/vm.js',
+			'../src/ifvms.js/src/zvm/outro.js'
+		/* ELSEDEBUG
+			'zvm.min.js'
+		/* ENDDEBUG */
+	],
 	
 	Class: 'ZVM',
 	

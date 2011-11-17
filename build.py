@@ -21,10 +21,9 @@ includes = (
 		'src/structio/api.js',
 		'src/structio/input.js',
 		'src/parchment/quixe.js',
-		'src/parchment/gnusto.js',
 		'src/parchment/ifvms.js',
+		'src/parchment/gnusto.js',
 		'src/parchment/outro.js',
-		'src/ifvms.js/src/zvm/ui.js',
 	)),
 	('.build/parchment.css', (
 		'src/parchment/parchment.css',
@@ -34,6 +33,7 @@ includes = (
 		'src/ifvms.js/src/zvm/quetzal.js',
 		'src/gnusto/remedial.js',
 		'src/gnusto/engine/gnusto-engine.js',
+		'src/ifvms.js/src/zvm/ui.js',
 		'src/gnusto/runner.js',
 	)),
 	('.build/quixe.js', (
@@ -52,13 +52,13 @@ includes = (
 		'src/ifvms.js/src/common/ast.js',
 		'src/ifvms.js/src/zvm/quetzal.js',
 		'src/ifvms.js/src/zvm/text.js',
+		'src/ifvms.js/src/zvm/ui.js',
 		'src/ifvms.js/src/zvm/opcodes.js',
 		'src/ifvms.js/src/common/idioms.js',
 		'src/ifvms.js/src/zvm/disassembler.js',
 		'src/ifvms.js/src/zvm/runtime.js',
 		'src/ifvms.js/src/zvm/vm.js',
 		'src/ifvms.js/src/zvm/outro.js',
-		#'src/ifvms.js/src/zvm/ui.js',
 	)),
 )
 

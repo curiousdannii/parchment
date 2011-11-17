@@ -13,17 +13,16 @@ http://github.com/curiousdannii/ifvms.js
 
 All AST nodes must use these functions, even constants
 (An exception is made for branch addresses and text literals which remain as primitives)
-write() functions are used to generate JIT code
+toString() functions are used to generate JIT code
 
 Aside from Variable is currently generic and could be used for Glulx too
 
 TODO:
-	Precalculate simple arith? Here? ZVM.compile?
-	Combine print statements?
 	Use strict mode for new Function()?
 	When we can run through a whole game, test whether using common_func is faster (if its slower then not worth the file size saving)
-	Would changing write() to toString() be simpler and faster? (No need for Operand, no need to check if something has been written already, most times it will even be implicit casting etc)
+	Can we eliminate the Operand class?
 	Subclass Operand/Variable from Number?
+	Replace calls to args() with arguments.join()?
 	
 */
 
@@ -38,7 +37,7 @@ var Operand = Object.subClass({
 		this.e = engine;
 		this.v = value;
 	},
-	write: function()
+	toString: function()
 	{
 		return this.v;
 	},
@@ -54,14 +53,33 @@ var Operand = Object.subClass({
 // Value is the variable number
 // TODO: unrolling is needed -> retain immediate returns if optimisations are disabled
 Variable = Operand.subClass({
-	write: function( value )
+	// Get a value
+	toString: function()
 	{
-		var variable = this.v,
-		havevalue = arguments.length,
+		var variable = this.v;
 		
-		// We may have already evaluated the value's write(), for example in Storer.write()
-		value = value && value.write ? value.write() : value,
-		offset = this.e.globals + (variable - 16) * 2;
+		// Stack
+		if ( variable == 0 )
+		{
+			// If we've been passed a value we're setting a variable
+			return 's.pop()';
+		}
+		// Locals
+		else if ( variable < 16 )
+		{
+			return 'l[' + --variable + ']';
+		}
+		// Globals
+		else
+		{
+			return 'm.getUint16(' + ( this.e.globals + ( variable - 16 ) * 2 ) + ')';
+		}
+	},
+	
+	// Store a value
+	store: function( value )
+	{
+		var variable = this.v;
 		
 		// BrancherStorers need the value
 		if ( this.returnval )
@@ -73,32 +91,24 @@ Variable = Operand.subClass({
 		if ( variable == 0 )
 		{
 			// If we've been passed a value we're setting a variable
-			return havevalue ? 's.push(' + value + ')' : 's.pop()';
+			return 's.push(' + value + ')';
 		}
 		// Locals
 		else if ( variable < 16 )
 		{
-			variable--;
-			return 'l[' + variable + ']' + ( havevalue ? '=' + value : '' );
+			return 'l[' + --variable + ']=' + value;
 		}
 		// Globals
 		else
 		{
-			if ( havevalue )
-			{
-				return 'm.setUint16(' + offset + ',' + value + ')';
-			}
-			else
-			{
-				return 'm.getUint16(' + offset + ')';
-			}
+			return 'm.setUint16(' + ( this.e.globals + ( variable - 16 ) * 2 ) + ',' + value + ')';
 		}
 	},
 	
 	// Convert an Operand into a signed operand
 	U2S: function()
 	{
-		return 'e.U2S(' + this.write() + ')';
+		return 'e.U2S(' + this + ')';
 	}
 }),
 
@@ -111,6 +121,7 @@ Opcode = Object.subClass({
 		this.context = context;
 		this.code = code;
 		this.pc = pc;
+		this.labels = [ this.pc + '/' + this.code ];
 		this.next = next;
 		this.operands = operands;
 		
@@ -122,7 +133,7 @@ Opcode = Object.subClass({
 	},
 	
 	// Write out the opcode, passing .operands to .func(), with a JS comment of the pc/opcode
-	write: function()
+	toString: function()
 	{
 		return this.label() + ( this.func ? this.func.apply( this, this.operands ) : '' );
 	},
@@ -130,20 +141,13 @@ Opcode = Object.subClass({
 	// Return a string of the operands separated by commas
 	args: function( joiner )
 	{
-		var i = 0,
-		new_array = [];
-		
-		while ( i < this.operands.length )
-		{
-			new_array.push( this.operands[i++].write() );
-		}
-		return new_array.join( joiner );
+		return this.operands.join( joiner );
 	},
 	
-	// Generate a comment of the pc and code
+	// Generate a comment of the pc and code, possibly for more than one opcode
 	label: function()
 	{
-		return '/* ' + this.pc + '/' + this.code + ' */ ';
+		return '/* ' + this.labels.join() + ' */ ';
 	}
 }),
 
@@ -160,7 +164,12 @@ Pauser = Stopper.subClass({
 	{
 		this.storer = this.operands.pop();
 		this.origfunc = this.func;
-		this.func = function() { return 'e.pc=' + this.next + ';' + this.origfunc.apply( this, arguments ); };
+		this.func = this.newfunc;
+	},
+	
+	newfunc: function()
+	{
+		return 'e.pc=' + this.next + ';' + this.origfunc.apply( this, arguments );
 	}
 }),
 
@@ -172,7 +181,7 @@ BrancherLogic = Object.subClass({
 		this.code = code || '||';
 	},
 	
-	write: function()
+	toString: function()
 	{
 		var i = 0,
 		ops = [],
@@ -184,7 +193,7 @@ BrancherLogic = Object.subClass({
 			ops.push(
 				op.func
 					? ( op.iftrue ? '' : '!(' ) + op.func.apply( op, op.operands ) + ( op.iftrue ? '' : ')' )
-					: op.write()
+					: op
 			);
 		}
 		return ( this.invert ? '(!(' : '(' ) + ops.join( this.code ) + ( this.invert ? '))' : ')' );
@@ -226,7 +235,6 @@ Brancher = Opcode.subClass({
 		this.result = result + '; return';
 		this.offset = offset;
 		this.cond = new BrancherLogic();
-		this.labels = [];
 		
 		// Compare with previous statement
 		if ( this.context.ops.length )
@@ -238,6 +246,7 @@ Brancher = Opcode.subClass({
 				// Goes to same offset so reuse the Brancher arrays
 				this.cond = prev.cond;
 				this.labels = prev.labels;
+				this.labels.push( this.pc + '/' + this.code );
 			}
 			else
 			{
@@ -247,11 +256,10 @@ Brancher = Opcode.subClass({
 		
 		// Push this op and label
 		this.cond.ops.push( this );
-		this.labels.push( this.pc + '/' + this.code );
 	},
 	
 	// Write out the brancher
-	write: function()
+	toString: function()
 	{
 		var i = 0,
 		result = this.result;
@@ -262,7 +270,7 @@ Brancher = Opcode.subClass({
 			// Update the context to be a child of this context
 			;;; result.context = this.context;
 			
-			result = result.write() + ( result.stopper ? '; return' : '' );
+			result = result + ( result.stopper ? '; return' : '' );
 			
 			// Extra line breaks for multi-op results
 			if ( this.result.ops.length > 1 )
@@ -273,7 +281,7 @@ Brancher = Opcode.subClass({
 		}
 		
 		// Print out a label for all included branches and the branch itself
-		return '/* ' + this.labels.join() + ' */ ' + this.keyword + this.cond.write() + ' {' + result + '}';
+		return this.label() + this.keyword + this.cond + ' {' + result + '}';
 	}
 }),
 
@@ -287,6 +295,15 @@ BrancherStorer = Brancher.subClass({
 		this._super();
 		this.storer = this.operands.pop();
 		this.storer.returnval = 1;
+		
+		// Replace the func
+		this.origfunc = this.func;
+		this.func = this.newfunc;
+	},
+	
+	newfunc: function()
+	{
+		return this.storer.store( this.origfunc.apply( this, arguments ) );
 	}
 }),
 
@@ -302,38 +319,31 @@ Storer = Opcode.subClass({
 	},
 	
 	// Write out the opcode, passing it to the storer (if there still is one)
-	write: function()
+	toString: function()
 	{
 		var data = this._super();
 		
 		// If we still have a storer operand, use it
 		// Otherwise (if it's been removed due to optimisations) just return func()
-		return this.storer ? this.storer.write( data ) : data;
+		return this.storer ? this.storer.store( data ) : data;
 	}
 }),
 
 // Routine calling opcodes
 Caller = Stopper.subClass({
-	post: function()
-	{
-		// Fake a result variable
-		this.result = { v: -1 };
-	},
+	// Fake a result variable
+	result: { v: -1 },
 
 	// Write out the opcode
-	write: function()
+	toString: function()
 	{
-		// Get the address to call
-		var addr = this.operands.shift();
-		
-		// Code generate
 		// Debug: include label if possible
 		/* DEBUG */
-			addr = addr.write();
-			var targetname = window.vm_functions && parseInt( addr ) ? ' /* ' + find_func_name( addr * 4 ) + '() */' : '';
+			var addr = '' + this.operands.shift(),
+			targetname = window.vm_functions && parseInt( addr ) ? ' /* ' + find_func_name( addr * 4 ) + '() */' : '';
 			return this.label() + 'e.call(' + addr + ',' + this.result.v + ',' + this.next + ',[' + this.args() + '])' + targetname;
 		/* ENDDEBUG */
-		return this.label() + 'e.call(' + addr.write() + ',' + this.result.v + ',' + this.next + ',[' + this.args() + '])';
+		return this.label() + 'e.call(' + this.operands.shift() + ',' + this.result.v + ',' + this.next + ',[' + this.args() + '])';
 	}
 }),
 
@@ -355,45 +365,38 @@ Context = Object.subClass({
 	{
 		this.e = engine;
 		this.pc = pc;
+		this.pre = [];
 		this.ops = [];
+		this.post = [];
 		this.targets = []; // Branch targets
 		;;; this.spacer = '';
 	},
 	
-	write: function()
+	toString: function()
 	{
-		var ops = this.ops,
-		compiled_ops = [],
-		i = 0;
-		
 		// Indent the spacer further if needed
 		;;; if ( this.context ) { this.spacer = this.context.spacer + '  '; }
-		
-		// Write out the individual lines
-		while ( i < ops.length )
-		{
-			compiled_ops.push( ops[i++].write() );
-		}
+		// DEBUG: Pretty print!
+		;;; return this.pre.join( '' ) + ( this.ops.length > 1 ? this.spacer : '' ) + this.ops.join( ';\n' + this.spacer ) + this.post.join( '' );
 		
 		// Return the code
-		// DEBUG: Pretty print!
-		;;; return ( ops.length > 1 ? this.spacer : '' ) + compiled_ops.join( ';\n' + this.spacer );
-		return compiled_ops.join( ';' );
+		return this.pre.join( '' ) + this.ops.join( ';' ) + this.post.join( '' );
 	}
 }),
 
 // A routine body
 RoutineContext = Context.subClass({
-	write: function()
+	toString: function()
 	{
-		// Add in some extra vars and return
 		// Debug: If we have routine names, find this one's name
 		/* DEBUG */
-			this.name = window.vm_functions && find_func_name( this.pc );
-			var funcname = this.name ? '/* ' + this.name + ' */\n' : '';
-			return funcname + 'var l=e.l,m=e.m,s=e.s;\n' + this._super();
+			var name = window.vm_functions && find_func_name( this.pc );
+			if ( name ) { this.pre.unshift( '/* ' + name + ' */\n' ); }
 		/* ENDDEBUG */
-		return 'var l=e.l,m=e.m,s=e.s;\n' + this._super();
+		
+		// Add in some extra vars and return
+		this.pre.unshift( 'var l=e.l,m=e.m,s=e.s;\n' );
+		return this._super();
 	}
 }),
 

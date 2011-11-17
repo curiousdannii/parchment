@@ -120,8 +120,8 @@ var ZVM_core = {
 		// Write the status window's cursor position
 		if ( code == 'get_cursor' )
 		{
-			memory.setUint16( data.addr, data.pos[0] );
-			memory.setUint16( data.addr + 2, data.pos[1] );
+			memory.setUint16( data.addr, data.pos[0] + 1 );
+			memory.setUint16( data.addr + 2, data.pos[1] + 1 );
 		}
 		
 		// Resume normal operation
@@ -246,12 +246,13 @@ var ZVM_core = {
 	// Compile a JIT routine
 	compile: function()
 	{
-		var context = disassemble( this ),
-		code = context.write();
+		var context = disassemble( this );
 		
 		// Compile the routine with new Function()
 		/* DEBUG */
+			var code = '' + context;
 			console.log( code );
+			// We use eval because Firebug can't profile new Function
 			var func = eval( '(function(e){' + code + '})' );
 			
 			// Extra stuff for debugging
@@ -263,7 +264,7 @@ var ZVM_core = {
 			}
 			this.jit[context.pc] = func;
 		/* ELSEDEBUG
-			this.jit[context.pc] = new Function( 'e', code );
+			this.jit[context.pc] = new Function( 'e', '' + context );
 		/* ENDDEBUG */
 		if ( context.pc < this.staticmem )
 		{

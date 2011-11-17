@@ -383,15 +383,14 @@ Text = Object.subClass({
 			word = this.encode( words[wordcount][0] );
 			
 			// If the flag is set then don't overwrite words which weren't found
-			if ( flag && !dictionary[word] )
+			if ( !flag || dictionary[word] )
 			{
-				continue;
+				// Fill out the buffer
+				memory.setUint16( buffer + 2 + wordcount * 4, dictionary[word] || 0 );
+				memory.setUint8( buffer + 4 + wordcount * 4, words[wordcount][0].length );
+				memory.setUint8( buffer + 5 + wordcount * 4, words[wordcount][1] );
 			}
-			
-			// Fill out the buffer
-			memory.setUint16( buffer + 2 + wordcount * 4, dictionary[word] || 0 );
-			memory.setUint8( buffer + 4 + wordcount * 4, words[wordcount][0].length );
-			memory.setUint8( buffer + 5 + wordcount * 4, words[wordcount++][1] );
+			wordcount++;
 		}
 		
 		// Update the number of found words

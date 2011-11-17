@@ -12,13 +12,14 @@ http://code.google.com/p/parchment
 /*
 
 TODO:
-	Needs style support
 	Box support
 	Check cursor is correct at end of grid
 
 */
 
-var TextGrid = Object.subClass({
+var $window = $( window ),
+
+TextGrid = Object.subClass({
 	// Set up the class, and attach a stream handler
 	init: function( elem, io )
 	{
@@ -30,21 +31,27 @@ var TextGrid = Object.subClass({
 				self.stream( e.order.data );
 				return false;
 			});
+		this.lineheight = io.env.charheight;
 		this.io = io;
-		this.io.TextInput.statuswin = this.elem;
+		io.TextInput.statuswin = this.elem;
 		this.lines = [];
 		this.styles = [];
 		this.cursor = [0, 0]; // row, col
-		this.blankline = Array( this.io.env.width + 1 ).join( ' ' );
 	},
 	
 	// Accept a stream of text grid orders
 	stream: function( orders )
 	{
-		var order, code, i,
+		var order, code, i, j,
+		elem = this.elem,
 		row = this.cursor[0],
 		col = this.cursor[1],
-		line, text, j;
+		lines = this.lines,
+		styles = this.styles,
+		env = this.io.env,
+		line, text, temp,
+		stylecode,
+		oldheight = this.lines.length;
 		
 		// Process the orders
 		for ( i = 0; i < orders.length; i++ )
@@ -56,17 +63,41 @@ var TextGrid = Object.subClass({
 			if ( code == 'height' )
 			{
 				// Increase the height
-				while ( order.lines > this.lines.length )
+				while ( order.lines > lines.length )
 				{
-					this.lines.push( this.blankline );
-					this.styles.push( Array( this.io.env.width ) );
+					line = [];
+					j = 0;
+					while ( j++ < env.width )
+					{
+						line.push( ' ' );
+					}
+					lines.push( line );
+					styles.push( Array( env.width ) );
 				}
 				
-				// Decrease the height
+				// Decrease the height, and handle box quotations
 				if ( order.lines < this.lines.length )
 				{
-					this.lines.length = order.lines;
-					this.styles.length = order.lines;
+					if ( order.lines != 0 )
+					{
+						// Add the floating box
+						temp = $( '<div>' )
+							.addClass( 'box' )
+							.prependTo( this.io.target );
+						// Position it where it would have been if it was part of the grid
+						// Scroll to the bottom just in case
+						window.scrollTo( 0, window.scrollMaxY );
+						temp.css({
+							top: $window.scrollTop() + this.lineheight * order.lines,
+							// Account for .main's added 1px padding
+							left: temp.offset().left - 1
+						});
+						// Fill it with the lines we'll be removing
+						this.write( temp, lines.slice( order.lines ), styles.slice( order.lines ) );
+					}
+				
+					lines.length = order.lines;
+					styles.length = order.lines;
 					if ( row > order.lines - 1 )
 					{
 						row = 0;
@@ -75,10 +106,27 @@ var TextGrid = Object.subClass({
 				}
 			}
 			
+			// Empty the grid, but don't change it's size
+			if ( code == 'clear' )
+			{
+				j = 0;
+				while ( j < lines.length )
+				{
+					temp = 0;
+					while ( temp < env.width )
+					{
+						lines[j][temp++] = ' ';
+					}
+					styles[j++] = Array( env.width );
+				}
+				row = 0;
+				col = 0;
+			}
+			
 			if ( code == 'cursor' )
 			{
-				row = order.to[0] - 1;
-				col = order.to[1] - 1;
+				row = order.to[0];
+				col = order.to[1];
 			}
 			
 			if ( code == 'get_cursor' )
@@ -90,14 +138,30 @@ var TextGrid = Object.subClass({
 			// Add text to the grid
 			if ( code == 'stream' )
 			{
-				text = order.text.split( '\n' );
+				// Calculate the style attribute for this set of text
+				stylecode = $( '<tt>' )
+					.appendTo( elem )
+					.css( order.css || {} )
+					.attr( 'style' );
+				if ( stylecode )
+				{
+					stylecode = ' style="' + stylecode + '"';
+				}
+				
+				// Add the text to the arrays
+				text = order.text;
 				j = 0;
 				while ( j < text.length )
 				{
-					line = this.lines[row];
-					this.lines[row] = line.substr( 0, col ) + text[j] + line.substr( col + text[j].length );
-					col += text[j].length;
-					if ( ++j < text.length )
+					temp = text.charAt( j++ );
+					// Regular character
+					if ( temp != '\n' )
+					{
+						lines[row][col] = temp;
+						styles[row][col++] = stylecode;
+					}
+					// New line, or end of a line
+					if ( temp == '\n' || col == env.width )
 					{
 						row++;
 						col = 0;
@@ -107,12 +171,60 @@ var TextGrid = Object.subClass({
 			
 			if ( code == 'eraseline' )
 			{
-				this.lines[row] = this.lines[row].slice( 0, col ) + this.blankline.slice( this.io.env.width - col );
+				for ( j = col; j < env.width; j++ )
+				{
+					lines[row][j] = ' ';
+					styles[row][j] = undefined;
+				}
 			}
 		}
+		
+		// Update the cursor
 		this.cursor = [row, col];
 		
 		// Update the HTML
-		this.elem.html( '<tt>' + this.lines.join( '</tt><br><tt>' ) + '</tt>' );
+		this.write( elem, lines, styles );
+		
+		// Try to adjust the main window's padding - for now guess what the window's class is
+		if ( lines.length != oldheight )
+		{
+			$( '.main' )
+				.css( 'padding-top', elem.height() );
+		}
+	},
+	
+	// Update the HTML
+	write: function( elem, lines, styles )
+	{
+		var result = '',
+		i = 0, j,
+		text,
+		style;
+		
+		// Go through the lines and styles array, constructing a <tt> whenever the styles change
+		while ( i < lines.length )
+		{
+			text = '';
+			style = styles[i][0];
+			for ( j = 0; j < lines[i].length; j++ )
+			{
+				if ( styles[i][j] == style )
+				{
+					text += lines[i][j];
+				}
+				else
+				{
+					result += '<tt' + ( style || '' ) + '>' + text + '</tt>';
+					style = styles[i][j];
+					text = lines[i][j];
+				}
+			}
+			result += '<tt' + ( style || '' ) + '>' + text + '</tt>';
+			if ( ++i < lines.length )
+			{
+				result += '<br>';
+			}
+		}
+		elem.html( result );
 	}
 });
