@@ -110,9 +110,27 @@ basic_stream_handler = function( e )
 // .input() must be set by whatever uses StructIO
 window.StructIO = Object.subClass({
 	
-	init: function( element, env )
+	init: function( env )
 	{
-		element = $( element );
+		env = extend( {}, env );
+		this.env = env;
+		var element = $( env.container ),
+		
+		// Calculate the width we want
+		measureelem = $( '<tt>00000</tt>' )
+			.appendTo( element ),
+		charheight = measureelem.height(),
+		charwidth = measureelem.width() / 5,
+		widthinchars = Math.min( Math.floor( element.width() / charwidth ), env.width || 80 );
+		measureelem.remove();
+		
+		extend( env, {
+			charheight: charheight,
+			charwidth: charwidth,
+			width: widthinchars
+		});
+		element.width( widthinchars * charwidth );
+		
 		this.container = element
 		this.target = element;
 		element.bind( 'stream', basic_stream_handler );
@@ -127,23 +145,6 @@ window.StructIO = Object.subClass({
 				func: function( elem, io ) { new TextGrid( elem, io ); }
 			}
 		};
-		env = extend( {}, env || {} );
-		this.env = env;
-		
-		// Calculate the width we want
-		var measureelem = $( '<tt>00000</tt>' )
-			.appendTo( element ),
-		charheight = measureelem.height(),
-		charwidth = measureelem.width() / 5,
-		widthinchars = Math.min( Math.floor( element.width() / charwidth ), env.width || 80 );
-		measureelem.remove();
-		
-		extend( env, {
-			charheight: charheight,
-			charwidth: charwidth,
-			width: widthinchars
-		});
-		element.width( widthinchars * charwidth );
 	},
 	
 	// Process some output events

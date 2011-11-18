@@ -58,6 +58,12 @@ Variable = Operand.subClass({
 	{
 		var variable = this.v;
 		
+		// Indirect
+		if ( this.indirect )
+		{
+			return 'e.indirect(' + variable + ')';
+		}
+		
 		// Stack
 		if ( variable == 0 )
 		{
@@ -65,21 +71,24 @@ Variable = Operand.subClass({
 			return 's.pop()';
 		}
 		// Locals
-		else if ( variable < 16 )
+		if ( --variable < 15 )
 		{
-			return 'l[' + --variable + ']';
+			return 'l[' + variable + ']';
 		}
 		// Globals
-		else
-		{
-			return 'm.getUint16(' + ( this.e.globals + ( variable - 16 ) * 2 ) + ')';
-		}
+		return 'm.getUint16(' + ( this.e.globals + ( variable - 15 ) * 2 ) + ')';
 	},
 	
 	// Store a value
 	store: function( value )
 	{
 		var variable = this.v;
+		
+		// Indirect variable
+		if ( this.indirect )
+		{
+			return 'e.indirect(' + variable + ',' + value + ')';
+		}
 		
 		// BrancherStorers need the value
 		if ( this.returnval )
@@ -94,15 +103,12 @@ Variable = Operand.subClass({
 			return 's.push(' + value + ')';
 		}
 		// Locals
-		else if ( variable < 16 )
+		if ( --variable < 15 )
 		{
-			return 'l[' + --variable + ']=' + value;
+			return 'l[' + variable + ']=' + value;
 		}
 		// Globals
-		else
-		{
-			return 'm.setUint16(' + ( this.e.globals + ( variable - 16 ) * 2 ) + ',' + value + ')';
-		}
+		return 'm.setUint16(' + ( this.e.globals + ( variable - 15 ) * 2 ) + ',' + value + ')';
 	},
 	
 	// Convert an Operand into a signed operand

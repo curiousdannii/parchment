@@ -12,8 +12,8 @@ http://code.google.com/p/parchment
 /*
 
 TODO:
-	Box support
 	Check cursor is correct at end of grid
+	Find out why Curses' box for inventory is messed up
 
 */
 

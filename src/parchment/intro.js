@@ -58,11 +58,11 @@ var parchment = {
 		panels: [ 'search', 'url', 'about' ],
 		
 		// URL of proxy server to use for files we can't directly load
-		proxy_url: 'http://zcode.appspot.com/proxy/',
+		proxy_url: 'http://zcode.appspot.com/proxy/'
 		
 		// Output width in characters
 		// NOTE: this is not guaranteed to be a stable API option
-		width: 80
+		//width: 80
 	},
 
 	// Classes etc

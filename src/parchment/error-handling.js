@@ -17,8 +17,8 @@ window.FatalError = function(message) {
 FatalError.prototype = {
   onError: function(e) {
   var message = e.message;
-  if (typeof e.message == "string")
-    message = message.entityify();
+  //if (typeof e.message == "string")
+  //  message = message.entityify();
   $( '#parchment' ).append('<div class="error">An error occurred:<br/>' +
                        '<pre>' + message + '\n\n' + e.traceback +
                        '</pre></div>');

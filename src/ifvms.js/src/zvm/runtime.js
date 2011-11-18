@@ -686,9 +686,11 @@ window.ZVM = Object.subClass( {
 		call_stack.reverse();
 		quetzal.stacks = stacks;
 		
-		// Set the variable now, the AST can't set it before an output event
-		this.variable( storer, 1 );
-		this.act( 'save', { data: quetzal.write() } );
+		// Send the event
+		this.act( 'save', {
+			data: quetzal.write(),
+			storer: storer
+		} );
 	},
 	
 	save_undo: function( pc, variable )

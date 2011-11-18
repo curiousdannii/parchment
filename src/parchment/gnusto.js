@@ -9,7 +9,7 @@ http://code.google.com/p/parchment
 
 */
 
-parchment.vms.gnusto = {
+parchment.add_vm({
 	id: 'gnusto',
 	
 	// File pattern
@@ -26,24 +26,7 @@ parchment.vms.gnusto = {
 		/* ELSEDEBUG
 			'gnusto.min.js'
 		/* ENDDEBUG */
-		],
+	],
 	
-	// Launcher. Will be run by jQuery.when(). The story file's jqXHR will be the first argument
-	launcher: function( args )
-	{
-		// De-blorbify
-		var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
-		
-		// Load it up!
-		window.engine = new GnustoEngine( window.console && function() { console.log( msg ); } || function(){} );
-		window.runner = new GnustoRunner( engine, new StructIO( parchment.options.container ), mystory.zcode );
-		
-		/* savefile = location.hash
-		if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
-		{
-			engine.loadSavedGame( file.base64_decode( savefile.slice(1)));
-			logfunc( 'Loading savefile' );
-		}*/
-	}
-};
-parchment.vms.push( parchment.vms.gnusto );
+	runner: 'GnustoRunner'
+});

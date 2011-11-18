@@ -1,7 +1,7 @@
 /*
 
 StructIO runner
-==================
+===============
 
 Copyright (c) 2011 The Parchment Contributors
 BSD licenced
@@ -10,6 +10,16 @@ http://code.google.com/p/parchment
 */
 
 /*
+
+Runners are Parchment's glue: they connect an engine to it's IO system and to the Library
+Not all runners are subclassed from Runner - there might be too little common code to make that worthwhile
+All runners do however need to support the same basic API:
+	init( env, engine )
+		env = parchment.options
+		engine = the VM class's name, if given in the definition
+	fromParchment( event )
+		Needs to handle these events: load, restart, save, restore
+	toParchment( event ) -> Will be added by the Parchment Library
 
 TODO:
 	Support Workers
@@ -20,33 +30,36 @@ TODO:
 // A basic StructIO runner
 var Runner = Object.subClass({
 
-	init: function( engine, io, data )
+	init: function( env, engine )
 	{
 		var self = this;
-		// engine is only a class, so make an instance now
-		engine = new engine();
-		window.engine = engine;
-		this.e = engine;
-		this.io = io;
+		// engine is only a class name, so make an instance now
+		engine = window.engine = this.e = new window[engine]();
+		this.io = new StructIO( env );
 		
 		// Set the appropriate event handlers
-		this.inputEvent = function( event ) { engine.inputEvent( event ); };
-		io.TextInput.callback = this.inputEvent;
-		engine.outputEvent = function( event ) { self.outputEvent( event ); };
+		this.toEngine = this.io.TextInput.callback = function( event ) { engine.inputEvent( event ); };
+		engine.outputEvent = function( event ) { self.fromEngine( event ); };
+	},
+	
+	// Handler for events from Parchment
+	fromParchment: function( event )
+	{
+		var code = event.code;
 		
-		// Start it up
-		this.inputEvent({
-			code: 'load',
-			data: data
-		});
-		this.inputEvent({
-			code: 'restart',
-			env: io.env
-		});
+		// Load the story file
+		if ( code == 'load' )
+		{
+			event.env = this.io.env;
+		}
+
+		// Restart, save, restore -> just return to the engine
+
+		this.toEngine( event );
 	},
 	
 	// Handler for output events from the VM
-	outputEvent: function( orders )
+	fromEngine: function( orders )
 	{
 		var	engine = this.e,
 		i = 0,
@@ -67,24 +80,15 @@ var Runner = Object.subClass({
 				return;
 			}
 			
-			if ( code == 'save' )
+			if ( code == 'save' || code == 'restore' )
 			{
-				// For now just store the save file here
-				// Later we'll want to talk to the Library
-				this.savefile = order.data;
-				sendevent = 1;
+				this.toParchment( order );
 			}
 			
 			if ( code == 'restart' )
 			{
 				// Reset the IO structures
 				this.io.target = this.io.container.empty();
-				sendevent = 1;
-			}
-			
-			if ( code == 'restore' )
-			{
-				order.data = this.savefile;
 				sendevent = 1;
 			}
 			
@@ -97,7 +101,7 @@ var Runner = Object.subClass({
 		
 		if ( sendevent )
 		{
-			this.inputEvent( order );
+			this.toEngine( order );
 		}
 	}
 

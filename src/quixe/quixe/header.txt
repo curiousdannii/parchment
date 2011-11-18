@@ -1,0 +1,15 @@
+/*
+
+Quixe
+=====
+
+Built: BUILDDATE
+
+Quixe -- a Glulx VM interpreter written in Javascript
+GiDispa -- a GlkAPI dispatch layer for Quixe
+
+Designed by Andrew Plotkin <erkyrath@eblong.com>
+Copyright (c) 2010-2011 Andrew Plotkin
+<http://eblong.com/zarf/glulx/quixe/>
+
+*/

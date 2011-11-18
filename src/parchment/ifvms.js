@@ -9,17 +9,7 @@ http://code.google.com/p/parchment
 
 */
 
-// Launcher. Will be run by jQuery.when(). jqXHR is args[2]
-var ifvms_launcher = function( args )
-{
-	// De-blorbify
-	var mystory = new parchment.lib.Story( args[2].responseArray, storyName );
-	
-	// Load it up!
-	window.runner = new Runner( window[args[2].vm.Class], new StructIO( parchment.options.container ), mystory.zcode );
-};
-
-parchment.vms.zvm = {
+parchment.add_vm({
 	id: 'zvm',
 	
 	// File pattern
@@ -46,8 +36,5 @@ parchment.vms.zvm = {
 		/* ENDDEBUG */
 	],
 	
-	Class: 'ZVM',
-	
-	launcher: ifvms_launcher
-};
-parchment.vms.push( parchment.vms.zvm );
+	engine: 'ZVM'
+});

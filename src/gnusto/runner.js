@@ -9,31 +9,68 @@ http://code.google.com/p/parchment
 
 */
 
-/*
-
-TODO:
-	Make save/restore talk to the library
-
-*/
-
 // A Gnusto runner
 var GnustoRunner = Object.subClass({
 
-	init: function( engine, io, data )
+	init: function( env, engine )
 	{
 		var self = this;
-		this.e = engine;
-		this.io = io;
+		engine = window.engine = this.e = new GnustoEngine( window.console && function() { console.log( msg ); } || function(){} );
+		this.io = new StructIO( env );
 		
 		// Set the appropriate event handlers
-		io.TextInput.callback = function( event ) { self.inputEvent( event ); };
+		this.io.TextInput.callback = function( event ) { self.inputEvent( event ); };
+	},
+	
+	// Handler for events from Parchment
+	fromParchment: function( event )
+	{
+		var code = event.code,
+		engine = this.e,
+		run;
 		
-		// Start it up
-		engine.loadStory( data );
-		this.restart();
+		// Load the story file
+		if ( code == 'load' )
+		{
+			engine.loadStory( event.data );
+		}
+
+		// (Re)start the engine
+		if ( code == 'restart' )
+		{
+			this.restart();
+			run = 1;
+		}
 		
-		// Run! 
-		this.run();
+		// Save a savefile
+		if ( code == 'save' )
+		{
+			engine.answer( 0, event.result || 1 );
+			run = 1;
+		}
+		
+		// Restore a savefile
+		if ( code == 'restore' )
+		{
+			if ( !this.ui )
+			{
+				this.restart();
+			}
+			if ( event.data )
+			{
+				engine.loadSavedGame( event.data )
+			}
+			else
+			{
+				engine.answer( 0, 0 );
+			}
+			run = 1;
+		}
+		
+		if ( run )
+		{
+			this.run();
+		}
 	},
 	
 	restart: function()
@@ -48,7 +85,7 @@ var GnustoRunner = Object.subClass({
 		engine.setWord( 255, 0x24 );
 		
 		// Set up the ifvms.js ZVMUI
-		this.io.target = this.io.container.empty();
+		io.target = io.container.empty();
 		this.orders = [];
 		this.ui = new ZVMUI( this, engine.getByte( 0x11 ) & 0x02 );
 		io.event( this.orders );
@@ -99,20 +136,17 @@ var GnustoRunner = Object.subClass({
 			}
 			if ( effect == GNUSTO_EFFECT_SAVE )
 			{
+				stop = 1;
 				engine.saveGame();
-				this.savefile = engine.saveGameData();
-				engine.answer( 0, 1 );
+				this.toParchment({
+					code: 'save',
+					data: engine.saveGameData()
+				});
 			}
 			if ( effect == GNUSTO_EFFECT_RESTORE )
 			{
-				if ( this.savefile )
-				{
-					engine.loadSavedGame( this.savefile )
-				}
-				else
-				{
-					engine.answer( 0, 0 );
-				}
+				stop = 1;
+				this.toParchment({ code: 'restore' });
 			}
 			if ( effect == GNUSTO_EFFECT_QUIT )
 			{
@@ -175,18 +209,18 @@ var GnustoRunner = Object.subClass({
 		}
 		
 		// Flush the buffer
-		this.ui.flush();
+		ui.flush();
 		
 		// Flush the status if we need to
 		// Should instead it be the first order? Might be better for screen readers etc
-		if ( this.ui.status.length )
+		if ( ui.status.length )
 		{
 			this.orders.push({
 				code: 'stream',
 				to: 'status',
 				data: this.ui.status
 			});
-			this.ui.status = [];
+			ui.status = [];
 		}
 		
 		// Process the orders

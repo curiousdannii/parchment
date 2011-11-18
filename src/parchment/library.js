@@ -23,14 +23,47 @@ rqueryvm = /vm=(\w+)/,
 rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
 
-// Callback to show an error if a VM's dependant scripts could be successfully loaded
+// Callback to show an error when the story file wasn't loaded
 story_get_fail = function(){
 	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
 },
 
-hide_load_indicator = function()
+// Launcher. Will be run by jQuery.when(). jqXHR is args[2]
+launch_callback = function( args )
 {
+	// Hide the load indicator
 	$( '.load' ).detach();
+	
+	// Create a runner
+	var runner = window.runner = new ( window[args[2].vm.runner] || Runner )(
+		parchment.options,
+		args[2].vm.engine
+	),
+	
+	savefile = location.hash;
+	
+	// Add the callback
+	runner.toParchment = function( event ) { args[2].library.fromRunner( runner, event ); };
+	
+	// Load it up!
+	runner.fromParchment({
+		code: 'load',
+		data: ( new parchment.lib.Story( args[2].responseArray ) ).data
+	});
+	
+	// Restore if we have a savefile
+	if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
+	{
+		runner.fromParchment({
+			code: 'restore',
+			data: file.base64_decode( savefile.slice( 1 ) )
+		});
+	}
+	// Restart if we don't
+	else
+	{
+		runner.fromParchment({ code: 'restart' });
+	}
 };
 
 // Callback to show an error if a VM's dependant scripts could be successfully loaded
@@ -57,7 +90,7 @@ parchment.lib.Story = IFF.subClass({
 				type: 'ZCOD',
 				data: data
 			});
-			this.zcode = data;
+			this.data = data;
 		}
 		
 		// Check for naked glulx
@@ -69,7 +102,7 @@ parchment.lib.Story = IFF.subClass({
 				type: 'GLUL',
 				data: data
 			});
-			this.glulx = data;
+			this.data = data;
 		}
 		
 		// Check for potential zblorb
@@ -99,11 +132,11 @@ parchment.lib.Story = IFF.subClass({
 					// Parchment uses the first ZCOD/GLUL chunk it finds, but the Blorb spec says the RIdx chunk should be used
 					if ( type == 'ZCOD' && !this.zcode )
 					{
-						this.zcode = this.chunks[i].data;
+						this.data = this.chunks[i].data;
 					}
 					else if ( type == 'GLUL' && !this.glulx )
 					{
-						this.glulx = this.chunks[i].data;
+						this.data = this.chunks[i].data;
 					}
 						
 					else if (type == 'IFmd')
@@ -330,10 +363,31 @@ Library = Object.subClass({
 		
 		// Add the launcher callback
 		$.when.apply( 1, actions )
-			.done( hide_load_indicator )
-			.done( vm.launcher );
+			.done( launch_callback );
 	},
-
+	
+	// An event from a runner
+	fromRunner: function( runner, event )
+	{
+		var code = event.code,
+		savefile = location.hash;
+		
+		if ( code == 'save' )
+		{
+			location.hash = file.base64_encode( event.data );
+		}
+		
+		if ( code == 'restore' )
+		{
+			if ( savefile && savefile != '#' )
+			{
+				event.data = file.base64_decode( savefile.slice( 1 ) );
+			}
+		}
+		
+		runner.fromParchment( event );
+	},
+	
 	// Loaded stories and savefiles
 	stories: new StoryCache(),
 	savefiles: {}
@@ -343,5 +397,10 @@ parchment.lib.Library = Library;
 
 // VM definitions
 parchment.vms = [];
+parchment.add_vm = function( defn )
+{
+	parchment.vms.push( defn );
+	parchment.vms[defn.id] = defn;
+};
 
 })(window, jQuery);

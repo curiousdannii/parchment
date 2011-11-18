@@ -15,7 +15,7 @@ This file represents the public API of the ZVM class, while runtime.js contains 
 	
 TODO:
 	Is 'use strict' needed for JIT functions too, or do they inherit that status?
-	Move the header setting stuff to a separate function and call it when restoring
+	Specifically handle saving?
 	
 */
 
@@ -69,12 +69,26 @@ var ZVM_core = {
 			this.restart();
 		}
 		
+		if ( code == 'save' )
+		{
+			// Set the result variable, assume success
+			this.variable( data.storer, data.result || 1 );
+		}
+		
 		if ( code == 'restore' )
 		{
+			// Restart the VM if we never have before
+			if ( !this.m )
+			{
+				this.restart();
+			}
+			
+			// Successful restore
 			if ( data.data )
 			{
 				this.restore( data.data );
 			}
+			// Failed restore
 			else
 			{
 				this.variable( data.storer, 0 );

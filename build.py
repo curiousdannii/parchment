@@ -44,6 +44,11 @@ includes = (
 		'src/quixe/glkote/glkote.js',
 		'src/quixe/glkote/dialog.js',
 		'src/quixe/glkote/glkapi.js',
+		'src/quixe/runner.js',
+	)),
+	('.build/glkote.css', (
+		'src/quixe/media/i7-glkote.css',
+		'src/quixe/media/dialog.css',
 	)),
 	('.build/zvm.js', (
 		'src/ifvms.js/src/zvm/intro.js',
@@ -73,8 +78,9 @@ compress = (
 	('.build/parchment.js', 'lib/parchment.min.js', 'src/parchment/header.txt'),
 	('.build/parchment.css', 'lib/parchment.min.css', 'src/parchment/header.txt'),
 	('.build/gnusto.js', 'lib/gnusto.min.js', 'src/gnusto/header.txt'),
-	('.build/glkote.js', 'lib/glkote.min.js'),
-	('.build/quixe.js', 'lib/quixe.min.js'),
+	('.build/quixe.js', 'lib/quixe.min.js', 'src/quixe/quixe/header.txt'),
+	('.build/glkote.js', 'lib/glkote.min.js', 'src/quixe/glkote/header.txt'),
+	('.build/glkote.css', 'lib/glkote.min.css', 'src/quixe/glkote/header.txt'),
 	('.build/zvm.js', 'lib/zvm.min.js', 'src/ifvms.js/src/zvm/header.txt', debugzvm),
 )
 

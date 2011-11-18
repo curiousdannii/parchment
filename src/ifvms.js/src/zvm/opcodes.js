@@ -23,29 +23,6 @@ var simple_func = function( a ) { return '' + a; },
 // Common opcodes
 alwaysbranch = opcode_builder( Brancher, function() { return 1; } ),
 
-// Indirect variable operand
-IndirectVariable = Variable.subClass({
-	toString: function()
-	{
-		var variable = this.v;
-		if ( typeof variable != 'number' || variable == 0 )
-		{
-			return 'e.indirect(' + variable + ')';
-		}
-		return this._super();
-	},
-	
-	store: function( value )
-	{
-		var variable = this.v;
-		if ( typeof variable != 'number' || variable == 0 )
-		{
-			return 'e.indirect(' + variable + ',' + value + ')';
-		}
-		return this._super( value );
-	}
-}),
-
 // Indirect storer opcodes - rather non-generic I'm afraid
 // Not used for inc/dec
 // @load (variable) -> (result)
@@ -56,10 +33,16 @@ Indirect = Storer.subClass({
 	
 	post: function()
 	{
-		var operands = this.operands;
+		var operands = this.operands,
+		op0 = operands[0],
+		op0isVar = op0 instanceof Variable;
 		
-		// If the indirect operand is a variable we replace it with a new variable whose value is the first
-		operands[0] = new IndirectVariable( this.e, operands[0] instanceof Variable ? operands[0] : operands[0].v );
+		// Replace the indirect operand with a Variable, and set .indirect if needed
+		operands[0] = new Variable( this.e, op0isVar ? op0 : op0.v );
+		if ( op0isVar || op0.v == 0 )
+		{
+			operands[0].indirect = 1;
+		}
 		
 		// Get the storer
 		this.storer = this.code == 142 ? operands.pop() : operands.shift();
