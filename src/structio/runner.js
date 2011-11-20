@@ -24,6 +24,7 @@ All runners do however need to support the same basic API:
 TODO:
 	Support Workers
 	Support errors in the Worker-like protocol
+	Consider a pub/sub model
 
 */
 

@@ -40,7 +40,7 @@ window.ZVM = Object.subClass( {
 		provided_args = args.length;
 		
 		// Get the number of locals and advance the pc
-		this.pc = addr * this.packing_multipler;
+		this.pc = addr * this.addr_multipler;
 		locals_count = this.m.getUint8( this.pc++ );
 		
 		// Add the locals

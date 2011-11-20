@@ -27,24 +27,6 @@ map_results_callback = function( story )
 	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
 };
 
-window.gIsIphone = /iPhone|iPod|iPad|Android/i.test( navigator.userAgent );
-
-// Make the statusline always move to the top of the screen in MSIE < 7
-if ( $.browser.msie && parseInt($.browser.version) < 7 )
-{
-	$(function(){
-		var topwin_element = $( '#top-window' ),
-		move_element = function()
-		{
-			topwin_element.style.top = document.documentElement.scrollTop + 'px';
-		};
-		topwin_element
-			.css( 'position', 'absolute' )
-			.resize( move_element )
-			.scroll( move_element );
-	});
-}
-
 // The main UI class
 parchment.lib.UI = Object.subClass({
 	init: function( library )

@@ -20,53 +20,6 @@ TODO:
 
 */
 
-(function( $, undefined ){
-
-var extend = function( old, add )
-{
-	for ( var name in add )
-	{
-		old[name] = add[name];
-	}
-	return old;
-},
-
-$body = $( 'body' );
-
-// Subclass jQuery
-// No point until subclasses support their own csshooks
-//var $ = originaljQuery.sub();
-
-// Add a CSS hook for reverse text
-$.cssHooks.reverse = {
-	set: function( elem, value )
-	{
-		if ( value )
-		{
-			// Get the current foreground and background colours
-			var $elem = $( elem ),
-			foreground = $elem.css( 'color' ),
-			background;
-			// Getting the current background colour is hard: go through the parent elements until one with a real colour is found
-			$elem.add( $elem.parents() )
-				.each( function() {
-					var mybackground = $( this ).css( 'background-color' );
-					// Check for inherit or transparent, including in the form of an rgba with 0 alpha
-					if ( mybackground && !/inh|tra|(\d+, ?){3}0/.test( mybackground ) )
-					{
-						background = mybackground;
-						return false;
-					}
-				});
-			// Now swap them!
-			$elem.css({
-				color: background,
-				'background-color': foreground
-			});
-		}
-	}
-};
-
 // Function to replace initial spaces with entities the browsers will respect. &ensp; seems a better width than &nbsp;
 var space_replacer = function( spaces )
 {
@@ -104,11 +57,11 @@ basic_stream_handler = function( e )
 	}
 		
 	return false;
-};
+},
 
 // The public API
 // .input() must be set by whatever uses StructIO
-window.StructIO = Object.subClass({
+StructIO = Object.subClass({
 	
 	init: function( env )
 	{
@@ -133,8 +86,9 @@ window.StructIO = Object.subClass({
 		
 		this.container = element
 		this.target = element;
-		element.bind( 'stream', basic_stream_handler );
+		element.on( 'stream', basic_stream_handler );
 		this.TextInput = new TextInput( element );
+		
 		// Default structures
 		this.structures = {
 			main: {
@@ -213,5 +167,3 @@ window.StructIO = Object.subClass({
 		}
 	}
 });
-
-})( jQuery );

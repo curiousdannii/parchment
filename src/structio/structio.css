@@ -30,7 +30,8 @@ http://code.google.com/p/parchment
 /* Text grid window */
 .TextGrid
 {
-	background: inherit;
+	/* Is set in code now */
+	/* background: inherit; */
 	position: fixed;
 	z-index: 2;
 }

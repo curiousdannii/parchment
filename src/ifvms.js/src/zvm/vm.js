@@ -187,8 +187,8 @@ var ZVM_core = {
 			extension: extension,
 			extension_count: extension ? memory.getUint16( extension ) : 0,
 			
-			// Routine and string packing multiplier
-			packing_multipler: version == 5 ? 4 : 8
+			// Routine and string multiplier
+			addr_multipler: version == 5 ? 4 : 8
 			
 		});
 		// These classes rely too much on the above, so add them after

@@ -27,9 +27,6 @@ body
 
 #parchment
 {
-	/* This is to make it easier for .TextGrid.
-	   Do something else, or make it so that the text grid does not actually sit on top of the other */
-	background: inherit;
 	margin: 0 auto;
 	text-align: left;
 }

@@ -19,34 +19,29 @@ TODO:
 	Support input when some is given already
 	Adjust styles so that the padding belongs to the input and the window scrolls all the way to the bottom when focused
 	Scroll to sensible place for char input
+	Cache @window.height - let StructIO update it for us
 
 */
 
-(function( window, $ ){
-
-// Wrap window, document and body
-var $window = $( window ),
-doc = $( document ),
-scrollByPages = window.scrollByPages,
+var scrollPages = window.scrollByPages,
 bodylineheight,
 
 // getSelection compatibility-ish. We only care about the text value of a selection
 selection = window.getSelection ||
-	( document.selection && function() { return document.selection.createRange().text; } ) ||
-	function() { return ''; };
+	function() { return document.selection ? document.selection.createRange().text : '' };
 
 // window.scrollByPages() compatibility
-if ( !scrollByPages )
+if ( !scrollPages )
 {
 	$(function(){
-		bodylineheight = parseInt( $( 'body' ).css( 'line-height' ) ) * 2;
+		bodylineheight = parseInt( $body.css( 'line-height' ) ) * 2;
 	});
 	
-	scrollByPages = function( pages )
+	scrollPages = function( pages )
 	{
 		// From Mozilla's nsGfxScrollFrame.cpp
 		// delta = viewportHeight - Min( 10%, lineHeight * 2 )
-		var height = doc[0].documentElement.clientHeight,
+		var height = document.documentElement.clientHeight,
 		delta = height - Math.min( height / 10, bodylineheight );
 		scrollBy( 0, delta * pages );
 	};
@@ -54,7 +49,7 @@ if ( !scrollByPages )
 
 // A generic text input class
 // Will handle both line and character input
-window.TextInput = Object.subClass({
+var TextInput = Object.subClass({
 	// Set up the text inputs with a container
 	// container is the greatest domain for which this instance should control input
 	init: function( container )
@@ -90,12 +85,12 @@ window.TextInput = Object.subClass({
 				// Trigger page up/down on the body
 				if ( keyCode == 33 ) // Up
 				{
-					scrollByPages(-1);
+					scrollPages(-1);
 					cancel = 1;
 				}
 				if ( keyCode == 34 ) // Down
 				{
-					scrollByPages(1);
+					scrollPages(1);
 					cancel = 1;
 				}
 				
@@ -141,7 +136,7 @@ window.TextInput = Object.subClass({
 			.appendTo( container );
 		
 		// Focus document clicks and keydowns
-		doc.bind( 'click.TextInput keydown.TextInput', function( ev ) {
+		$doc.on( 'click.TextInput keydown.TextInput', function( ev ) {
 			
 			// Only intercept things that aren't inputs
 			if ( ev.target.nodeName != 'INPUT' &&
@@ -169,13 +164,13 @@ window.TextInput = Object.subClass({
 		
 		// Find the element which we calculate scroll offsets from
 		// For now just decide by browser
-		self.scrollParent = $( $.browser.webkit ? 'body' : 'html' );
+		self.scrollParent = $.browser.webkit ? $body : $( 'html' );
 	},
 	
 	// Cleanup so we can deconstruct
 	die: function()
 	{
-		doc.unbind( '.TextInput' );
+		$doc.off( '.TextInput' );
 	},
 	
 	// Get some input
@@ -244,7 +239,7 @@ window.TextInput = Object.subClass({
 		}
 		
 		// Trigger a custom event for anyone listening in for commands
-		doc.trigger({
+		$doc.trigger({
 			type: 'TextInput',
 			mode: 'line',
 			input: command
@@ -308,7 +303,7 @@ window.TextInput = Object.subClass({
 			.removeClass( 'CharInput' );
 		
 		// Trigger a custom event for anyone listening in for key strokes
-		doc.trigger({
+		$doc.trigger({
 			type: 'TextInput',
 			mode: 'char',
 			input: input
@@ -319,5 +314,3 @@ window.TextInput = Object.subClass({
 		this.callback( this.order );
 	}
 });
-
-})( window, jQuery );

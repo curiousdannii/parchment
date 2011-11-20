@@ -17,20 +17,19 @@ TODO:
 
 */
 
-var $window = $( window ),
-
-TextGrid = Object.subClass({
+var TextGrid = Object.subClass({
 	// Set up the class, and attach a stream handler
 	init: function( elem, io )
 	{
 		var self = this;
 		this.elem = elem
 			.addClass( 'TextGrid' )
-			.bind( 'stream', function( e )
+			.on( 'stream', function( e )
 			{
 				self.stream( e.order.data );
 				return false;
-			});
+			})
+			.css( 'bgcolor', 'inherit' );
 		this.lineheight = io.env.charheight;
 		this.io = io;
 		io.TextInput.statuswin = this.elem;

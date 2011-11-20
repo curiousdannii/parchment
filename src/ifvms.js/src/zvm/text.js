@@ -50,12 +50,12 @@ Text = Object.subClass({
 		i = 0, l = 96;
 		
 		this.e = engine;
-		this.maxaddr = memory.getUint16( 0x1A ) * engine.packing_multipler;
+		this.maxaddr = memory.getUint16( 0x1A ) * engine.addr_multipler;
 		
 		// Check for custom alphabets
 		this.make_alphabet( alphabet_addr ? memory.getBuffer( alphabet_addr, 78 )
 			// Or use the standard alphabet
-			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*\r0123456789.,!?_#\'"/\\-:()' ) );
+			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \r0123456789.,!?_#\'"/\\-:()' ) );
 		
 		// Check for a custom unicode table
 		this.make_unicode( unicode_addr ? memory.getBuffer16( unicode_addr, unicode_len )
@@ -102,9 +102,9 @@ Text = Object.subClass({
 			table[i + 155] = data[i];
 			reverse[data[i]] = 155 + i++;
 		}
-		this.unicode_table = table;
+		//this.unicode_table = table;
 		this.reverse_unicode_table = reverse;
-		this.unicode_callback = function( charr ) { return String.fromCharCode( table[charr.charCodeAt(0)] || 63 ) };
+		this.unicode_callback = function( charr ) { return String.fromCharCode( table[charr.charCodeAt(0)] || 63 ); };
 	},
 	
 	// Decode Z-chars into ZSCII and then Unicode
@@ -220,29 +220,30 @@ Text = Object.subClass({
 				zchars.push( 0 );
 			}
 			// Alphabets
-			temp = alphabets[0].indexOf( achar );
-			if ( temp >= 0 )
+			else if ( ( temp = alphabets[0].indexOf( achar ) ) >= 0 )
 			{
 				zchars.push( temp + 6 );
 			}
-			temp = alphabets[1].indexOf( achar );
-			if ( temp >= 0 )
+			else if ( ( temp = alphabets[1].indexOf( achar ) ) >= 0 )
 			{
 				zchars.push( 4, temp + 6 );
 			}
-			temp = alphabets[2].indexOf( achar );
-			if ( temp >= 0 )
+			else if ( ( temp = alphabets[2].indexOf( achar ) ) >= 0 )
 			{
 				zchars.push( 5, temp + 6 );
 			}
 			// 10-bit ZSCII
-			temp = this.reverse_unicode_table[achar];
-			if ( temp )
+			else if ( achar > 32 && achar < 127 )
+			{
+				zchars.push( 5, 6, achar >> 5, achar & 0x1F );
+			}
+			// Unicode table
+			else if ( temp = this.reverse_unicode_table[achar] )
 			{
 				zchars.push( 5, 6, temp >> 5, temp & 0x1F );
 			}
 			// Pad character
-			if ( achar == undefined )
+			else if ( achar == undefined )
 			{
 				zchars.push( 5 );
 			}
