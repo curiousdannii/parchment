@@ -8,15 +8,12 @@ BSD licenced
 http://code.google.com/p/parchment
 
 */
-(function(window, $){
-
-var parchment = window.parchment;
+;;; (function(window, $){
 
 // Load Parchment, start it all up!
 $(function()
 {
-	var queryoptions = /options=([^;&]+)/.exec( location.search ),
-	library;
+	var queryoptions = /options=([^;&]+)/.exec( location.search );
 	
 	// Check for any customised options
 	if ( window.parchment_options )
@@ -32,8 +29,7 @@ $(function()
 	}
 	
 	// Load the library
-	library = new parchment.lib.Library();
-	parchment.library = library;
+	library = parchment.library = new Library();
 	library.load();
 
 	// Add the Analytics tracker, but only if we're at iplayif.com

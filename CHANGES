@@ -6,6 +6,7 @@ ZVM is now the default Z-Machine VM.
 Changed the VM launching system so that each VM now provides a Runner (or else it will use the default).
 Gnusto uses ZVM's UI class. The old ZUI is gone!
 Wrote a new IO system called StructIO, which is used by both ZVM and Gnusto. Eventually I hope to make a Glk wrapper for it too.
+Started rewriting the Library to use a Model and ORM system, and to write to localStorage
 
 October 2011
 ================================================================================

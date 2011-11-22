@@ -13,15 +13,82 @@ http://code.google.com/p/parchment
 
 TODO:
 	Display a more specific error if one was given by the proxy
+	Change page title if Story.launch() has a vm
 
 */
 
-(function(window, $){
-
-var rqueryurl = /story=([^;&]+)/,
-rqueryvm = /vm=(\w+)/,
-rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
+var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
+
+// Savefile
+Savefile = Model.subClass( 'Savefile', {} ),
+
+// Storyfile
+Story = Model.subClass( 'Story', {
+	_has: { 'Savefile': [] },
+	_id_prop: 'url',
+	
+	// Launch this story
+	launch: function( vm )
+	{
+		// Get a VM if we can
+		vm = parchment.vms.match( vm || this.vm, this.url );
+		
+		// Or raise an error if we can't
+		if ( !vm )
+		{
+			throw new FatalError( 'File type is not supported!' );
+		}
+		
+		// Load the story file
+		var actions = [
+			
+			$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
+				// Attach the library for the launcher to use (yay for chaining)
+				.done( function( data, textStatus, jqXHR )
+				{
+					jqXHR.library = library;
+					jqXHR.vm = vm;
+				})
+				// Some error in downloading
+				.fail( story_get_fail )
+			
+		],
+		
+		// Get the scripts if they haven't been loaded already
+		scripts = [],
+		i = 0,
+		dependency;
+		
+		if ( !vm.loaded )
+		{
+			vm.loaded = 1;
+			
+			while ( i < vm.files.length )
+			{
+				dependency = parchment.options.lib_path + vm.files[i++];
+				// JS
+				if ( rjs.test( dependency ) )
+				{
+					scripts.push( $.getScript( dependency ) );
+				}
+				// CSS
+				else
+				{
+					this.ui.stylesheet_add( vm.id, dependency );
+				}
+			}
+			
+			// Use jQuery.when() to get a promise for all of the scripts
+			actions[1] = $.when.apply( 1, scripts );
+				//.fail( scripts_fail );
+		}
+		
+		// Add the launcher callback
+		$.when.apply( 1, actions )
+			.done( launch_callback );
+	}
+}),
 
 // Callback to show an error when the story file wasn't loaded
 story_get_fail = function(){
@@ -35,7 +102,7 @@ launch_callback = function( args )
 	$( '.load' ).detach();
 	
 	// Create a runner
-	var runner = window.runner = new ( window[args[2].vm.runner] || Runner )(
+	var runner = parchment.runner = new ( window[args[2].vm.runner] || Runner )(
 		parchment.options,
 		args[2].vm.engine
 	),
@@ -48,7 +115,7 @@ launch_callback = function( args )
 	// Load it up!
 	runner.fromParchment({
 		code: 'load',
-		data: ( new parchment.lib.Story( args[2].responseArray ) ).data
+		data: ( new Blorb( args[2].responseArray ) ).data
 	});
 	
 	// Restore if we have a savefile
@@ -64,7 +131,7 @@ launch_callback = function( args )
 	{
 		runner.fromParchment({ code: 'restart' });
 	}
-};
+},
 
 // Callback to show an error if a VM's dependant scripts could be successfully loaded
 // Currently not usable as errors are not detected :(
@@ -72,8 +139,8 @@ launch_callback = function( args )
 	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
 };*/
 
-// A story file
-parchment.lib.Story = IFF.subClass({
+// A blorbed story file
+Blorb = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
 	init: function parse_zblorb(data, story_name)
 	{
@@ -187,29 +254,22 @@ parchment.lib.Story = IFF.subClass({
 			// Not a story file
 			this.filetype = 'error unknown general';
 */	}
-});
-
-// Story file cache
-var StoryCache = Object.subClass({
-	// Add a story to the cache
-	add: function(story)
-	{
-		this[story.ifid] = story;
-		if (story.url)
-			this.url[story.url] = story;
-	},
-	url: {}
 }),
 
 // The Parchment Library class
-Library = Object.subClass({
+// Must be instantiated as library (from intro.js)
+Library = Collection.subClass({
 	// Set up the library
 	init: function()
 	{
+		// Collection.init()
+		this.Class = Story;
+		this.fetch();
+	
 		// Keep a reference to our container
 		this.container = $( parchment.options.container );
 		
-		this.ui = new parchment.lib.UI( this );
+		this.ui = new UI( this );
 	},
 	
 	// Load a story or savefile
@@ -219,30 +279,14 @@ Library = Object.subClass({
 		
 		options = parchment.options,
 		
-		storyfile = rqueryurl.exec( location.search ),
-		url,
-		vm = rqueryvm.exec( location.search ),
-		i = 0;
+		//storyName,
+		vm = /vm=(\w+)/.exec( location.search ),
 		
-		// Run the default story only
-		if ( options.lock_story )
-		{
-			// Locked to the default story
-			storyfile = options.default_story;
-
-			if ( !storyfile )
-			{
-				throw new FatalError( 'Story file not specified' );
-			}
-		}
-		// Load the requested story or the default story
-		else if ( options.default_story || storyfile )
-		{
-			// Load from URL, or the default story
-			storyfile = storyfile && unescape( storyfile[1] ) || options.default_story;
-		}
+		// Get the requested story, if there is one
+		story = this.get_story();
+		
 		// Show the library
-		else
+		if ( !story )
 		{
 			return this.ui.load_panels();
 		}
@@ -252,118 +296,76 @@ Library = Object.subClass({
 		
 		// Show the load indicator
 		$( 'body' ).append( self.ui.load_indicator );
-		
-		// Normalise the storyfile array
-		if ( !$.isArray( storyfile ) )
-		{
-			storyfile = [ storyfile, 0 ];
-		}
-		url = storyfile[0];
-		self.url = url;
 
-		storyName = rtitle.exec( url );
-		storyName = storyName ? storyName[1] + " - Parchment" : "Parchment";
-		
-		// Change the page title
-		if ( options.page_title )
+		// If we've been told which vm to use, add it to the story
+		if ( vm )
 		{
-			window.document.title = storyName;
+			story.set( 'vm', ( vm = vm[1] ) );
 		}
 		
-		// Check the story cache first
-		//if ( self.stories.url[url] )
-		//	var story = self.stories.url[url];
-
-		// We will have to download it
-		//else
-		//{
-			// If a VM was explicitly specified, use it
-			if ( vm )
-			{
-				vm = parchment.vms[ vm[1] ];
-			}
-			// Otherwise test each in turn
-			else
-			{
-				for ( ; i < parchment.vms.length; i++ )
-				{
-					if ( parchment.vms[i].match.test( url ) )
-					{
-						vm = parchment.vms[i];
-						break;
-					}
-				}
-			}
-			// Raise an error if we have no VM
-			if ( !vm )
-			{
-				throw new FatalError( 'File type is not supported!' );
-			}
-			
-			// Launch the story with the VM
-			try
-			{
-				this.launch( vm, storyfile );
-			}
-			catch (e)
-			{
-				throw new FatalError( e );
-			}
-		//}
+		// Launch the story
+		try
+		{
+			story.launch( vm );
+		}
+		catch (e)
+		{
+			throw new FatalError( e );
+		}
 	},
 	
-	// Get all the required files and launch the VM
-	launch: function( vm, storyfile )
+	// Get the requested story, or fall back to a default one
+	get_story: function()
 	{
-		var self = this,
+		var options = parchment.options,
 		
-		// Load the story file
-		actions = [
-			
-			$.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
-				// Attach the library for the launcher to use (yay for chaining)
-				.done( function( data, textStatus, jqXHR )
-				{
-					jqXHR.library = self;
-					jqXHR.vm = vm;
-				})
-				// Some error in downloading
-				.fail( story_get_fail )
-			
-		],
+		storyurl = /story=([^;&]+)/.exec( location.search ),
+		backupurl,
+		story;
 		
-		// Get the scripts if they haven't been loaded already
-		scripts = [],
-		i = 0,
-		dependency;
-		
-		if ( !vm.loaded )
+		// Run the default story only
+		if ( options.lock_story )
 		{
-			vm.loaded = 1;
-			
-			while ( i < vm.files.length )
+			// Locked to the default story
+			storyurl = options.default_story;
+
+			if ( !storyurl )
 			{
-				dependency = parchment.options.lib_path + vm.files[i++];
-				// JS
-				if ( rjs.test( dependency ) )
-				{
-					scripts.push( $.getScript( dependency ) );
-				}
-				// CSS
-				else
-				{
-					this.ui.stylesheet_add( vm.id, dependency );
-				}
+				throw 'Story file not specified';
 			}
-			
-			// Use jQuery.when() to get a promise for all of the scripts
-			actions[1] = $.when.apply( 1, scripts );
-				//.fail( scripts_fail );
+		}
+		// Load the requested story or the default story
+		else if ( options.default_story || storyurl )
+		{
+			// Load from URL, or the default story
+			storyurl = storyurl && unescape( storyurl[1] ) || options.default_story;
+		}
+		// Give up
+		else
+		{
+			return;
 		}
 		
-		// Add the launcher callback
-		$.when.apply( 1, actions )
-			.done( launch_callback );
+		// storyurl could be an array if it is from the options
+		if ( $.isArray( storyurl ) )
+		{
+			backupurl = storyurl[1];
+			storyurl = storyurl[0];
+		}
+		
+		// Try to find this story in the library
+		story = this.find( 'url', storyurl )[0];
+		
+		// Or create it if needed
+		if ( !story )
+		{
+			this.add( story = new Story({
+				url: storyurl,
+				backup: backupurl
+			}) );
+		}
+		
+		return story;
 	},
 	
 	// An event from a runner
@@ -386,21 +388,5 @@ Library = Object.subClass({
 		}
 		
 		runner.fromParchment( event );
-	},
-	
-	// Loaded stories and savefiles
-	stories: new StoryCache(),
-	savefiles: {}
+	}
 });
-
-parchment.lib.Library = Library;
-
-// VM definitions
-parchment.vms = [];
-parchment.add_vm = function( defn )
-{
-	parchment.vms.push( defn );
-	parchment.vms[defn.id] = defn;
-};
-
-})(window, jQuery);

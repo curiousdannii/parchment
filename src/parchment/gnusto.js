@@ -9,7 +9,7 @@ http://code.google.com/p/parchment
 
 */
 
-parchment.add_vm({
+parchment.vms.add({
 	id: 'gnusto',
 	
 	// File pattern

@@ -1,9 +1,7 @@
 /*
 
-Parchment
-=========
-
-Built: BUILDDATE
+Parchment Intro: utility functions and various other things that need to be set up
+==================================================================================
 
 Copyright (c) 2008-2011 The Parchment Contributors
 BSD licenced
@@ -11,27 +9,56 @@ http://code.google.com/p/parchment
 
 */
 
+(function( window, jQuery, undefined ){ 'use strict';
+
+;;; })();
+
+var $ = jQuery,
+
+extend = function( old, add )
+{
+	for ( var name in add )
+	{
+		old[name] = add[name];
+	}
+	return old;
+},
+
+// Are we running from file:? Do it this way just to be fancy and save a few bytes
+LOCAL =
+
 // Don't append a timestamp to XHR requests
 // Converter for use with the binary dataType prefilter in file.js
-jQuery.ajaxSetup({
+$.ajaxSetup({
 	cache: 1,
 	converters: {
 		'* binary': true
     }
-});
+})
 
-// Don't use XHR for local files
-// Limit to Chrome?
-jQuery.ajaxPrefilter( 'script', function( options /*, originalOptions, jqXHR*/ )
+.isLocal,
+
+// A simple pub/sub implementation
+// from http://addyosmani.com/blog/jquery-1-7s-callbacks-feature-demystified/
+topics = {},
+topic = function( id )
 {
-	if ( options.isLocal )
+	var callbacks,
+	topic = topics[id];
+	if ( !topic )
 	{
-		options.crossDomain = 1;
+		callbacks = $.Callbacks();
+		topic = topics[id] = callbacks.fire;
+		topic.sub = callbacks.add;
+		topic.unsub = callbacks.remove;
 	}
-});
+	return topic;
+},
+
+library,
 
 // The home for Parchment to live in
-var parchment = {
+parchment = window.parchment = {
 
 	// The default parchment options
 	options: {
@@ -64,7 +91,40 @@ var parchment = {
 		// NOTE: this is not guaranteed to be a stable API option
 		//width: 80
 	},
-
-	// Classes etc
-	lib: {}
+	
+	//topics: topics,
+	topic: topic,
+	
+	// VM definitions
+	vms: []
 };
+extend( parchment.vms, {
+	add: function( defn )
+	{
+		this.push( defn );
+		this[defn.id] = defn;
+	},
+	match: function( id, url )
+	{
+		if ( this[id] )
+		{
+			return this[id];
+		}
+		for ( var i = 0; i < this.length; i++ )
+		{
+			if ( this[i].match.test( url ) )
+			{
+				return this[i];
+			}
+		}
+	}
+});
+
+// Don't use XHR for local files
+if ( LOCAL )
+{
+	jQuery.ajaxPrefilter( 'script', function( options /*, originalOptions, jqXHR*/ )
+	{
+		options.crossDomain = 1;
+	});
+}

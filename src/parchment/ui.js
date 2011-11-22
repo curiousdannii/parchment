@@ -16,19 +16,15 @@ TODO:
 
 */
 
-(function($){
-
-var window = this,
-
 // Map results callback
-results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
+var results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
 map_results_callback = function( story )
 {
 	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
-};
+},
 
 // The main UI class
-parchment.lib.UI = Object.subClass({
+UI = Object.subClass({
 	init: function( library )
 	{
 		this.library = library;
@@ -125,5 +121,3 @@ parchment.lib.UI = Object.subClass({
 	}
 
 });
-
-})(jQuery);

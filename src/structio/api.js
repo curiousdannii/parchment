@@ -67,7 +67,7 @@ StructIO = Object.subClass({
 	{
 		env = extend( {}, env );
 		this.env = env;
-		var element = $( env.container ),
+		var element = this.container = this.target = $( env.container ),
 		
 		// Calculate the width we want
 		measureelem = $( '<tt>00000</tt>' )
@@ -82,11 +82,9 @@ StructIO = Object.subClass({
 			charwidth: charwidth,
 			width: widthinchars
 		});
-		element.width( widthinchars * charwidth );
 		
-		this.container = element
-		this.target = element;
-		element.on( 'stream', basic_stream_handler );
+		element.on( 'stream', basic_stream_handler )
+			.width( widthinchars * charwidth );
 		this.TextInput = new TextInput( element );
 		
 		// Default structures
@@ -142,7 +140,7 @@ StructIO = Object.subClass({
 			
 			if ( code == 'clear' )
 			{
-				var temp = order.name ? $( '.' + order.name ) : target;
+				temp = order.name ? $( '.' + order.name ) : target;
 				temp.empty();
 				// Set the background colour
 				// If we're clearing the main window, then change <body> instead

@@ -24,7 +24,7 @@ TODO:
 
 */
  
-(function(window, $){
+var file = (function(window, $){
 
 // VBScript code
 if ( window.execScript )
@@ -241,7 +241,7 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 {
 	// Chrome > 4 doesn't allow file:// to file:// XHR
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	var binary = options.isLocal && !options.crossDomain && chrome_no_file ? 0 : support.binary,
+	var binary = LOCAL && !options.crossDomain && chrome_no_file ? 0 : support.binary,
 	
 	// Expose the real XHR object onto the jqXHR
 	XHRFactory = options.xhr;
@@ -306,22 +306,6 @@ $.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 
 // Converters are set in intro.js
 
-/* DEBUG */
-
-// Download a file to a byte array
-// Note: no longer used by library.js
-function download_to_array( url, callback )
-{
-	// Request the file with the binary type
-	$.ajax( url, { dataType: 'binary' } )
-		.success(function( data, textStatus, jqXHR )
-		{
-			callback( jqXHR.responseArray );
-		});
-}
-
-/* ENDDEBUG */
-
 /*
 	// Images made from byte arrays
 	file.image = base2.Base.extend({
@@ -347,14 +331,12 @@ function download_to_array( url, callback )
 */
 
 // Expose
-
-window.file = {
+return parchment.file = {
 	text_to_array: text_to_array,
 	array_to_text: array_to_text,
 	base64_decode: base64_decode,
 	base64_encode: base64_encode,
 	support: support
 };
-;;; window.file.download_to_array = download_to_array;
 
 })(window, jQuery);

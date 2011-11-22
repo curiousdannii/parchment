@@ -101,9 +101,6 @@ var TextInput = Object.subClass({
 					cancel = 1;
 				}
 				
-				// Don't propagate the event
-				event.stopPropagation();
-				
 				// Don't do the default browser action
 				// (For example in Mac OS pressing up will force the cursor to the beginning of a line)
 				if ( cancel )
@@ -147,6 +144,7 @@ var TextInput = Object.subClass({
 			// Or if the cursor is too far below the viewport
 				$window.scrollTop() + $window.height() - input.offset().top > -60 )
 			{
+				ev.stopPropagation();
 				window.scrollTo( 0, window.scrollMaxY );
 				input.focus()
 					.trigger( ev );
@@ -165,6 +163,9 @@ var TextInput = Object.subClass({
 		// Find the element which we calculate scroll offsets from
 		// For now just decide by browser
 		self.scrollParent = $.browser.webkit ? $body : $( 'html' );
+		
+		// Topic for notifying of input events
+		self.msg = parchment.topic( 'TextInput' );
 	},
 	
 	// Cleanup so we can deconstruct
@@ -238,9 +239,8 @@ var TextInput = Object.subClass({
 			this.history.unshift( command );
 		}
 		
-		// Trigger a custom event for anyone listening in for commands
-		$doc.trigger({
-			type: 'TextInput',
+		// Send a message for anyone listening in for commands
+		this.msg({
 			mode: 'line',
 			input: command
 		});
@@ -302,9 +302,8 @@ var TextInput = Object.subClass({
 		this.input.detach()
 			.removeClass( 'CharInput' );
 		
-		// Trigger a custom event for anyone listening in for key strokes
-		$doc.trigger({
-			type: 'TextInput',
+		// Send a message for anyone listening in for key strokes
+		this.msg({
 			mode: 'char',
 			input: input
 		});

@@ -9,20 +9,18 @@ http://code.google.com/p/parchment
 
 */
 
+/*
+
+Note:
+	Requires extend() from parchment/intro.js
+
+*/
+
 (function( window, $, undefined ){
 
 ;;; })();
 
-var extend = function( old, add )
-{
-	for ( var name in add )
-	{
-		old[name] = add[name];
-	}
-	return old;
-},
-
-rBadBackground = /inh|tra|(\d+, ?){3}0/,
+var rBadBackground = /inh|tra|(\d+, ?){3}0/,
 
 $window = $( window ),
 $doc = $( document ),
