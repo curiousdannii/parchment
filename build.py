@@ -86,6 +86,7 @@ compress = (
 	('.build/glkote.js', 'lib/glkote.min.js', 'src/quixe/glkote/header.txt'),
 	('.build/glkote.css', 'lib/glkote.min.css', 'src/quixe/glkote/header.txt'),
 	('.build/zvm.js', 'lib/zvm.min.js', 'src/ifvms.js/src/zvm/header.txt', debugzvm),
+	('src/parchment/parchment.manifest', 'parchment.manifest'),
 )
 
 import datetime
@@ -99,7 +100,7 @@ today = str(datetime.date.today())
 if not os.path.isdir('.build'):
 	os.makedirs('.build')
 
-filestobuild = []
+filestobuild = ['src/parchment/parchment.manifest']
 
 # Combine source files together to make 'packages'
 for package in includes:
@@ -138,9 +139,10 @@ for package in compress:
 	output.close()
 	
 	# Compress!
-	command = 'java -jar tools/yuicompressor-2.4.2.jar --type ' + (package[1].endswith('.js') and 'js' or 'css' ) + ' .build/temp -o .build/temp'
-	os.system(command)
-	data = file('.build/temp').read()
+	if package[1].endswith('.js') or package[1].endswith('.css'):
+		command = 'java -jar tools/yuicompressor-2.4.2.jar --type ' + (package[1].endswith('.js') and 'js' or 'css' ) + ' .build/temp -o .build/temp'
+		os.system(command)
+		data = file('.build/temp').read()
 	
 	# Add a header if needed
 	if len(package) > 2:
