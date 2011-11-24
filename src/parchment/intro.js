@@ -9,6 +9,17 @@ http://code.google.com/p/parchment
 
 */
 
+/*
+
+TODO:
+	Invesigate these Apple media options
+	    <link rel="apple-touch-icon" href="media/img/iphone/icon.png">
+		<link rel="apple-touch-startup-image" href="media/img/iphone/splash.png">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+*/
+
 (function( window, jQuery, undefined ){ 'use strict';
 
 ;;; })();
@@ -55,7 +66,11 @@ topic = function( id )
 	return topic;
 },
 
+// These will all be class instances, but there should only ever be one at once
+ui,
 library,
+runner,
+engine,
 
 // The home for Parchment to live in
 parchment = window.parchment = {
@@ -97,12 +112,58 @@ parchment = window.parchment = {
 	
 	// VM definitions
 	vms: []
+},
+
+// Load a VM's dependent files - attached by vms.add()
+load_vm = function()
+{
+	var self = this,
+	i = 0,
+	dependency,
+	scripts = [],
+	deferred;
+	
+	// We've loaded this VM before, so return the Deferred
+	if ( this.loaded )
+	{
+		return this.loaded;
+	}
+	
+	// This is our first time, so make a Deferred
+	deferred = this.loaded = $.Deferred();
+	
+	// Load all the dependencies
+	while ( i < this.files.length )
+	{
+		dependency = parchment.options.lib_path + this.files[i++];
+		// JS
+		if ( /\.js$/.test( dependency ) )
+		{
+			scripts.push( $.getScript( dependency ) );
+		}
+		// CSS
+		else
+		{
+			ui.stylesheet_add( this.id, dependency );
+		}
+	}
+	
+	// Use jQuery.when() to get a promise for all of the scripts
+	$.when.apply( this, scripts )
+		// When all the scripts are loaded, then resolve our deferred with this vm
+		.done( function(){ deferred.resolve( self ); } );
+		//.fail( scripts_fail );
+		
+	return deferred;
 };
+
+// VM helper functions - here is as good a place as any to define them
 extend( parchment.vms, {
 	add: function( defn )
 	{
 		this.push( defn );
 		this[defn.id] = defn;
+		defn.load = load_vm;
 	},
 	match: function( id, url )
 	{

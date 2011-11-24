@@ -13,6 +13,7 @@ http://code.google.com/p/parchment
 
 TODO:
 	Flash support: default for LOCAL, because loading extra files is no harm
+		Offer to Undum developer when complete
 
 */
 
@@ -22,6 +23,55 @@ var storage = {},
 
 // JSON compatibility
 JSON_parse = JSON ? JSON.parse : $.parseJSON,
+JSON_stringify = JSON ? JSON.stringify : function( value )
+{
+	var i = 0,
+	partial = [],
+	temp;
+	
+	// A crude implementation of JSON.stringify
+	switch ( typeof value )
+	{
+		case 'string':
+			return JSON_stringify_quote( value );
+        case 'number':
+        case 'boolean':
+            return String( value );
+		case 'object':
+			if ( !value )
+			{
+				return 'null';
+			}
+			// Array
+			if ( Object.prototype.toString.apply( value ) == '[object Array]' )
+			{
+				while( i < value.length )
+				{
+					partial.push( JSON_stringify( value[i++] ) || 'null' );
+				}
+				return '[' + partial.join() + ']';
+			}
+			// Object
+			for ( i in value )
+			{
+				//if ( Object.hasOwnProperty.call(value, i) )
+				//{
+					if ( temp = JSON_stringify( value[i] ) )
+					{
+						partial.push( JSON_stringify_quote( i ) + ':' + temp );
+					}
+				//}
+			}
+			return '{' + partial.join() + '}';
+	}
+},
+// Very crude quoter
+JSON_stringify_quote = function( string )
+{
+	return '"' + string.replace( /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\uffff]/g, function( a ) {
+		return '\\u' + ( '0000' + a.charCodeAt( 0 ).toString( 16 ) ).slice( -4 );
+	} ) + '"';
+},
 
 // First get our potential storage objects
 //indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB,
@@ -65,11 +115,12 @@ build_storage = function()
 		get: function( key, callback )
 		{
 			//callback( JSON_parse( localStorage[key] ) );
-			return JSON_parse( localStorage[key] );
+			var data = localStorage['parchment' + key];
+			return /^[[{]/.test( data ) ? JSON_parse( data ) : data;
 		},
 		set: function( key, val )
 		{
-			localStorage[key] = JSON.stringify( val );
+			localStorage['parchment' + key] = typeof val == 'string' ? val : JSON_stringify( val );
 		}
 	});
 };

@@ -48,7 +48,6 @@ ByteArray = native_bytearrays ?
 				getUint8: function( index ) { return data[index]; },
 				getUint16: function( index ) { return data[index] << 8 | data[index + 1]; },
 				getBuffer: function( start, length ) { return data.slice( start, start + length ); },
-				getBuffer16: function( start, length ) { return byte_to_word( data.slice( start, start + length * 2 ) ); },
 				setUint8: function( index, value ) { return data[index] = value & 0xFF; },
 				setUint16: function( index, value ) { data[index] = (value >> 8) & 0xFF; data[index + 1] = value & 0xFF; return value & 0xFFFF; },
 				setBuffer: function( index, buffer ) { return data = data.slice( 0, index ).concat( buffer, data.slice( index + buffer.length ) ); }

@@ -28,12 +28,15 @@ $(function()
 		$.extend( parchment.options, $.parseJSON( unescape( queryoptions[1] ) ) );
 	}
 	
+	// Instantiate our UI
+	ui = parchment.ui = new UI();
+	
 	// Load the library
-	library = parchment.library = new Library();
+	library = parchment.library = new Library( Story );
 	library.load();
 
 	// Add the Analytics tracker, but only if we're at iplayif.com
-	if ( location.href.indexOf( 'iplayif.com' ) != -1 )
+	if ( /iplayif.com/.test( location.host ) )
 	{
 		$.getScript( 'http://google-analytics.com/ga.js', function(){_gat._getTracker( 'UA-7949545-3' )._trackPageview();} );
 	}

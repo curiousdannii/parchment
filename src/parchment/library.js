@@ -14,21 +14,21 @@ http://code.google.com/p/parchment
 TODO:
 	Display a more specific error if one was given by the proxy
 	Change page title if Story.launch() has a vm
+		rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/
 
 */
 
-var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
-rjs = /\.js$/,
-
 // Savefile
-Savefile = Model.subClass( 'Savefile', {} ),
+var Savefile = Model.subClass( 'Savefile', {
+	_init_data: 1
+}),
 
 // Storyfile
 Story = Model.subClass( 'Story', {
 	_has: { 'Savefile': [] },
 	_id_prop: 'url',
 	
-	// Launch this story
+	// Load this story and its VM
 	launch: function( vm )
 	{
 		// Get a VM if we can
@@ -40,53 +40,48 @@ Story = Model.subClass( 'Story', {
 			throw new FatalError( 'File type is not supported!' );
 		}
 		
-		// Load the story file
-		var actions = [
-			
-			$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
-				// Attach the library for the launcher to use (yay for chaining)
-				.done( function( data, textStatus, jqXHR )
-				{
-					jqXHR.library = library;
-					jqXHR.vm = vm;
-				})
-				// Some error in downloading
-				.fail( story_get_fail )
-			
-		],
+		// Get a promise which will resolve when the story and VM are both finished loading
+		$.when( this.load(), vm.load() )
+			// And then launch the VM!
+			.done( launch_callback );
 		
-		// Get the scripts if they haven't been loaded already
-		scripts = [],
-		i = 0,
-		dependency;
+		// Update some stats
+		this.set( 'lastplay', ( new Date() ).getTime() );
+		this.set( 'playcount', ( this.playcount || 0 ) + 1 );
+	},
+	
+	// Get the story file from storage, or download it
+	load: function()
+	{
+		var self = this,
+		data = this.data(),
+		deferred = $.Deferred();
 		
-		if ( !vm.loaded )
+		// We have the data, so resolve the Deferred
+		if ( data )
 		{
-			vm.loaded = 1;
-			
-			while ( i < vm.files.length )
-			{
-				dependency = parchment.options.lib_path + vm.files[i++];
-				// JS
-				if ( rjs.test( dependency ) )
-				{
-					scripts.push( $.getScript( dependency ) );
-				}
-				// CSS
-				else
-				{
-					this.ui.stylesheet_add( vm.id, dependency );
-				}
-			}
-			
-			// Use jQuery.when() to get a promise for all of the scripts
-			actions[1] = $.when.apply( 1, scripts );
-				//.fail( scripts_fail );
+			// Fake an XHR, all we access are these properties
+			deferred.resolve({
+				responseText: data,
+				responseArray: this._array || ( this._array = file.text_to_array( data ) )
+			});
 		}
 		
-		// Add the launcher callback
-		$.when.apply( 1, actions )
-			.done( launch_callback );
+		// Otherwise download the file
+		else
+		{
+			$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
+				.done( function( data, textStatus, jqXHR )
+				{
+					// Save the data to storage
+					self.data( data );
+					// Resolve our deferred with the XHR
+					deferred.resolve( jqXHR );
+				})
+				.fail( story_get_fail );
+		}
+		
+		return deferred;
 	}
 }),
 
@@ -96,26 +91,26 @@ story_get_fail = function(){
 },
 
 // Launcher. Will be run by jQuery.when(). jqXHR is args[2]
-launch_callback = function( args )
+launch_callback = function( storydata, vm )
 {
 	// Hide the load indicator
 	$( '.load' ).detach();
 	
 	// Create a runner
-	var runner = parchment.runner = new ( window[args[2].vm.runner] || Runner )(
+	runner = parchment.runner = new ( window[vm.runner] || Runner )(
 		parchment.options,
-		args[2].vm.engine
-	),
+		vm.engine
+	);
 	
-	savefile = location.hash;
+	var savefile = location.hash;
 	
 	// Add the callback
-	runner.toParchment = function( event ) { args[2].library.fromRunner( runner, event ); };
+	runner.toParchment = function( event ) { library.fromRunner( runner, event ); };
 	
 	// Load it up!
 	runner.fromParchment({
 		code: 'load',
-		data: ( new Blorb( args[2].responseArray ) ).data
+		data: ( new Blorb( storydata.responseArray ) ).data
 	});
 	
 	// Restore if we have a savefile
@@ -260,26 +255,14 @@ Blorb = IFF.subClass({
 // Must be instantiated as library (from intro.js)
 Library = Collection.subClass({
 	// Set up the library
-	init: function()
+	load: function()
 	{
-		// Collection.init()
-		this.Class = Story;
+		// Update from localStorage
 		this.fetch();
-	
-		// Keep a reference to our container
-		this.container = $( parchment.options.container );
 		
-		this.ui = new UI( this );
-	},
-	
-	// Load a story or savefile
-	load: function( id )
-	{
 		var self = this,
 		
 		options = parchment.options,
-		
-		//storyName,
 		vm = /vm=(\w+)/.exec( location.search ),
 		
 		// Get the requested story, if there is one
@@ -288,19 +271,19 @@ Library = Collection.subClass({
 		// Show the library
 		if ( !story )
 		{
-			return this.ui.load_panels();
+			return ui.load_panels();
 		}
 		
 		// Hide the #about, until we can do something more smart with it
 		$('#about').remove();
 		
 		// Show the load indicator
-		$( 'body' ).append( self.ui.load_indicator );
+		$( 'body' ).append( ui.load_indicator );
 
 		// If we've been told which vm to use, add it to the story
 		if ( vm )
 		{
-			story.set( 'vm', ( vm = vm[1] ) );
+			story.set( 'vm', vm = vm[1] );
 		}
 		
 		// Launch the story

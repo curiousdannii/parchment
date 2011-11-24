@@ -16,8 +16,6 @@ TODO:
 		doesn't work yet because of storers before the branch
 		Need loops where the condition is at the end -> do {} while ()
 	break (& continue?)
-	when opcodes are removed, if debug then add a comment
-	The @jump check isn't VM independant
 	
 */
 
@@ -68,10 +66,14 @@ var idiom_if_block = function( context, pc )
 			
 			// Check if this is actually a loop
 			lastop = subcontext.ops[subcontext.ops.length - 1];
-			if ( lastop.code == 140 && ( U2S( lastop.operands[0].v ) + lastop.next - 2 ) == brancher.pc )
+			if ( lastop.jumper && ( U2S( lastop.operands[0].v ) + lastop.next - 2 ) == brancher.pc )
 			{
 				brancher.keyword = 'while';
-				subcontext.ops.pop();
+				/* DEBUG */
+					lastop.toString = function() { return this.label() + '/* Removed by idiom_if_block */'; };
+				/* ELSEDEBUG
+					subcontext.ops.pop();
+				/* ENDDEBUG */
 			}
 			else
 			{

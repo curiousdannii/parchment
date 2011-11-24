@@ -58,7 +58,7 @@ Text = Object.subClass({
 			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \r0123456789.,!?_#\'"/\\-:()' ) );
 		
 		// Check for a custom unicode table
-		this.make_unicode( unicode_addr ? memory.getBuffer16( unicode_addr, unicode_len )
+		this.make_unicode( unicode_addr ? byte_to_word( memory.getBuffer( unicode_addr, unicode_len * 2 ) )
 			// Or use the default
 			: this.text_to_zscii( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ), 1 ) );
 		

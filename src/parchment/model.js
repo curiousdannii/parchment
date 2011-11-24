@@ -14,6 +14,7 @@ http://code.google.com/p/parchment
 After exploring some JS MVC options I've decided to try writing my own. I'm not opposed to using another, and might consider more options again in the future, if this proves insufficient.
 
 TODO:
+	Do we ever save(1)? If not, then remove propagate option
 
 */
 
@@ -36,6 +37,11 @@ var Model = Object.subClass({
 			}
 		}
 		
+		if ( this._init_data )
+		{
+			this.data();
+		}
+		
 		this._id = this._id || this._id_prop && this[this._id_prop] || Model.id++
 	},
 	
@@ -51,7 +57,7 @@ var Model = Object.subClass({
 		for ( itemid in this )
 		{
 			// Don't save undefined props, _ props, Collections or functions!
-			if ( this[itemid] && itemid.charAt(0) != '_' && !Model.models[itemid] && typeof this[itemid] != 'function' )
+			if ( this[itemid] != undefined && itemid.charAt(0) != '_' && !Model.models[itemid] && typeof this[itemid] != 'function' )
 			{
 				data[itemid] = this[itemid];
 			}
@@ -84,15 +90,14 @@ var Model = Object.subClass({
 	data: function( data )
 	{
 		var datastring = 'DATA' + this._Class + this._id;
-		if ( data )
+		if ( data != undefined )
 		{
 			storage.set( datastring, data );
 		}
 		else
 		{
-			data = this._data || storage.get( datastring );
+			return this._data = this._data || storage.get( datastring );
 		}
-		return this._data = data;
 	}
 }),
 

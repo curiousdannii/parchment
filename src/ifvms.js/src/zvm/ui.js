@@ -58,13 +58,8 @@ convert_true_colour = function( colour )
 	var newcolour = Math.round( ( colour & 0x1F ) * 8.226 ) << 16
 		| Math.round( ( ( colour & 0x03E0 ) >> 5 ) * 8.226 ) << 8
 		| Math.round( ( ( colour & 0x7C00 ) >> 10 ) * 8.226 );
-	newcolour = newcolour.toString( 16 );
 	// Ensure the colour is 6 bytes long
-	while ( newcolour.length < 6 )
-	{
-		newcolour = '0' + newcolour;
-	}
-	return '#' + newcolour;
+	return '#' + ( '000000' + newcolour.toString( 16 ) ).slice( -6 );
 };
 
 return Object.subClass({
