@@ -26,7 +26,8 @@ var Savefile = Model.subClass( 'Savefile', {
 // Storyfile
 Story = Model.subClass( 'Story', {
 	_has: { 'Savefile': [] },
-	_id_prop: 'url',
+	// Not needed as long as we can ensure we keep the urls unique -> remove this option from model.js too
+//	_id_prop: 'url',
 	
 	// Load this story and its VM
 	launch: function( vm )
@@ -73,10 +74,10 @@ Story = Model.subClass( 'Story', {
 			$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
 				.done( function( data, textStatus, jqXHR )
 				{
-					// Save the data to storage
-					self.data( data );
 					// Resolve our deferred with the XHR
 					deferred.resolve( jqXHR );
+					// Save the data to storage
+					self.data( jqXHR.responseText );
 				})
 				.fail( story_get_fail );
 		}
@@ -260,10 +261,7 @@ Library = Collection.subClass({
 		// Update from localStorage
 		this.fetch();
 		
-		var self = this,
-		
-		options = parchment.options,
-		vm = /vm=(\w+)/.exec( location.search ),
+		var vm = /vm=(\w+)/.exec( location.search ),
 		
 		// Get the requested story, if there is one
 		story = this.get_story();

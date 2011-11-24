@@ -10,17 +10,8 @@
 
 TODO:
 	Consider whether it's worth having cross domain requests to things other than the proxy
-	
 	Add transport for XDR
-	
 	Access buffer if possible (don't change encodings)
-	
-	Is the native base64_decode function still useful?
-	If such a time comes when everyone has native atob(), then always expose the decoded text in process_binary_XHR()
-	
-	If we know we have a string which is latin1 (say from atob()), would it be faster to have a separate text_to_array() that doesn't need to &0xFF?
-	
-	Consider combining the eNs together first, then shifting to get the cNs (for the base64 decoder)
 
 */
  
@@ -53,41 +44,68 @@ if ( window.execScript )
 	, 'VBScript' );
 }
 
-var chrome = /chrome\/(\d+)/i.exec( navigator.userAgent ),
-chrome_no_file = chrome && parseInt( chrome[1] ) > 4,
+var chrome = /chrome/i.test( navigator.userAgent ),
+
+// Turn Windows-1252 into ISO-8859-1
+// There are only 27 differences, so this is an reasonable strategy
+// If only we could override with ISO-8859-1...
+fixWindows1252 = function( string )
+{
+	return string
+		.replace( /\u20ac/g, '\x80' ).replace( /\u201a/g, '\x82' ).replace( /\u0192/g, '\x83' )
+		.replace( /\u201e/g, '\x84' ).replace( /\u2026/g, '\x85' ).replace( /\u2020/g, '\x86' )
+		.replace( /\u2021/g, '\x87' ).replace( /\u02c6/g, '\x88' ).replace( /\u2030/g, '\x89' )
+		.replace( /\u0160/g, '\x8a' ).replace( /\u2039/g, '\x8b' ).replace( /\u0152/g, '\x8c' )
+		.replace( /\u017d/g, '\x8e' ).replace( /\u2018/g, '\x91' ).replace( /\u2019/g, '\x92' )
+		.replace( /\u201c/g, '\x93' ).replace( /\u201d/g, '\x94' ).replace( /\u2022/g, '\x95' )
+		.replace( /\u2013/g, '\x96' ).replace( /\u2014/g, '\x97' ).replace( /\u02dc/g, '\x98' )
+		.replace( /\u2122/g, '\x99' ).replace( /\u0161/g, '\x9a' ).replace( /\u203a/g, '\x9b' )
+		.replace( /\u0153/g, '\x9c' ).replace( /\u017e/g, '\x9e' ).replace( /\u0178/g, '\x9f' );
+},
 
 // Text to byte array and vice versa
-text_to_array = function(text, array)
+text_to_array = function( text )
 {
-	var array = array || [], i = 0, l;
-	for (l = text.length % 8; i < l; ++i)
-		array.push(text.charCodeAt(i) & 0xff);
-	for (l = text.length; i < l;)
+	var array = [],
+	i = 0, l = text.length % 8;
+	
+	while ( i < l )
+	{
+		array.push( text.charCodeAt( i++ ) );
+	}
+	
+	for ( l = text.length; i < l; )
+	{
 		// Unfortunately unless text is cast to a String object there is no shortcut for charCodeAt,
 		// and if text is cast to a String object, it's considerably slower.
-		array.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
-			text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff);
+		array.push( text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++),
+			text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++), text.charCodeAt(i++) );
+	}
 	return array;
 },
 
-array_to_text = function(array, text)
+array_to_text = function( array )
 {
 	// String.fromCharCode can be given an array of numbers if we call apply on it!
-	return ( text || '' ) + String.fromCharCode.apply( 1, array );
+	return String.fromCharCode.apply( this, array );
 },
 
 // Base64 encoding and decoding
 // Use the native base64 functions if available
 
-// Run this little function to build the decoder array
-encoder = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-decoder = (function()
+// Run this little function to build the encoding arrays
+encoder = [],
+decoder = (function( data )
 {
-	var out = [], i = 0;
-	for (; i < encoder.length; i++)
-		out[encoder.charAt(i)] = i;
+	var out = [], i = 0,
+	charr;
+	while ( i < 65 )
+	{
+		encoder.push( charr = data.charAt( i ) );
+		out[charr] = i++;
+	}
 	return out;
-})(),
+})( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=' ),
 
 base64_decode = function(data, out)
 {
@@ -97,23 +115,23 @@ base64_decode = function(data, out)
 	}
 	
 	var out = out || [],
-	c1, c2, c3, e1, e2, e3, e4,
+	e, e2,
 	i = 0, l = data.length;
-	while (i < l)
+	while ( i < l )
 	{
-		e1 = decoder[data.charAt(i++)];
-		e2 = decoder[data.charAt(i++)];
-		e3 = decoder[data.charAt(i++)];
-		e4 = decoder[data.charAt(i++)];
-		c1 = (e1 << 2) + (e2 >> 4);
-		c2 = ((e2 & 15) << 4) + (e3 >> 2);
-		c3 = ((e3 & 3) << 6) + e4;
-		out.push(c1, c2, c3);
+		e = decoder[data.charAt(i++)] << 18 | decoder[data.charAt(i++)] << 12 | decoder[data.charAt(i++)] << 6 | decoder[data.charAt(i++)];
+		out.push( e >> 16, ( e >> 8 ) & 0xFF, e & 0xFF );
 	}
-	if (e4 == 64)
-		out.pop();
-	if (e3 == 64)
-		out.pop();
+	e = out.pop();
+	e2 = out.pop();
+	if ( e2 != 64 )
+	{
+		out.push( e2 );
+	}
+	if ( e != 64 )
+	{
+		out.push( e );
+	}
 	return out;
 },
 
@@ -137,8 +155,7 @@ base64_encode = function(data, out)
 		e3 = ((c2 & 15) << 2) + (c3 >> 6);
 		e4 = c3 & 63;
 
-		// Consider other string concatenation methods?
-		out += (encoder.charAt(e1) + encoder.charAt(e2) + encoder.charAt(e3) + encoder.charAt(e4));
+		out += encoder[e1] + encoder[e2] + encoder[e3] + encoder[e4];
 	}
 	if (isNaN(c2))
 		out = out.slice(0, -2) + '==';
@@ -205,7 +222,6 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 	// Decode base64
 	if ( jqXHR.mode == 'base64' )
 	{
-		// Expose the decoded text if we have native decoding
 		if ( window.atob )
 		{
 			text = atob( data );
@@ -214,19 +230,22 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 		else
 		{
 			array = base64_decode( data );
+			text = array_to_text( array );
 		}
 	}
 	
-	// Binary support through charset=x-user-defined
+	// Binary support through charset=windows-1252
 	else if ( jqXHR.mode == 'charset' )
 	{
-		array = text_to_array( data );
+		text = fixWindows1252( data );
+		array = text_to_array( text );
 	}
 	
 	// Access responseBody
 	else
 	{
 		array = bytearray_to_array( jqXHR.xhr.responseBody );
+		text = array_to_text( array );
 	}
 	
 	jqXHR.responseArray = array;
@@ -241,7 +260,7 @@ $.ajaxPrefilter( 'binary', function( options, originalOptions, jqXHR )
 {
 	// Chrome > 4 doesn't allow file:// to file:// XHR
 	// It should however work for the rest of the world, so we have to test here, rather than when first checking for binary support
-	var binary = LOCAL && !options.crossDomain && chrome_no_file ? 0 : support.binary,
+	var binary = LOCAL && !options.crossDomain && chrome ? 0 : support.binary,
 	
 	// Expose the real XHR object onto the jqXHR
 	XHRFactory = options.xhr;
@@ -300,7 +319,7 @@ $.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 	
 	if ( jqXHR.mode == 'charset' )
 	{
-		options.mimeType = 'text/plain; charset=x-user-defined';
+		options.mimeType = 'text/plain; charset=windows-1252';
 	}
 });
 
