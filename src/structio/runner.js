@@ -31,11 +31,11 @@ TODO:
 // A basic StructIO runner
 var Runner = Object.subClass({
 
-	init: function( env, engine )
+	init: function( env, enginename )
 	{
 		var self = this;
 		// engine is only a class name, so make an instance now
-		engine = window.engine = this.e = new window[engine]();
+		engine = parchment.engine = this.e = new window[enginename]();
 		this.io = new StructIO( env );
 		
 		// Set the appropriate event handlers

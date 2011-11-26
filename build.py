@@ -100,7 +100,7 @@ today = str(datetime.date.today())
 if not os.path.isdir('.build'):
 	os.makedirs('.build')
 
-filestobuild = ['src/parchment/parchment.manifest']
+filestobuild = []
 
 # Combine source files together to make 'packages'
 for package in includes:
@@ -119,6 +119,9 @@ for package in includes:
 		output.write(data)
 		output.close()
 		filestobuild.append(package[0])
+
+if len(filestobuild) > 0:
+	filestobuild.append('src/parchment/parchment.manifest')
 
 # Compress these files, requires the YUI Compressor. Icky Java
 for package in compress:
