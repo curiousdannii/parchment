@@ -63,3 +63,23 @@ byte_to_word = function( array )
 	}
 	return result;
 };
+
+/* DEBUG */
+
+// Debug flags
+var debugflags = {},
+get_debug_flags = function( data )
+{
+	data = data.split( ',' );
+	var i = 0;
+	while ( i < data.length )
+	{
+		debugflags[data[i++]] = 1; 
+	}
+};
+if ( parchment && parchment.options && parchment.options.debug )
+{
+	get_debug_flags( parchment.options.debug );
+}
+
+/* ENDDEBUG */

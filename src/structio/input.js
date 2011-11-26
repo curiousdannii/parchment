@@ -147,6 +147,7 @@ var TextInput = Object.subClass({
 			// Or if the cursor is too far below the viewport
 				$window.scrollTop() + $window.height() - input.offset().top > -60 )
 			{
+				ev.stopPropagation();
 				window.scrollTo( 0, window.scrollMaxY );
 				input.focus()
 					.trigger( ev );

@@ -45,6 +45,13 @@ var ZVM_core = {
 		{
 			extend( this.env, data.env );
 			
+			/* DEBUG */
+			if ( this.env.debug )
+			{
+				get_debug_flags( this.env.debug ); 
+			}
+			/* ENDDEBUG */
+			
 			// Also need to update the header
 			
 			// Stop if there's no code - we're being sent live updates
@@ -265,7 +272,10 @@ var ZVM_core = {
 		// Compile the routine with new Function()
 		/* DEBUG */
 			var code = '' + context;
-			console.log( code );
+			if ( debugflags.jit )
+			{
+				console.log( code );
+			}
 			// We use eval because Firebug can't profile new Function
 			var func = eval( '(function(e){' + code + '})' );
 			

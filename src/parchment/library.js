@@ -18,9 +18,7 @@ TODO:
 
 (function(window, $){
 
-var rqueryurl = /story=([^;&]+)/,
-rqueryvm = /vm=(\w+)/,
-rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
+var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
 
 // Callback to show an error when the story file wasn't loaded
@@ -219,9 +217,9 @@ Library = Object.subClass({
 		
 		options = parchment.options,
 		
-		storyfile = rqueryurl.exec( location.search ),
+		storyfile = urloptions.story,
 		url,
-		vm = rqueryvm.exec( location.search ),
+		vm = urloptions.vm,
 		i = 0;
 		
 		// Run the default story only
@@ -239,7 +237,7 @@ Library = Object.subClass({
 		else if ( options.default_story || storyfile )
 		{
 			// Load from URL, or the default story
-			storyfile = storyfile && unescape( storyfile[1] ) || options.default_story;
+			storyfile = storyfile || options.default_story;
 		}
 		// Show the library
 		else
@@ -280,7 +278,7 @@ Library = Object.subClass({
 			// If a VM was explicitly specified, use it
 			if ( vm )
 			{
-				vm = parchment.vms[ vm[1] ];
+				vm = parchment.vms[ vm ];
 			}
 			// Otherwise test each in turn
 			else

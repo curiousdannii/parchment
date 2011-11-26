@@ -36,7 +36,7 @@ var extend = function( old, add )
 
 // Standard colours
 colours = [
-	-2,
+	0xFFFE,
 	0xFFFF,
 	0x0000,
 	0x001D,

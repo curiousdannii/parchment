@@ -59,12 +59,19 @@ var parchment = {
 		
 		// URL of proxy server to use for files we can't directly load
 		proxy_url: 'http://zcode.appspot.com/proxy/'
-		
-		// Output width in characters
-		// NOTE: this is not guaranteed to be a stable API option
-		//width: 80
 	},
 
 	// Classes etc
 	lib: {}
-};
+},
+
+// Isolate the query string options we have
+urloptions = (function( options ) {
+	var i = 0, result = {}, temp;
+	while ( i < options.length )
+	{
+		temp = /([^=]+)(=(.*))?/.exec( options[i++] );
+		result[temp[1]] = temp[3] ? unescape( temp[3] ) : true;
+	}
+	return result;
+} )( location.search.slice(1).split( /[&;]/g ) );

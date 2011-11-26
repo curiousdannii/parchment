@@ -172,6 +172,10 @@ var disassemble = function( engine )
 		temp = 0;
 		if ( context.targets.indexOf( pc ) >= 0 )
 		{
+			/* DEBUG */
+			// Skip if we must
+			if ( !debugflags.noidioms )
+			/* ENDDEBUG */
 			temp = idiom_if_block( context, pc );
 		}
 		
