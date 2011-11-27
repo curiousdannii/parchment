@@ -77,6 +77,12 @@ Text = Object.subClass({
 		this.dictionaries = {};
 		this.dict = memory.getUint16( 0x08 );
 		this.parse_dict( this.dict );
+		
+		// Optimise our own functions
+		/* DEBUG */
+		if ( !debugflags.nooptimise )
+		/* ENDDEBUG */
+			optimise_obj( this /* DEBUG */, 'TEXT' /* ENDDEBUG */ );
 	},
 	
 	// Generate alphabets

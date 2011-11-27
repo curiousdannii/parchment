@@ -31,6 +31,12 @@ var ZVM_core = {
 		this.env = {
 			width: 80 // Default width of 80 characters
 		};
+		
+		// Optimise our own functions
+		/* DEBUG */
+		if ( !debugflags.nooptimise )
+		/* ENDDEBUG */
+			optimise_obj( this /* DEBUG */, 'ZVM' /* ENDDEBUG */ );
 	},
 	
 	// An input event, or some other event from the runner
@@ -267,17 +273,21 @@ var ZVM_core = {
 	// Compile a JIT routine
 	compile: function()
 	{
-		var context = disassemble( this );
+		var context = this.disassemble( this );
 		
 		// Compile the routine with new Function()
 		/* DEBUG */
 			var code = '' + context;
+			if ( !debugflags.nooptimise )
+			{
+				code = optimise( code );
+			}
 			if ( debugflags.jit )
 			{
 				console.log( code );
 			}
 			// We use eval because Firebug can't profile new Function
-			var func = eval( '(function(e){' + code + '})' );
+			var func = eval( '(function JIT_' + context.pc + '(e){' + code + '})' );
 			
 			// Extra stuff for debugging
 			func.context = context;
@@ -295,6 +305,8 @@ var ZVM_core = {
 			console.warn( 'Caching a JIT function in dynamic memory: ' + context.pc );
 		}
 	},
+	
+	disassemble: disassemble,
 	
 	// Return control to the ZVM runner to perform some action
 	act: function( code, options )

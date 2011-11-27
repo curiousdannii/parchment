@@ -131,12 +131,12 @@ window.ZVM = Object.subClass( {
 		properties = memory.getUint16( this.objects + 14 * object + 12 );
 		properties += memory.getUint8( properties ) * 2 + 1;
 		
-		this_property_byte = memory.getUint8( properties );
-		this_property = this_property_byte & 0x3F;
-		
 		// Run through the properties
 		while (1)
 		{
+			this_property_byte = memory.getUint8( properties );
+			this_property = this_property_byte & 0x3F;
+		
 			// Found the previous property, so return this one's number
 			if ( last_property == prev )
 			{
@@ -167,9 +167,6 @@ window.ZVM = Object.subClass( {
 			{
 				properties += this_property_byte & 0x40 ? 3 : 2;
 			}
-			
-			this_property_byte = memory.getUint8( properties );
-			this_property = this_property_byte & 0x3F;
 		}
 	},
 	
