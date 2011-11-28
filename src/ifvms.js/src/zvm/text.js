@@ -12,6 +12,7 @@ http://github.com/curiousdannii/ifvms.js
 /*
 	
 TODO:
+	Consider quote suggestions from 1.1 spec
 	
 */
 
@@ -55,7 +56,7 @@ Text = Object.subClass({
 		// Check for custom alphabets
 		this.make_alphabet( alphabet_addr ? memory.getBuffer( alphabet_addr, 78 )
 			// Or use the standard alphabet
-			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \r0123456789.,!?_#\'"/\\-:()' ) );
+			: this.text_to_zscii( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \r0123456789.,!?_#\'"/\\-:()', 1 ) );
 		
 		// Check for a custom unicode table
 		this.make_unicode( unicode_addr ? memory.getBuffer16( unicode_addr, unicode_len )
@@ -100,21 +101,26 @@ Text = Object.subClass({
 	// Make the unicode tables
 	make_unicode: function( data )
 	{
-		var table = {},
-		reverse = { 10: 13 }, // New line conversion
+		var table = { 13: '\n' }, // New line conversion
+		reverse = { 10: 13 },
 		i = 0;
 		while ( i < data.length )
 		{
-			table[i + 155] = data[i];
+			table[155 + i] = String.fromCharCode( data[i] );
 			reverse[data[i]] = 155 + i++;
 		}
-		//this.unicode_table = table;
+		i = 32;
+		while ( i < 127 )
+		{
+			table[i] = String.fromCharCode( i );
+			reverse[i] = i++;
+		}
+		this.unicode_table = table;
 		this.reverse_unicode_table = reverse;
-		this.unicode_callback = function( charr ) { return String.fromCharCode( table[charr.charCodeAt(0)] || 63 ); };
 	},
 	
 	// Decode Z-chars into ZSCII and then Unicode
-	decode: function( addr, length, notext )
+	decode: function( addr, length, nowarn )
 	{
 		var memory = this.e.m,
 		
@@ -124,7 +130,11 @@ Text = Object.subClass({
 		i = 0,
 		zchar,
 		alphabet = 0,
-		result = [];
+		result = [],
+		resulttexts = [],
+		tenbit,
+		tempi,
+		unicodecount = 0;
 		
 		// Check if this one's been cached already
 		if ( this.e.jit[addr] )
@@ -165,7 +175,8 @@ Text = Object.subClass({
 			// Abbreviations
 			else if ( zchar < 4 )
 			{
-				result = result.concat( this.abbr[ 32 * ( zchar - 1 ) + buffer[i++] ] );
+				result.push( -1 );
+				resulttexts.push( this.abbr[ 32 * ( zchar - 1 ) + buffer[i++] ] );
 			}
 			// Shift characters
 			else if ( zchar < 6 )
@@ -178,30 +189,54 @@ Text = Object.subClass({
 				// Check we have enough Z-chars left.
 				if ( i + 1 < buffer.length )
 				{
-					result.push( buffer[i++] << 5 | buffer[i++] );
+					tenbit = buffer[i++] << 5 | buffer[i++];
+					// A regular character
+					if ( tenbit < 768 )
+					{
+						result.push( tenbit );
+					}
+					// 1.1 spec Unicode strings - not the most efficient code, but then noone uses this
+					else
+					{
+						tenbit -= 767;
+						unicodecount += tenbit;
+						tempi = i;
+						i = ( i % 3 ) + 3;
+						while ( tenbit-- )
+						{
+							result.push( -1 );
+							resulttexts.push( String.fromCharCode( buffer[i] << 10 | buffer[i + 1] << 5 | buffer[i + 2] ) );
+							// Set those characters so they won't be decoded again
+							buffer[i++] = buffer[i++] = buffer[i++] = 0x20;
+						}
+						i = tempi;
+					}
 				}
 			}
-			else
+			// Regular characters
+			else if ( zchar < 0x20 )
 			{
-				// Regular characters
 				result.push( this.alphabets[alphabet][ zchar - 6 ] );
 			}
 			
 			// Reset the alphabet
 			alphabet = alphabet < 4 ? 0 : alphabet - 3;
+			
+			// Add to the index if we've had raw unicode
+			if ( ( i % 3 ) == 0 )
+			{
+				i += unicodecount;
+				unicodecount = 0;
+			}
 		}
 		
-		// The abbreviations table doesn't want text
-		if ( !notext )
+		// Cache and return. Use String() so that .pc will be preserved
+		result = new String( this.zscii_to_text( result, resulttexts ) );
+		result.pc = addr;
+		this.e.jit[start_addr] = result;
+		if ( !nowarn && start_addr < this.e.staticmem )
 		{
-			// Cache and return. Use String() so that .pc will be preserved
-			result = new String( this.zscii_to_text( result ) );
-			result.pc = addr;
-			this.e.jit[start_addr] = result;
-			if ( start_addr < this.e.staticmem )
-			{
-				console.warn( 'Caching a string in dynamic memory: ' + start_addr );
-			}
+			console.warn( 'Caching a string in dynamic memory: ' + start_addr );
 		}
 		return result;
 	},
@@ -238,12 +273,7 @@ Text = Object.subClass({
 			{
 				zchars.push( 5, temp + 6 );
 			}
-			// 10-bit ZSCII
-			else if ( achar > 32 && achar < 127 )
-			{
-				zchars.push( 5, 6, achar >> 5, achar & 0x1F );
-			}
-			// Unicode table
+			// 10-bit ZSCII / Unicode table
 			else if ( temp = this.reverse_unicode_table[achar] )
 			{
 				zchars.push( 5, 6, temp >> 5, temp & 0x1F );
@@ -267,35 +297,40 @@ Text = Object.subClass({
 	},
 	
 	// In these two functions zscii means an array of ZSCII codes and text means a regular Javascript unicode string
-	// Are using regex's slower than looping through the array?
-	zscii_to_text: function( array )
+	zscii_to_text: function( zscii, texts )
 	{
-		// String.fromCharCode can be given an array of numbers if we call apply on it!
-		return String.fromCharCode.apply( this, array )
-			
-			// Now convert the ZSCII to unicode
-			// First remove any undefined codes
-			.replace( /[\x00-\x0C\x0E-\x1F\x7F-\x9A\xFC-\uFFFF]/g, '' )
-			
-			// Then convert form feeds to new lines
-			.replace( /\r/g, '\n' )
-			
-			// Then replace the extra characters with the ones from the unicode table, or with '?'
-			.replace( /[\x9B-\xFB]/g, this.unicode_callback );
+		var i = 0, l = zscii.length,
+		charr,
+		j = 0,
+		result = '';
+		
+		while ( i < l )
+		{
+			charr = zscii[i++];
+			// Text substitution from abbreviations or 1.1 unicode
+			if ( charr == -1 )
+			{
+				result += texts[j++];
+			}
+			// Regular characters
+			if ( charr = this.unicode_table[charr] )
+			{
+				result += charr;
+			}
+		}
+		return result;
 	},
 	
 	// If the second argument is set then don't use the unicode table
 	text_to_zscii: function( text, notable )
 	{
 		var array = [], i = 0, l = text.length, charr;
-		notable = !notable;
 		while ( i < l )
 		{
 			charr = text.charCodeAt( i++ );
-			// Non-safe ZSCII code... check the unicode table!
-			if ( notable && charr != 13 && ( charr < 32 || charr > 126 ) )
+			// Check the unicode table
+			if ( !notable )
 			{
-				// Find it or replace with '?'
 				charr = this.reverse_unicode_table[charr] || 63;
 			}
 			array.push( charr );
@@ -416,13 +451,7 @@ Text = Object.subClass({
 			return ZSCII_keyCodes[keyCode];
 		}
 		
-		// Standard ASCII
-		if ( charCode > 31 && charCode < 127 )
-		{
-			return charCode;
-		}
-		
-		// Consult the unicode table or return a '?'
+		// Check the character table or return a '?'
 		return this.reverse_unicode_table[charCode] || 63;
 	}
 });

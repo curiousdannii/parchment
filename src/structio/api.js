@@ -80,9 +80,12 @@ StructIO = Object.subClass({
 		extend( env, {
 			charheight: charheight,
 			charwidth: charwidth,
-			width: widthinchars
+			width: widthinchars,
+			fgcolor: element.css( 'color' ),
+			bgcolor: element.css( 'bgcolor' )
 		});
-		element.width( widthinchars * charwidth );
+		// Set the container's width: +2 to account for the 1px of padding the structures inside will receive to hide obnoxious serifs
+		element.width( widthinchars * charwidth + 2 );
 		
 		this.container = element
 		this.target = element;

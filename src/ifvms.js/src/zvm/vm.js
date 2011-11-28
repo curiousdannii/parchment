@@ -235,9 +235,7 @@ var ZVM_core = {
 		memory.setUint16( 0x24, 255 );
 		memory.setUint16( 0x26, 0x0101 ); // Font height/width in "units"
 		// Z Machine Spec revision
-		// For now only set 1.2 if PARCHMENT_SECURITY_OVERRIDE is set, still need to finish 1.1 support!
-		memory.setUint8( 0x32, 1 );
-		memory.setUint8( 0x33, this.env.PARCHMENT_SECURITY_OVERRIDE ? 2 : 0 );
+		memory.setUint16( 0x32, 0x0102 );
 		// Clear flags three, we don't support any of that stuff
 		this.extension_table( 4, 0 );
 	},
@@ -298,7 +296,7 @@ var ZVM_core = {
 			}
 			this.jit[context.pc] = func;
 		/* ELSEDEBUG
-			this.jit[context.pc] = new Function( 'e', '' + context );
+			this.jit[context.pc] = new Function( 'e', optimise( '' + context ) );
 		/* ENDDEBUG */
 		if ( context.pc < this.staticmem )
 		{

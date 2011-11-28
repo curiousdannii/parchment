@@ -14,6 +14,7 @@ http://github.com/curiousdannii/ifvms.js
 TODO:
 	Add a seeded RNG
 	Check when restoring that it's a savefile for this storyfile
+	Save/restore: table, name, prompt support
 	
 */
 
@@ -168,6 +169,23 @@ window.ZVM = Object.subClass( {
 				properties += this_property_byte & 0x40 ? 3 : 2;
 			}
 		}
+	},
+	
+	// 1.2 spec @gestalt
+	gestalt: function( id, arg )
+	{
+		switch ( id )
+		{
+			case 1:
+				return 0x0102;
+			case 0x2000:
+				return 1;
+			// These aren't really applicable, but 2 is closer than 1
+			case 0x2001:
+			case 0x2002:
+				return 2;
+		}
+		return 0;
 	},
 	
 	// Get the first child of an object

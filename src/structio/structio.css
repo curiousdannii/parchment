@@ -44,7 +44,7 @@ http://code.google.com/p/parchment
 }
 
 /* Main window */
-.main
+.main, .TextGrid
 {
 	/* Extra padding in case some serifs stick outside the status window */
 	padding: 0 1px;
