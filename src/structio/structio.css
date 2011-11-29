@@ -30,9 +30,8 @@ http://code.google.com/p/parchment
 /* Text grid window */
 .TextGrid
 {
-	/* Is set in code now */
-	/* background: inherit; */
 	position: fixed;
+	white-space: pre;
 	z-index: 2;
 }
 
@@ -40,6 +39,7 @@ http://code.google.com/p/parchment
 .box
 {
 	position: absolute;
+	white-space: pre;
 	z-index: 1;
 }
 
@@ -55,5 +55,11 @@ tt
 {
 	font-family: monospace;
 	line-height: 1;
+}
+
+/* Ensure that spaces are both displayed correctly, and will also wrap */
+tt .space
+{
+	display: inline-block;
 	white-space: pre;
 }

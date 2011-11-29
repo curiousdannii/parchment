@@ -43,10 +43,8 @@ basic_stream_handler = function( e )
 	if ( text )
 	{
 		// Fix initial spaces, but not for tt (which will actually mess it up)
-		if ( node != 'tt' )
-		{
-			text = text.replace( /\n +(?=\S)/g, space_replacer )
-		}
+		// For tt's, fix all spaces so that they will still wrap
+		text = node == 'tt' ? text.replace( /( +)/g, '<span class="space">$1</span>' ) : text.replace( /\n +(?=\S)/g, space_replacer );
 		elem.html( text.replace( /\n/g, '<br>' ) );
 	}
 	

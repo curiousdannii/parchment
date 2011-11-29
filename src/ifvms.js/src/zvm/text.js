@@ -81,9 +81,9 @@ Text = Object.subClass({
 		
 		// Optimise our own functions
 		/* DEBUG */
-		if ( !debugflags.nooptimise )
+		//if ( !debugflags.nooptimise )
+		//	optimise_obj( this, 'TEXT' );
 		/* ENDDEBUG */
-			optimise_obj( this /* DEBUG */, 'TEXT' /* ENDDEBUG */ );
 	},
 	
 	// Generate alphabets

@@ -34,9 +34,9 @@ var ZVM_core = {
 		
 		// Optimise our own functions
 		/* DEBUG */
-		if ( !debugflags.nooptimise )
+		//if ( !debugflags.nooptimise )
+		//	optimise_obj( this, 'ZVM' );
 		/* ENDDEBUG */
-			optimise_obj( this /* DEBUG */, 'ZVM' /* ENDDEBUG */ );
 	},
 	
 	// An input event, or some other event from the runner
