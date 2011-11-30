@@ -136,21 +136,25 @@ var TextInput = Object.subClass({
 			.appendTo( container );
 		
 		// Focus document clicks and keydowns
-		$doc.on( 'click.TextInput keydown.TextInput', function( ev ) {
-			
-			// Only intercept things that aren't inputs
-			if ( ev.target.nodeName != 'INPUT' &&
-			
-			// Don't do anything if the user is selecting some text
-				selection() == '' &&
-				
-			// Or if the cursor is too far below the viewport
-				$window.scrollTop() + $window.height() - input.offset().top > -60 )
+		$doc.on( 'click.TextInput keydown.TextInput', function( ev )
+		{
+			// Only intercept on things that aren't inputs and if the user isn't selecting text
+			if ( ev.target.nodeName != 'INPUT' && selection() == '' )
 			{
-				ev.stopPropagation();
-				window.scrollTo( 0, window.scrollMaxY );
-				input.focus()
-					.trigger( ev );
+				// If the input box is close to the viewport then focus it
+				if ( $window.scrollTop() + $window.height() - input.offset().top > -60 )
+				{
+					window.scrollTo( 0, window.scrollMaxY );
+					input.focus()
+						.trigger( ev );
+					// Stop propagating after re-triggering it, so that the trigger will work for all keys
+					ev.stopPropagation();
+				}
+				// Intercept the backspace key if not
+				else if ( ev.type == 'keydown' && ev.which == 8 )
+				{
+					return false;
+				}
 			}
 		});
 		
