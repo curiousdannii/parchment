@@ -57,6 +57,9 @@ basic_stream_handler = function( e )
 	return false;
 },
 
+// Pattern for getting the RGB components from a colour
+RGB_pattern = /(\d+),\s*(\d+),\s*(\d+)/,
+
 // The public API
 // .input() must be set by whatever uses StructIO
 StructIO = Object.subClass({
@@ -79,8 +82,8 @@ StructIO = Object.subClass({
 			charheight: charheight,
 			charwidth: charwidth,
 			width: widthinchars,
-			fgcolor: element.css( 'color' ),
-			bgcolor: element.css( 'bgcolor' )
+			fgcolour: RGB_pattern.exec( element.css( 'color' ) ).slice( 1 ),
+			bgcolour: RGB_pattern.exec( element.css( 'bgcolor' ) ).slice( 1 )
 		});
 		// Set the container's width: +2 to account for the 1px of padding the structures inside will receive to hide obnoxious serifs
 		element.width( widthinchars * charwidth + 2 );

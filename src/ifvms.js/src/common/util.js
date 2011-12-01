@@ -45,7 +45,7 @@ console = window.console || {
 // Utilities for 16-bit signed arithmetic
 U2S = function( value )
 {
-	return ( (value & 0x8000) ? ~0xFFFF : 0 ) | value;
+	return value << 16 >> 16;
 },
 S2U = function( value )
 {
@@ -69,30 +69,31 @@ optimise = function( code )
 {
 	return code
 	
+	// Sign conversions
+	.replace( /(e\.)?U2S\(([^(]+?)\)/g, '(($2)<<16>>16)' )
+	.replace( /(e\.)?S2U\(([^(]+?)\)/g, '(($2)&65535)' )
+	
 	// Bytearray
 	.replace( /([\w.]+)\.getUint8\(([^(]+?)\)/g, '$1[$2]' )
-	.replace( /([\w.]+)\.getUint16\(([^(]+?)\)/g, '($1[$2]<<8|$1[$2+1])' )
-	
-	// Conversions
-	.replace( /(e\.)?S2U\(([^(]+?)\)/g, '($2)&65535' );
+	.replace( /([\w.]+)\.getUint16\(([^(]+?)\)/g, '($1[$2]<<8|$1[$2+1])' );
 },
-optimise_obj = function( obj )
+// Optimise some functions of an obj, compiling several at once
+optimise_obj = function( obj, funcnames )
 {
-	var funcname, funcparts, args;
+	var funcname, funcparts, newfuncs = [];
 	for ( funcname in obj )
 	{
-		funcparts = /function\s*\(([^(]*)\)\s*\{([\s\S]+)\}/.exec( '' + obj[funcname] );
-		if ( funcparts )
+		if ( funcnames.indexOf( funcname ) >= 0 )
 		{
+			funcparts = /function\s*\(([^(]*)\)\s*\{([\s\S]+)\}/.exec( '' + obj[funcname] );
 			/* DEBUG */
-				obj[funcname] = eval( '(function ' + arguments[1] +'_' + funcname + '(' + funcparts[1] + '){' + optimise( funcparts[2] ) + '})' );
+				newfuncs.push( funcname + ':function ' + funcname + '(' + funcparts[1] + '){' + optimise( funcparts[2] ) + '}' );
 			/* ELSEDEBUG
-				args = funcparts[1].split( ',' );
-				args.push( optimise( funcparts[2] ) );
-				obj[funcname] = Function.apply( this, args );
+				newfuncs.push( funcname + ':function(' + funcparts[1] + '){' + optimise( funcparts[2] ) + '}' );
 			/* ENDDEBUG */
 		}
 	}
+	extend( obj, window['eval']( '({' + newfuncs.join() + '})' ) );
 };
 
 /* DEBUG */
