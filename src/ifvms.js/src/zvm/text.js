@@ -380,7 +380,7 @@ Text = Object.subClass({
 		
 		var memory = this.e.m,
 		
-		i = text + 2,
+		i = 2,
 		textend = i + memory.getUint8( text + 1 ),
 		letter,
 		separators = dictionary.separators,
@@ -393,25 +393,25 @@ Text = Object.subClass({
 		// Find the words, separated by the separators, but as well as the separators themselves
 		while ( i < textend )
 		{
-			letter = memory.getUint8( i );
+			letter = memory.getUint8( text + i++ );
 			if ( letter == 32 || separators.indexOf( letter ) >= 0 )
 			{
 				if ( word.length )
 				{
 					words.push( [word, wordstart] );
+					wordstart += word.length;
 					word = [];
-					wordstart = i + 1;
 				}
 				if ( letter != 32 )
 				{
-					words.push( [letter, i] );
+					words.push( [[letter], wordstart] );
 				}
+				wordstart++;
 			}
 			else
 			{
 				word.push( letter );
 			}
-			i++;
 		}
 		if ( word.length )
 		{
@@ -422,13 +422,13 @@ Text = Object.subClass({
 		max_words = Math.min( words.length, memory.getUint8( buffer ) );
 		while ( wordcount < max_words )
 		{
-			word = this.encode( words[wordcount][0] );
+			word = dictionary['' + this.encode( words[wordcount][0] )];
 			
 			// If the flag is set then don't overwrite words which weren't found
-			if ( !flag || dictionary[word] )
+			if ( !flag || word )
 			{
 				// Fill out the buffer
-				memory.setUint16( buffer + 2 + wordcount * 4, dictionary[word] || 0 );
+				memory.setUint16( buffer + 2 + wordcount * 4, word || 0 );
 				memory.setUint8( buffer + 4 + wordcount * 4, words[wordcount][0].length );
 				memory.setUint8( buffer + 5 + wordcount * 4, words[wordcount][1] );
 			}
