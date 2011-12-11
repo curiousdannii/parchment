@@ -176,9 +176,10 @@ opcodes = {
 /* restore_undo */ 1010: opcode_builder( Opcode, function() { return 'if(e.restore_undo())return'; }, { storer: 1 } ),
 /* print_unicode */ 1011: opcode_builder( Opcode, function( a ) { return 'e.print(String.fromCharCode(' + a + '))'; } ),
 // Assume we can print and read all unicode characters rather than actually testing
-/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } )
-/* set_true_colour */ //1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
-/* gestalt */ //1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } ),
+/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } ),
+/* set_true_colour */ 1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
+/* sound_data */ 1014: Opcode.subClass( { brancher: 1 } ), // We don't support sounds (but disassemble the branch address)
+/* gestalt */ 1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } )
 /* parchment */ //1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.args() + ')'; } )
 	
 };

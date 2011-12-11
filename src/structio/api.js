@@ -43,10 +43,8 @@ basic_stream_handler = function( e )
 	if ( text )
 	{
 		// Fix initial spaces, but not for tt (which will actually mess it up)
-		if ( node != 'tt' )
-		{
-			text = text.replace( /\n +(?=\S)/g, space_replacer )
-		}
+		// For tt's, fix all spaces so that they will still wrap
+		text = node == 'tt' ? text.replace( /( +)/g, '<span class="space">$1</span>' ) : text.replace( /\n +(?=\S)/g, space_replacer );
 		elem.html( text.replace( /\n/g, '<br>' ) );
 	}
 	
@@ -58,6 +56,9 @@ basic_stream_handler = function( e )
 		
 	return false;
 },
+
+// Pattern for getting the RGB components from a colour
+RGB_pattern = /(\d+),\s*(\d+),\s*(\d+)/,
 
 // The public API
 // .input() must be set by whatever uses StructIO
@@ -80,9 +81,12 @@ StructIO = Object.subClass({
 		extend( env, {
 			charheight: charheight,
 			charwidth: charwidth,
-			width: widthinchars
+			width: widthinchars,
+			fgcolour: RGB_pattern.exec( element.css( 'color' ) ).slice( 1 ),
+			bgcolour: RGB_pattern.exec( element.css( 'bgcolor' ) ).slice( 1 )
 		});
-		element.width( widthinchars * charwidth );
+		// Set the container's width: +2 to account for the 1px of padding the structures inside will receive to hide obnoxious serifs
+		element.width( widthinchars * charwidth + 2 );
 		
 		this.container = element
 		this.target = element;

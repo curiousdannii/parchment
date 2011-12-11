@@ -149,7 +149,7 @@ var disassemble = function( engine )
 					// single byte address
 					temp & 0x3F :
 					// word address, but first get the second byte of it
-					( ( temp = (temp << 8) | memory.getUint8(pc++) ) & 0x2000 ? ~0x1FFF : 0 ) | ( temp & 0x1FFF )
+					( temp << 8 | memory.getUint8( pc++ ) ) << 18 >> 18
 			] );
 		}
 		

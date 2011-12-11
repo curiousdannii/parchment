@@ -16,6 +16,7 @@ This file represents the public API of the ZVM class, while runtime.js contains 
 TODO:
 	Is 'use strict' needed for JIT functions too, or do they inherit that status?
 	Specifically handle saving?
+	Try harder to find default colours
 	
 */
 
@@ -31,6 +32,12 @@ var ZVM_core = {
 		this.env = {
 			width: 80 // Default width of 80 characters
 		};
+		
+		// Optimise our own functions
+		/* DEBUG */
+		if ( !debugflags.nooptimise )
+		/* ENDDEBUG */
+			optimise_obj( this, ['find_prop'] );
 	},
 	
 	// An input event, or some other event from the runner
@@ -46,9 +53,9 @@ var ZVM_core = {
 			extend( this.env, data.env );
 			
 			/* DEBUG */
-			if ( this.env.debug )
+			if ( data.env.debug )
 			{
-				get_debug_flags( this.env.debug ); 
+				get_debug_flags( data.env.debug ); 
 			}
 			/* ENDDEBUG */
 			
@@ -211,7 +218,9 @@ var ZVM_core = {
 	// Update the header after restarting or restoring
 	update_header: function()
 	{
-		var memory = this.m;
+		var memory = this.m,
+		fgcolour = this.env.fgcolour ? this.ui.convert_RGB( this.env.fgcolour ) : 0xFFFF,
+		bgcolour = this.env.bgcolour ? this.ui.convert_RGB( this.env.bgcolour ) : 0xFFFF;
 		
 		// Reset the random state
 		this.random_state = 0;
@@ -228,19 +237,25 @@ var ZVM_core = {
 		memory.setUint16( 0x22, this.env.width );
 		memory.setUint16( 0x24, 255 );
 		memory.setUint16( 0x26, 0x0101 ); // Font height/width in "units"
+		// Default colours
+		// Math.abs will convert -1 (not found) to 1 (default) which is convenient
+		memory.setUint8( 0x2C, Math.abs( this.ui.colours.indexOf( bgcolour ) ) );
+		memory.setUint8( 0x2D, Math.abs( this.ui.colours.indexOf( fgcolour ) ) );
 		// Z Machine Spec revision
-		// For now only set 1.2 if PARCHMENT_SECURITY_OVERRIDE is set, still need to finish 1.1 support!
-		memory.setUint8( 0x32, 1 );
-		memory.setUint8( 0x33, this.env.PARCHMENT_SECURITY_OVERRIDE ? 2 : 0 );
+		memory.setUint16( 0x32, 0x0102 );
 		// Clear flags three, we don't support any of that stuff
 		this.extension_table( 4, 0 );
+		// Default true colours - assume that the 1.1 spec has a typo, it's silly to store the foreground colour twice!
+		this.extension_table( 5, fgcolour );
+		this.extension_table( 6, bgcolour );
 	},
 	
 	// Run
 	run: function()
 	{
 		var now = Date.now(),
-		pc;
+		pc,
+		count = 0;
 		
 		// Stop when ordered to
 		this.stop = 0;
@@ -253,10 +268,9 @@ var ZVM_core = {
 			}
 			this.jit[pc]( this );
 			
-			// Or if more than five seconds has passed
+			// Or if more than five seconds has passed, however only check every 50k times
 			// What's the best time for this?
-			// Or maybe count iterations instead?
-			if ( (Date.now() - now) > 5000 )
+			if ( ++count % 50000 == 0 && ( Date.now() - now ) > 5000 )
 			{
 				this.act( 'tick' );
 				return;
@@ -272,12 +286,16 @@ var ZVM_core = {
 		// Compile the routine with new Function()
 		/* DEBUG */
 			var code = '' + context;
+			if ( !debugflags.nooptimise )
+			{
+				code = optimise( code );
+			}
 			if ( debugflags.jit )
 			{
 				console.log( code );
 			}
 			// We use eval because Firebug can't profile new Function
-			var func = eval( '(function(e){' + code + '})' );
+			var func = eval( '(function JIT_' + context.pc + '(e){' + code + '})' );
 			
 			// Extra stuff for debugging
 			func.context = context;
@@ -288,7 +306,7 @@ var ZVM_core = {
 			}
 			this.jit[context.pc] = func;
 		/* ELSEDEBUG
-			this.jit[context.pc] = new Function( 'e', '' + context );
+			this.jit[context.pc] = new Function( 'e', optimise( '' + context ) );
 		/* ENDDEBUG */
 		if ( context.pc < this.staticmem )
 		{

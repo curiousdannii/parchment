@@ -68,6 +68,10 @@ var parchment = {
 // Isolate the query string options we have
 urloptions = (function( options ) {
 	var i = 0, result = {}, temp;
+	if ( options[0] == '' )
+	{
+		i++;
+	}
 	while ( i < options.length )
 	{
 		temp = /([^=]+)(=(.*))?/.exec( options[i++] );
