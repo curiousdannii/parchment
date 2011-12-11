@@ -88,6 +88,8 @@ Text = Object.subClass({
 		{
 			alphabets[parseInt( i / 26 )][i % 26] = data[ i++ ];
 		}
+		// A2->7 is always a newline
+		alphabets[2][1] = 13;
 		this.alphabets = alphabets;
 	},
 	

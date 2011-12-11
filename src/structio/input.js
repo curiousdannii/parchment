@@ -144,7 +144,7 @@ var TextInput = Object.subClass({
 				// If the input box is close to the viewport then focus it
 				if ( $window.scrollTop() + $window.height() - input.offset().top > -60 )
 				{
-					window.scrollTo( 0, window.scrollMaxY );
+					window.scrollTo( 0, 9e9 );
 					input.focus()
 						.trigger( ev );
 					// Stop propagating after re-triggering it, so that the trigger will work for all keys
