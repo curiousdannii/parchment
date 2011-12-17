@@ -39,6 +39,10 @@ basic_stream_handler = function( e )
 		.appendTo( e.target )
 		.addClass( order.name )
 		.css( order.css || {} );
+	if ( order.css && order.css.reverse )
+	{
+		do_reverse( elem );
+	}
 	// Add the text, if we've been given any
 	if ( text )
 	{
@@ -152,7 +156,7 @@ StructIO = Object.subClass({
 				// If we're clearing the main window, then change <body> instead
 				if ( order.css && order.css['background-color'] )
 				{
-					( order.name == 'main' ? temp : $body ).css( 'background-color', order.css['background-color'] );
+					( order.name == 'main' ? $body : temp ).css( 'background-color', order.css['background-color'] );
 				}
 			}
 			
