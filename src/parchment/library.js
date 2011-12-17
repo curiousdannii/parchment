@@ -261,7 +261,7 @@ Library = Collection.subClass({
 		// Update from localStorage
 		this.fetch();
 		
-		var vm = /vm=(\w+)/.exec( location.search ),
+		var vm = urloptions.vm,
 		
 		// Get the requested story, if there is one
 		story = this.get_story();
@@ -281,7 +281,7 @@ Library = Collection.subClass({
 		// If we've been told which vm to use, add it to the story
 		if ( vm )
 		{
-			story.set( 'vm', vm = vm[1] );
+			story.set( 'vm', vm );
 		}
 		
 		// Launch the story
@@ -300,7 +300,7 @@ Library = Collection.subClass({
 	{
 		var options = parchment.options,
 		
-		storyurl = /story=([^;&]+)/.exec( location.search ),
+		storyurl = urloptions.story,
 		backupurl,
 		story;
 		
@@ -319,7 +319,7 @@ Library = Collection.subClass({
 		else if ( options.default_story || storyurl )
 		{
 			// Load from URL, or the default story
-			storyurl = storyurl && unescape( storyurl[1] ) || options.default_story;
+			storyurl = storyurl || options.default_story;
 		}
 		// Give up
 		else

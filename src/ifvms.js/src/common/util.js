@@ -45,7 +45,7 @@ console = window.console || {
 // Utilities for 16-bit signed arithmetic
 U2S = function( value )
 {
-	return ( (value & 0x8000) ? ~0xFFFF : 0 ) | value;
+	return value << 16 >> 16;
 },
 S2U = function( value )
 {
@@ -62,4 +62,56 @@ byte_to_word = function( array )
 		result[i / 2] = array[i++] << 8 | array[i++];
 	}
 	return result;
+},
+	
+// Perform some micro optimisations
+optimise = function( code )
+{
+	return code
+	
+	// Sign conversions
+	.replace( /(e\.)?U2S\(([^(]+?)\)/g, '(($2)<<16>>16)' )
+	.replace( /(e\.)?S2U\(([^(]+?)\)/g, '(($2)&65535)' )
+	
+	// Bytearray
+	.replace( /([\w.]+)\.getUint8\(([^(]+?)\)/g, '$1[$2]' )
+	.replace( /([\w.]+)\.getUint16\(([^(]+?)\)/g, '($1[$2]<<8|$1[$2+1])' );
+},
+// Optimise some functions of an obj, compiling several at once
+optimise_obj = function( obj, funcnames )
+{
+	var funcname, funcparts, newfuncs = [];
+	for ( funcname in obj )
+	{
+		if ( funcnames.indexOf( funcname ) >= 0 )
+		{
+			funcparts = /function\s*\(([^(]*)\)\s*\{([\s\S]+)\}/.exec( '' + obj[funcname] );
+			/* DEBUG */
+				newfuncs.push( funcname + ':function ' + funcname + '(' + funcparts[1] + '){' + optimise( funcparts[2] ) + '}' );
+			/* ELSEDEBUG
+				newfuncs.push( funcname + ':function(' + funcparts[1] + '){' + optimise( funcparts[2] ) + '}' );
+			/* ENDDEBUG */
+		}
+	}
+	extend( obj, window['eval']( '({' + newfuncs.join() + '})' ) );
 };
+
+/* DEBUG */
+
+// Debug flags
+var debugflags = {},
+get_debug_flags = function( data )
+{
+	data = data.split( ',' );
+	var i = 0;
+	while ( i < data.length )
+	{
+		debugflags[data[i++]] = 1; 
+	}
+};
+if ( parchment && parchment.options && parchment.options.debug )
+{
+	get_debug_flags( parchment.options.debug );
+}
+
+/* ENDDEBUG */

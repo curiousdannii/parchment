@@ -240,8 +240,16 @@ Brancher = Opcode.subClass({
 		
 		this.result = result + '; return';
 		this.offset = offset;
-		this.cond = new BrancherLogic();
+		this.cond = new BrancherLogic( [this] );
 		
+		/* DEBUG */
+		// Stop if we must
+		if ( debugflags.noidioms )
+		{
+			return;
+		}
+		/* ENDDEBUG */
+			
 		// Compare with previous statement
 		if ( this.context.ops.length )
 		{
@@ -250,7 +258,7 @@ Brancher = Opcode.subClass({
 			if ( /* prev instanceof Brancher && */ prev.offset == offset )
 			{
 				// Goes to same offset so reuse the Brancher arrays
-				this.cond = prev.cond;
+				this.cond.ops.unshift( prev.cond );
 				this.labels = prev.labels;
 				this.labels.push( this.pc + '/' + this.code );
 			}
@@ -259,9 +267,6 @@ Brancher = Opcode.subClass({
 				this.context.ops.push( prev );
 			}
 		}
-		
-		// Push this op and label
-		this.cond.ops.push( this );
 	},
 	
 	// Write out the brancher

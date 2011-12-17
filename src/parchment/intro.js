@@ -72,6 +72,21 @@ library,
 runner,
 engine,
 
+// Isolate the query string options we have
+urloptions = (function( options ) {
+	var i = 0, result = {}, temp;
+	if ( options[0] == '' )
+	{
+		i++;
+	}
+	while ( i < options.length )
+	{
+		temp = /([^=]+)(=(.*))?/.exec( options[i++] );
+		result[temp[1]] = temp[3] ? unescape( temp[3] ) : true;
+	}
+	return result;
+} )( location.search.slice(1).split( /[&;]/g ) );
+
 // The home for Parchment to live in
 parchment = window.parchment = {
 
@@ -101,10 +116,6 @@ parchment = window.parchment = {
 		
 		// URL of proxy server to use for files we can't directly load
 		proxy_url: 'http://zcode.appspot.com/proxy/'
-		
-		// Output width in characters
-		// NOTE: this is not guaranteed to be a stable API option
-		//width: 80
 	},
 	
 	//topics: topics,

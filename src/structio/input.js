@@ -18,38 +18,27 @@ TODO:
 	Page up/down doesn't work in Chrome
 	Support input when some is given already
 	Adjust styles so that the padding belongs to the input and the window scrolls all the way to the bottom when focused
-	Scroll to sensible place for char input
 	Cache @window.height - let StructIO update it for us
 
 */
 
-var scrollPages = window.scrollByPages,
-bodylineheight,
+// window.scrollByPages() compatibility
+var scrollPages = window.scrollByPages || function( pages )
+{
+	// From Mozilla's nsGfxScrollFrame.cpp
+	// delta = viewportHeight - Min( 10%, lineHeight * 2 )
+	var height = document.documentElement.clientHeight,
+	delta = height - Math.min( height / 10, bodylineheight * 2 );
+	scrollBy( 0, delta * pages );
+},
 
 // getSelection compatibility-ish. We only care about the text value of a selection
 selection = window.getSelection ||
-	function() { return document.selection ? document.selection.createRange().text : '' };
-
-// window.scrollByPages() compatibility
-if ( !scrollPages )
-{
-	$(function(){
-		bodylineheight = parseInt( $body.css( 'line-height' ) ) * 2;
-	});
-	
-	scrollPages = function( pages )
-	{
-		// From Mozilla's nsGfxScrollFrame.cpp
-		// delta = viewportHeight - Min( 10%, lineHeight * 2 )
-		var height = document.documentElement.clientHeight,
-		delta = height - Math.min( height / 10, bodylineheight );
-		scrollBy( 0, delta * pages );
-	};
-}
+	function() { return document.selection ? document.selection.createRange().text : '' },
 
 // A generic text input class
 // Will handle both line and character input
-var TextInput = Object.subClass({
+TextInput = Object.subClass({
 	// Set up the text inputs with a container
 	// container is the greatest domain for which this instance should control input
 	init: function( container )
@@ -133,21 +122,27 @@ var TextInput = Object.subClass({
 			.appendTo( container );
 		
 		// Focus document clicks and keydowns
-		$doc.on( 'click.TextInput keydown.TextInput', function( ev ) {
-			
-			// Only intercept things that aren't inputs
-			if ( ev.target.nodeName != 'INPUT' &&
-			
-			// Don't do anything if the user is selecting some text
-				selection() == '' &&
-				
-			// Or if the cursor is too far below the viewport
-				$window.scrollTop() + $window.height() - input.offset().top > -60 )
+		$doc.on( 'click.TextInput keydown.TextInput', function( ev )
+		{
+			// Only intercept on things that aren't inputs and if the user isn't selecting text
+			if ( ev.target.nodeName != 'INPUT' && selection() == '' )
 			{
-				ev.stopPropagation();
-				window.scrollTo( 0, window.scrollMaxY );
-				input.focus()
-					.trigger( ev );
+				// If the input box is close to the viewport then focus it
+				if ( $window.scrollTop() + $window.height() - input.offset().top > -60 )
+				{
+					window.scrollTo( 0, 9e9 );
+					// Manually reset the target incase focus/trigger don't - we don't want the trigger to recurse
+					ev.target = input[0];
+					input.focus()
+						.trigger( ev );
+					// Stop propagating after re-triggering it, so that the trigger will work for all keys
+					ev.stopPropagation();
+				}
+				// Intercept the backspace key if not
+				else if ( ev.type == 'keydown' && ev.which == 8 )
+				{
+					return false;
+				}
 			}
 		});
 		
@@ -174,12 +169,24 @@ var TextInput = Object.subClass({
 		$doc.off( '.TextInput' );
 	},
 	
+	// Scroll to the beginning of the last set of output
+	scroll: function()
+	{
+		this.scrollParent.scrollTop(
+			// The last input relative to the top of the document
+			this.lastinput.offset().top
+			// Minus the height of the top window
+			- this.statuswin.height()
+			// Minus one further line
+			- bodylineheight
+		);
+	},
+	
 	// Get some input
 	getLine: function( order )
 	{
 		var laststruct = order.target.children().last(),
 		input = this.input,
-		scrollParent = this.scrollParent,
 		prompt;
 		
 		this.order = order;
@@ -211,15 +218,7 @@ var TextInput = Object.subClass({
 			.appendTo( prompt )
 			.width( order.target.offset().left + order.target.width() - input.offset().left );
 		
-		// Scroll to the beginning of the last set of output
-		scrollParent.scrollTop(
-			// The last input relative to the top of the document
-			this.lastinput.offset().top
-			// Minus the height of the top window
-			- this.statuswin.height()
-			// Minus one further line
-			- prompt.height()
-		);
+		this.scroll();
 	},
 	
 	// Submit the input data
@@ -280,6 +279,8 @@ var TextInput = Object.subClass({
 		// Add the <input>
 		this.input.addClass( 'CharInput' )
 			.appendTo( this.container );
+		
+		this.scroll();
 	},
 	
 	// Submit the input data

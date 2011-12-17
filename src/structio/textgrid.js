@@ -49,6 +49,7 @@ var TextGrid = Object.subClass({
 		styles = this.styles,
 		env = this.io.env,
 		line, text, temp,
+		styleelem,
 		stylecode,
 		oldheight = this.lines.length;
 		
@@ -138,10 +139,14 @@ var TextGrid = Object.subClass({
 			if ( code == 'stream' )
 			{
 				// Calculate the style attribute for this set of text
-				stylecode = $( '<tt>' )
+				styleelem = $( '<tt>' )
 					.appendTo( elem )
-					.css( order.css || {} )
-					.attr( 'style' );
+					.css( order.css || {} );
+				if ( order.css && order.css.reverse )
+				{
+					do_reverse( styleelem );
+				}
+				stylecode = styleelem.attr( 'style' );
 				if ( stylecode )
 				{
 					stylecode = ' style="' + stylecode + '"';
@@ -164,6 +169,7 @@ var TextGrid = Object.subClass({
 					{
 						row++;
 						col = 0;
+						// Add a row if needed
 					}
 				}
 			}

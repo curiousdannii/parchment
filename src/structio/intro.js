@@ -11,8 +11,9 @@ http://code.google.com/p/parchment
 
 /*
 
-Note:
-	Requires extend() from parchment/intro.js
+TODO:
+	Live reverse
+	Calculate bodylineheight with the rest of the metrics?
 
 */
 
@@ -20,13 +21,36 @@ Note:
 
 ;;; })();
 
-var rBadBackground = /inh|tra|(\d+, ?){3}0/,
+var extend = function( old, add )
+{
+	for ( var name in add )
+	{
+		old[name] = add[name];
+	}
+	return old;
+},
+
+// Swap reverse colours - manually called in api.js and textgrid.js
+do_reverse = function( elem )
+{
+	// Swap the fore and back ground colours
+	elem.css({
+		color: elem.css( 'bgcolor' ),
+		'background-color': elem.css( 'color' )
+	});
+},
+
+rBadBackground = /inh|tra|(\d+, ?){3}0/,
 
 $window = $( window ),
 $doc = $( document ),
-$body;
+$body,
+bodylineheight;
 
-$(function(){ $body = $( 'body' ); });
+$(function(){
+	$body = $( 'body' );
+	bodylineheight = parseFloat( $body.css( 'line-height' ) );
+});
 
 extend( $.cssHooks, {
 
@@ -54,22 +78,6 @@ extend( $.cssHooks, {
 			if ( rBadBackground.test( parent.css( 'background-color' ) ) )
 			{
 				parent.css( 'bgcolor', value );
-			}
-		}
-	},
-	
-	// A hook for reverse style text
-	reverse: {
-		set: function( elem, value )
-		{
-			if ( value )
-			{
-				var $elem = $( elem );
-				// Swap the fore and back ground colours
-				$elem.css({
-					color: $elem.css( 'bgcolor' ),
-					'background-color': $elem.css( 'color' )
-				});
 			}
 		}
 	}

@@ -43,15 +43,22 @@ ByteArray = native_bytearrays ?
 		data = data.slice();
 		
 		/* ZVM */ if ( ZVM ) {
-			return {
+			return extend( data, {
 				data: data,
 				getUint8: function( index ) { return data[index]; },
 				getUint16: function( index ) { return data[index] << 8 | data[index + 1]; },
 				getBuffer: function( start, length ) { return data.slice( start, start + length ); },
 				setUint8: function( index, value ) { return data[index] = value & 0xFF; },
 				setUint16: function( index, value ) { data[index] = (value >> 8) & 0xFF; data[index + 1] = value & 0xFF; return value & 0xFFFF; },
-				setBuffer: function( index, buffer ) { return data = data.slice( 0, index ).concat( buffer, data.slice( index + buffer.length ) ); }
-			};
+				setBuffer: function( index, buffer )
+				{
+					var i = 0, l = buffer.length;
+					while ( i < l )
+					{
+						data[i + index] = buffer[i++];
+					}
+				}
+			} );
 		} /* ENDZVM */
 		/* GVM */ if ( GVM ) {
 		} /* ENDGVM */

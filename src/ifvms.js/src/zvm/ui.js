@@ -12,9 +12,6 @@ http://github.com/curiousdannii/ifvms.js
 /*
 
 Note: is used by both ZVM and Gnusto. In the case of Gnusto the engine is actually GnustoRunner.
-
-TODO:
-	default background/foreground colours
 	
 */
 
@@ -36,7 +33,7 @@ var extend = function( old, add )
 
 // Standard colours
 colours = [
-	-2,
+	0xFFFE,
 	0xFFFF,
 	0x0000,
 	0x001D,
@@ -63,6 +60,9 @@ convert_true_colour = function( colour )
 };
 
 return Object.subClass({
+	
+	colours: colours,
+	
 	init: function( engine, headerbit )
 	{
 		this.e = engine;
@@ -100,6 +100,12 @@ return Object.subClass({
 			name: 'main',
 			css: extend( {}, this.styles )
 		});
+	},
+	
+	// Convert RGB to a true colour - RGB is an array of colour components
+	convert_RGB: function( RGB )
+	{
+		return Math.round( RGB[2] / 8.226 ) << 10 | Math.round( RGB[1] / 8.226 ) << 5 | Math.round( RGB[0] / 8.226 );
 	},
 	
 	erase_line: function( value )

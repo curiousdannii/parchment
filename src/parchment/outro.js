@@ -13,7 +13,7 @@ http://code.google.com/p/parchment
 // Load Parchment, start it all up!
 $(function()
 {
-	var queryoptions = /options=([^;&]+)/.exec( location.search );
+	var library;
 	
 	// Check for any customised options
 	if ( window.parchment_options )
@@ -23,13 +23,18 @@ $(function()
 	
 	// Load additional options from the query string
 	// Is a try/catch needed?
-	if ( !parchment.options.lock_options && queryoptions )
+	if ( !parchment.options.lock_options && urloptions.options )
 	{
-		$.extend( parchment.options, $.parseJSON( unescape( queryoptions[1] ) ) );
+		$.extend( parchment.options, $.parseJSON( urloptions.options ) );
 	}
 	
 	// Instantiate our UI
 	ui = parchment.ui = new UI();
+	
+	// Some extra debug options
+	/* DEBUG */
+	parchment.options.debug = urloptions.debug;
+	/* ENDDEBUG */
 	
 	// Load the library
 	library = parchment.library = new Library( Story );

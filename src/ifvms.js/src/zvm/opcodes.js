@@ -92,8 +92,8 @@ opcodes = {
 /* clear_attr */ 12: opcode_builder( Opcode, function() { return 'e.clear_attr(' + this.args() + ')'; } ),
 /* store */ 13: Indirect,
 /* insert_obj */ 14: opcode_builder( Opcode, function() { return 'e.insert_obj(' + this.args() + ')'; } ),
-/* loadw */ 15: opcode_builder( Storer, function( array, index ) { return 'm.getUint16(' + array + '+2*' + index.U2S() + ')'; } ),
-/* loadb */ 16: opcode_builder( Storer, function( array, index ) { return 'm.getUint8(' + array + '+' + index.U2S() + ')'; } ),
+/* loadw */ 15: opcode_builder( Storer, function( array, index ) { return 'm.getUint16(e.S2U(' + array + '+2*' + index.U2S() + '))'; } ),
+/* loadb */ 16: opcode_builder( Storer, function( array, index ) { return 'm.getUint8(e.S2U(' + array + '+' + index.U2S() + '))'; } ),
 /* get_prop */ 17: opcode_builder( Storer, function() { return 'e.get_prop(' + this.args() + ')'; } ),
 /* get_prop_addr */ 18: opcode_builder( Storer, function() { return 'e.find_prop(' + this.args() + ')'; } ),
 /* get_next_prop */ 19: opcode_builder( Storer, function() { return 'e.find_prop(' + this.args( ',0,' ) + ')'; } ),
@@ -136,8 +136,8 @@ opcodes = {
 /* verify */ 189: alwaysbranch, // Actually check??
 /* piracy */ 191: alwaysbranch,
 /* call_vs */ 224: CallerStorer,
-/* storew */ 225: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint16(' + array + '+2*' + index.U2S() + ',' + value + ')'; } ),
-/* storeb */ 226: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint8(' + array + '+' + index.U2S() + ',' + value + ')'; } ),
+/* storew */ 225: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint16(e.S2U(' + array + '+2*' + index.U2S() + '),' + value + ')'; } ),
+/* storeb */ 226: opcode_builder( Opcode, function( array, index, value ) { return 'm.setUint8(e.S2U(' + array + '+' + index.U2S() + '),' + value + ')'; } ),
 /* put_prop */ 227: opcode_builder( Opcode, function() { return 'e.put_prop(' + this.args() + ')'; } ),
 /* aread */ 228: opcode_builder( Pauser, function() { return 'e.read(' + this.args() + ',' + this.storer.v + ')'; } ),
 /* print_char */ 229: opcode_builder( Opcode, function( a ) { return 'e.print(e.text.zscii_to_text([' + a + ']))'; } ),
@@ -177,9 +177,10 @@ opcodes = {
 /* restore_undo */ 1010: opcode_builder( Opcode, function() { return 'if(e.restore_undo())return'; }, { storer: 1 } ),
 /* print_unicode */ 1011: opcode_builder( Opcode, function( a ) { return 'e.print(String.fromCharCode(' + a + '))'; } ),
 // Assume we can print and read all unicode characters rather than actually testing
-/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } )
-/* set_true_colour */ //1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
-/* gestalt */ //1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } ),
+/* check_unicode */ 1012: opcode_builder( Storer, function() { return 3; } ),
+/* set_true_colour */ 1013: opcode_builder( Opcode, function() { return 'e.ui.set_true_colour(' + this.args() + ')'; } ),
+/* sound_data */ 1014: Opcode.subClass( { brancher: 1 } ), // We don't support sounds (but disassemble the branch address)
+/* gestalt */ 1030: opcode_builder( Storer, function() { return 'e.gestalt(' + this.args() + ')'; } )
 /* parchment */ //1031: opcode_builder( Storer, function() { return 'e.op_parchment(' + this.args() + ')'; } )
 	
 };
