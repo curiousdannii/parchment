@@ -262,4 +262,10 @@ var GnustoRunner = Object.subClass({
 	// Dummy func needed by get_cursor()
 	act: function(){}
 
-});
+}),
+
+// FatalError compatibility
+FatalError = function( message )
+{
+	ui.error( message.replace( /\n/g, '<br>' ) );
+};

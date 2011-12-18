@@ -23,7 +23,6 @@ All runners do however need to support the same basic API:
 
 TODO:
 	Support Workers
-	Support errors in the Worker-like protocol
 
 */
 
@@ -38,7 +37,17 @@ var Runner = Object.subClass({
 		this.io = new StructIO( env );
 		
 		// Set the appropriate event handlers
-		this.toEngine = this.io.TextInput.callback = function( event ) { engine.inputEvent( event ); };
+		this.toEngine = this.io.TextInput.callback = function( event )
+		{
+			try
+			{
+				engine.inputEvent( event );
+			}
+			catch ( e )
+			{
+				ui.error( e );
+			}
+		};
 		engine.outputEvent = function( event ) { self.fromEngine( event ); };
 	},
 	

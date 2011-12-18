@@ -69,6 +69,11 @@ body
 	border-bottom: 1px solid #ddd;
 }
 
+.error
+{
+	border-color: red;
+}
+
 /* Front page panels */
 
 /* Load any web story file */
@@ -77,11 +82,4 @@ body
 	display: block;
 	margin: 0 auto;
 	width: 50%;
-}
-
-.error {
-    background: red;
-    color: white;
-    padding: 10px;
-    margin: 10px;
 }

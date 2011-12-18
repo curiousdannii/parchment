@@ -36,7 +36,7 @@ Story = Model.subClass( 'Story', {
 		// Or raise an error if we can't
 		if ( !vm )
 		{
-			throw new FatalError( 'File type is not supported!' );
+			return ui.error( 'Story type is not supported', 'Unfortunately Parchment can\'t run this story. Please try a desktop interpreter instead.' );
 		}
 		
 		// Get a promise which will resolve when the story and VM are both finished loading
@@ -52,9 +52,8 @@ Story = Model.subClass( 'Story', {
 	// Get the story file from storage, or download it
 	load: function()
 	{
-		var self = this,
-		data = this.data(),
-		deferred = $.Deferred();
+		var data = this.data(),
+		deferred = this.deferred = $.Deferred();
 		
 		// We have the data, so resolve the Deferred
 		if ( data )
@@ -69,25 +68,41 @@ Story = Model.subClass( 'Story', {
 		// Otherwise download the file
 		else
 		{
-			$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
-				.done( function( data, textStatus, jqXHR )
-				{
-					// Resolve our deferred with the XHR
-					deferred.resolve( jqXHR );
-					// Save the data to storage
-					self.data( jqXHR.responseText );
-				})
-				.fail( story_get_fail );
+			this.download();
 		}
 		
 		return deferred;
+	},
+	
+	// Download the file
+	download: function()
+	{
+		// Re-show the indicator if that's needed
+		if ( !ui.modal )
+		{
+			library.indicator.show();
+		}
+		
+		var self = this;
+		
+		$.ajax( this.url, { dataType: 'binary', legacy: this.backup } )
+			.done( function( data, textStatus, jqXHR )
+			{
+				// Resolve our deferred with the XHR
+				self.deferred.resolve( jqXHR );
+				// Save the data to storage
+				self.data( jqXHR.responseText );
+			})
+			// We couldn't download the file - but offer the option to try again
+			.fail( function(){
+				ui.error(
+					'Parchment could not load the story',
+					'Please check your connection, and that the URL is correct',
+					'Retry', function() { self.download(); }
+				);
+			});
 	}
 }),
-
-// Callback to show an error when the story file wasn't loaded
-story_get_fail = function(){
-	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
-},
 
 // Launcher. Will be run by jQuery.when(). jqXHR is args[2]
 launch_callback = function( storydata, vm )
@@ -274,7 +289,7 @@ Library = Collection.subClass({
 		$('#about').remove();
 		
 		// Show the load indicator
-		new Dialog({
+		this.indicator = new Dialog({
 			content: [
 				'Parchment is loading.',
 				'> <blink>_</blink>'
@@ -294,7 +309,7 @@ Library = Collection.subClass({
 		}
 		catch (e)
 		{
-			throw new FatalError( e );
+			return ui.error( e );
 		}
 	},
 	
@@ -315,7 +330,7 @@ Library = Collection.subClass({
 
 			if ( !storyurl )
 			{
-				throw 'Story file not specified';
+				return ui.error( 'Story file not specified' );
 			}
 		}
 		// Load the requested story or the default story

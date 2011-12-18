@@ -13,11 +13,14 @@ http://code.google.com/p/parchment
 
 TODO:
 	Fix the stylesheets implementation to actually allow enabling/disabling in IE
+	Give the option for error tracebacks
 
 */
 
+var $body = $( 'body' ),
+
 // Map results callback
-var results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
+results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
 map_results_callback = function( story )
 {
 	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
@@ -35,14 +38,14 @@ Dialog = Object.subClass({
 		var i, j,
 		component,
 		temp,
-		modal = $( '<div class="modal">' ),
+		modal = this.modal = $( '<div class="modal">' ),
 			
 		div = $( '<form class="dialog">' )
 			.addClass( opts.type )
 			.submit( function()
 			{
-				opts.callback( this );
 				ui.endmodal();
+				opts.callback( this );
 				return false;
 			})
 			.appendTo( modal );
@@ -71,12 +74,15 @@ Dialog = Object.subClass({
 				temp = $( '<p>' ).appendTo( div );
 				while ( j < component.labels.length )
 				{
-					$( '<input type="submit" value="' + component.labels[j++] + '">' )
-					.click( function()
-					{
-						div.data( 'action', $( this ).val() );
+					$( '<input>', {
+						type: 'submit',
+						value: component.labels[j++],
+						click: function()
+						{
+							div.data( 'action', $( this ).val() );
+						}
 					})
-					.appendTo( temp );
+						.appendTo( temp );
 				}
 			}
 			
@@ -88,7 +94,18 @@ Dialog = Object.subClass({
 			}
 		}
 		
-		modal.appendTo( 'body' );
+		$body.append( modal );
+	},
+	
+	// Re-show
+	show: function()
+	{
+		ui.modal = 1;
+		
+		// Remove any existing dialog box, just in case
+		$( '.modal' ).remove();
+		
+		$body.append( this.modal );
 	}
 }),
 
@@ -98,6 +115,32 @@ UI = Object.subClass({
 	{
 		this.container = $( parchment.options.container );
 		this.panels = {};
+	},
+	
+	// Display an error
+	error: function( message, detail, action, callback )
+	{
+		var opts = {
+			type: 'error',
+			title: message,
+			content: []
+		};
+		if ( detail )
+		{
+			opts.content.push( detail );
+		}
+		if ( action )
+		{
+			opts.content.push({
+				type: 'actions',
+				labels: [action]
+			});
+		}
+		if ( callback )
+		{
+			opts.callback = callback;
+		}
+		new Dialog( opts );
 	},
 	
 	endmodal: function()
