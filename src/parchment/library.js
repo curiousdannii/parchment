@@ -26,8 +26,6 @@ var Savefile = Model.subClass( 'Savefile', {
 // Storyfile
 Story = Model.subClass( 'Story', {
 	_has: { 'Savefile': [] },
-	// Not needed as long as we can ensure we keep the urls unique -> remove this option from model.js too
-//	_id_prop: 'url',
 	
 	// Load this story and its VM
 	launch: function( vm )
@@ -95,7 +93,7 @@ story_get_fail = function(){
 launch_callback = function( storydata, vm )
 {
 	// Hide the load indicator
-	$( '.load' ).detach();
+	ui.endmodal();
 	
 	// Create a runner
 	runner = parchment.runner = new ( window[vm.runner] || Runner )(
@@ -276,7 +274,12 @@ Library = Collection.subClass({
 		$('#about').remove();
 		
 		// Show the load indicator
-		$( 'body' ).append( ui.load_indicator );
+		new Dialog({
+			content: [
+				'Parchment is loading.',
+				'> <blink>_</blink>'
+			]
+		});
 
 		// If we've been told which vm to use, add it to the story
 		if ( vm )
@@ -357,7 +360,28 @@ Library = Collection.subClass({
 		
 		if ( code == 'save' )
 		{
-			location.hash = file.base64_encode( event.data );
+			new Dialog({
+				title: 'Save',
+				content: [
+					{
+						type: 'actions',
+						labels: ['Save', 'Cancel']
+					},
+					{
+						type: 'link',
+						text: 'Bookmark',
+						href: '#' + file.base64_encode( event.data ),
+						target: '_blank',
+						// Stop the cancel putton from saying we didn't save
+						click: function() { $( '.modal input[value=Cancel]' ).off( 'click' ); }
+					}
+				],
+				callback: function( form )
+				{
+					event.result = $( form ).data( 'action' ) != 'Cancel';
+					runner.fromParchment( event );
+				}
+			});
 		}
 		
 		if ( code == 'restore' )
@@ -366,8 +390,7 @@ Library = Collection.subClass({
 			{
 				event.data = file.base64_decode( savefile.slice( 1 ) );
 			}
+			runner.fromParchment( event );
 		}
-		
-		runner.fromParchment( event );
 	}
 });

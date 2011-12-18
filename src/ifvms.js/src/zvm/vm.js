@@ -86,7 +86,7 @@ var ZVM_core = {
 		if ( code == 'save' )
 		{
 			// Set the result variable, assume success
-			this.variable( data.storer, data.result || 1 );
+			this.variable( data.storer, data.result == undefined ? 1 : data.result & 0xFF );
 		}
 		
 		if ( code == 'restore' )

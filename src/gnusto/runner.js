@@ -45,7 +45,7 @@ var GnustoRunner = Object.subClass({
 		// Save a savefile
 		if ( code == 'save' )
 		{
-			engine.answer( 0, event.result || 1 );
+			engine.answer( 0, event.result == undefined ? 1 : event.result & 0xFF );
 			run = 1;
 		}
 		

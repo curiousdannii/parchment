@@ -42,7 +42,7 @@ var Model = Object.subClass({
 			this.data();
 		}
 		
-		this._id = this._id || this._id_prop && this[this._id_prop] || Model.id++
+		this._id = this._id || Model.id++
 	},
 	
 	// Save an instance to localStorage

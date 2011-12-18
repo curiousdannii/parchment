@@ -13,8 +13,6 @@ http://code.google.com/p/parchment
 // Load Parchment, start it all up!
 $(function()
 {
-	var library;
-	
 	// Check for any customised options
 	if ( window.parchment_options )
 	{

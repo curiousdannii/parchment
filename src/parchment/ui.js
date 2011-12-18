@@ -23,17 +23,89 @@ map_results_callback = function( story )
 	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
 },
 
+// A class for dialog boxes
+Dialog = Object.subClass({
+	init: function( opts )
+	{
+		ui.modal = 1;
+		
+		// Remove any existing dialog box, just in case
+		$( '.modal' ).remove();
+		
+		var i, j,
+		component,
+		temp,
+		modal = $( '<div class="modal">' ),
+			
+		div = $( '<form class="dialog">' )
+			.addClass( opts.type )
+			.submit( function()
+			{
+				opts.callback( this );
+				ui.endmodal();
+				return false;
+			})
+			.appendTo( modal );
+		
+		if ( opts.title )
+		{
+			div.append( '<p class="title">' + opts.title + '</p>' );
+		}
+		
+		// Go through the content
+		for ( i in opts.content )
+		{
+			component = opts.content[i];
+			
+			if ( typeof component == 'string' )
+			{
+				$( '<p>' )
+					.html( component )
+					.appendTo( div );
+			}
+			
+			// Action buttons
+			else if ( component.type == 'actions' )
+			{
+				j = 0;
+				temp = $( '<p>' ).appendTo( div );
+				while ( j < component.labels.length )
+				{
+					$( '<input type="submit" value="' + component.labels[j++] + '">' )
+					.click( function()
+					{
+						div.data( 'action', $( this ).val() );
+					})
+					.appendTo( temp );
+				}
+			}
+			
+			// Links
+			else if ( component.type == 'link' )
+			{
+				component.type = undefined;
+				div.append( $( '<p>' ).append( $( '<a>', component ) ) );
+			}
+		}
+		
+		modal.appendTo( 'body' );
+	}
+}),
+
 // The main UI class
 UI = Object.subClass({
 	init: function()
 	{
 		this.container = $( parchment.options.container );
 		this.panels = {};
-		
-		// Load indicator
-		this.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
-
+	
+	endmodal: function()
+	{
+		$( '.modal' ).remove();
+		this.modal = 0;
+	},
+	
 	// Stylesheet management
 	// Add some stylesheets, disabled at first
 	stylesheet_add: function( /* title, url, ... */ )

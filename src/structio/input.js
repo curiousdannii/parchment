@@ -124,8 +124,8 @@ TextInput = Object.subClass({
 		// Focus document clicks and keydowns
 		$doc.on( 'click.TextInput keydown.TextInput', function( ev )
 		{
-			// Only intercept on things that aren't inputs and if the user isn't selecting text
-			if ( ev.target.nodeName != 'INPUT' && selection() == '' )
+			// Only intercept if a modal dialogue isn't being shown, on things that aren't inputs and if the user isn't selecting text
+			if ( !ui.modal && ev.target.nodeName != 'INPUT' && selection() == '' )
 			{
 				// If the input box is close to the viewport then focus it
 				if ( $window.scrollTop() + $window.height() - input.offset().top > -60 )
