@@ -18,6 +18,13 @@ TODO:
 
 (function($){
 
+if (!String.prototype.entityify) {
+    String.prototype.entityify = function () {
+        return this.replace(/&/g, "&amp;").replace(/</g,
+            "&lt;").replace(/>/g, "&gt;");
+    };
+}
+
 var window = this,
 
 // Map results callback
