@@ -24,7 +24,7 @@ var window = this,
 results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
 map_results_callback = function( story )
 {
-	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
+	return results_link + story.path + '">' + story.desc + '</a></p>';
 };
 
 // The main UI class
