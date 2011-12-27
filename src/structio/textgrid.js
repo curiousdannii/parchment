@@ -12,8 +12,7 @@ http://code.google.com/p/parchment
 /*
 
 TODO:
-	Check cursor is correct at end of grid
-	Find out why Curses' box for inventory is messed up
+	Check cursor column is correct?
 
 */
 
@@ -51,7 +50,7 @@ var TextGrid = Object.subClass({
 		line, text, temp,
 		styleelem,
 		stylecode,
-		oldheight = this.lines.length;
+		oldheight = lines.length;
 		
 		// Process the orders
 		for ( i = 0; i < orders.length; i++ )
@@ -65,28 +64,27 @@ var TextGrid = Object.subClass({
 				// Increase the height
 				while ( order.lines > lines.length )
 				{
-					line = [];
-					j = 0;
-					while ( j++ < env.width )
-					{
-						line.push( ' ' );
-					}
-					lines.push( line );
-					styles.push( Array( env.width ) );
+					this.addline();
 				}
 				
 				// Decrease the height, and handle box quotations
-				if ( order.lines < this.lines.length )
+				if ( order.lines < lines.length )
 				{
 					if ( order.lines != 0 )
 					{
+						// Fix bad heights (that would split a multi-line status) by increasing the requested height to the first blank line
+						while ( /\S/.test( lines[order.lines].join( '' ) ) && order.lines < lines.length )
+						{
+							order.lines++;
+						}
+					
 						// Add the floating box
 						temp = $( '<div>' )
 							.addClass( 'box' )
 							.prependTo( this.io.target );
 						// Position it where it would have been if it was part of the grid
 						// Scroll to the bottom just in case
-						window.scrollTo( 0, window.scrollMaxY );
+						window.scrollTo( 0, 9e9 );
 						temp.css({
 							top: $window.scrollTop() + this.lineheight * order.lines,
 							// Account for .main's added 1px padding
@@ -112,12 +110,7 @@ var TextGrid = Object.subClass({
 				j = 0;
 				while ( j < lines.length )
 				{
-					temp = 0;
-					while ( temp < env.width )
-					{
-						lines[j][temp++] = ' ';
-					}
-					styles[j++] = Array( env.width );
+					this.addline( j++ );
 				}
 				row = 0;
 				col = 0;
@@ -127,6 +120,12 @@ var TextGrid = Object.subClass({
 			{
 				row = order.to[0];
 				col = order.to[1];
+				
+				// Add a row(s) if needed
+				while ( row >= lines.length )
+				{
+					this.addline();
+				}
 			}
 			
 			if ( code == 'get_cursor' )
@@ -138,18 +137,28 @@ var TextGrid = Object.subClass({
 			// Add text to the grid
 			if ( code == 'stream' )
 			{
-				// Calculate the style attribute for this set of text
-				styleelem = $( '<tt>' )
-					.appendTo( elem )
-					.css( order.css || {} );
-				if ( order.css && order.css.reverse )
+				// Add a row(s) if needed
+				while ( row >= lines.length )
 				{
-					do_reverse( styleelem );
+					this.addline();
 				}
-				stylecode = styleelem.attr( 'style' );
-				if ( stylecode )
+				
+				// Calculate the style attribute for this set of text
+				stylecode = undefined;
+				if ( order.css )
 				{
-					stylecode = ' style="' + stylecode + '"';
+					styleelem = $( '<tt>' )
+						.appendTo( elem )
+						.css( order.css );
+					if ( order.css.reverse )
+					{
+						do_reverse( styleelem );
+					}
+					stylecode = styleelem.attr( 'style' );
+					if ( stylecode )
+					{
+						stylecode = ' style="' + stylecode + '"';
+					}
 				}
 				
 				// Add the text to the arrays
@@ -169,7 +178,12 @@ var TextGrid = Object.subClass({
 					{
 						row++;
 						col = 0;
+						
 						// Add a row if needed
+						if ( row >= lines.length )
+						{
+							this.addline();
+						}
 					}
 				}
 			}
@@ -231,5 +245,20 @@ var TextGrid = Object.subClass({
 			}
 		}
 		elem.html( result );
+	},
+	
+	// Add a blank line
+	addline: function( row )
+	{
+		var width = this.io.env.width,
+		line = [],
+		i = 0;
+		row = row || this.lines.length;
+		while ( i++ < width )
+		{
+			line.push( ' ' );
+		}
+		this.lines[row] = line;
+		this.styles[row] = Array( width );
 	}
 });
