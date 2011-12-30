@@ -49,7 +49,28 @@ bodylineheight;
 
 $(function(){
 	$body = $( 'body' );
-	bodylineheight = parseFloat( $body.css( 'line-height' ) );
+
+	// Calculate line height, bodylineheight, in pixels.
+	// The CSS value line-height can be:
+	//   1) a ratio (based on font-size),
+	//   2) a length (px/em/in/cm), or
+	//   3) the string "normal"
+
+	var heightstr = $body.css( 'line-height' ),
+		fontsizestr = $body.css('font-size');
+	// if line-height is a ratio (and therefore ends with a number), multiply it by the font size
+	if ( !isNaN( parseInt(heightstr[ heightstr.length-1 ]) ) ) {
+		bodylineheight = Math.floor( parseFloat( heightstr ) * parseFloat( fontsizestr ) );
+	}
+	// if line-height is "normal" (thus not a pixel value or ratio), guess the line height as 140% of the font size
+	else if( heightstr == "normal" ) {
+		bodylineheight = Math.floor( 1.4 * parseFloat( fontsizestr ) );
+	}
+	// else, line-height is a length value (we assume it is a px value)
+	// TODO: convert em/in/cm values to pixel
+	else {
+		bodylineheight = parseFloat( heightstr );
+	}
 });
 
 extend( $.cssHooks, {
