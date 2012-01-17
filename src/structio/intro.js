@@ -3,7 +3,7 @@
 StructIO intro
 ==============
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -47,9 +47,14 @@ $doc = $( document ),
 $body,
 bodylineheight;
 
-$(function(){
+$(function()
+{
 	$body = $( 'body' );
-	bodylineheight = parseFloat( $body.css( 'line-height' ) );
+	
+	// Calculate the body line-height
+	var elem = $( '<span>&nbsp;</span>' ).appendTo( $body );
+	bodylineheight = elem.height();
+	elem.remove();
 });
 
 extend( $.cssHooks, {
