@@ -331,7 +331,30 @@ Library = Object.subClass({
 		],
 		
 		// Get the scripts if they haven't been loaded already
-		scripts = [],
+		/* DEBUG */
+			scripts = [$.Deferred()],
+			script_callback = function()
+			{
+				if ( vm.files.length == 0 )
+				{
+					scripts[0].resolve();
+					return;
+				}
+				var dependency = parchment.options.lib_path + vm.files.shift();
+				if ( rjs.test( dependency ) )
+				{
+					$.getScript( dependency, script_callback );
+				}
+				// CSS
+				else
+				{
+					this.ui.stylesheet_add( vm.id, dependency );
+					script_callback();
+				}
+			},
+		/* ELSEDEBUG
+			scripts = [],
+		/* ENDDEBUG */
 		i = 0,
 		dependency;
 		
@@ -339,21 +362,25 @@ Library = Object.subClass({
 		{
 			vm.loaded = 1;
 			
-			while ( i < vm.files.length )
-			{
-				dependency = parchment.options.lib_path + vm.files[i++];
-				// JS
-				if ( rjs.test( dependency ) )
+			/* DEBUG */
+				script_callback();
+			/* ELSEDEBUG
+				while ( i < vm.files.length )
 				{
-					scripts.push( $.getScript( dependency ) );
+					dependency = parchment.options.lib_path + vm.files[i++];
+					// JS
+					if ( rjs.test( dependency ) )
+					{
+						scripts.push( $.getScript( dependency ) );
+					}
+					// CSS
+					else
+					{
+						this.ui.stylesheet_add( vm.id, dependency );
+					}
 				}
-				// CSS
-				else
-				{
-					this.ui.stylesheet_add( vm.id, dependency );
-				}
-			}
-			
+			/* ENDDEBUG */
+
 			// Use jQuery.when() to get a promise for all of the scripts
 			actions[1] = $.when.apply( 1, scripts );
 				//.fail( scripts_fail );
