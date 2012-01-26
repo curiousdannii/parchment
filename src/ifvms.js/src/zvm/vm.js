@@ -189,7 +189,7 @@ var ZVM_core = {
 			
 			// IO stuff
 			orders: [],
-			streams: [ 1, 0, [], 0 ],
+			streams: [ 1, 0, [], 0, [] ],
 			
 			// Get some header variables
 			version: version,
