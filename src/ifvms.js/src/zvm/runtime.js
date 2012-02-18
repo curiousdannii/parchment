@@ -70,8 +70,7 @@ window.ZVM = Object.subClass( {
 		size = U2S( size );
 		var memory = this.m,
 		i = 0,
-		allowcorrupt = size < 0,
-		temp;
+		allowcorrupt = size < 0;
 		size = Math.abs( size );
 		
 		// Simple case, zeroes
@@ -93,9 +92,7 @@ window.ZVM = Object.subClass( {
 		}
 		else
 		{
-			temp = memory.getBuffer( first, size );
-			memory.setBuffer( second, temp );
-			memory.setBuffer( first, temp );
+			memory.setBuffer( second, memory.getBuffer( first, size ) );
 		}
 	},
 	

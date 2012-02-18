@@ -157,7 +157,7 @@ opcodes = {
 /* output_stream */ 243: opcode_builder( Opcode, function() { return 'e.output_stream(' + this.args() + ')'; } ),
 /* input_stream */ 244: Opcode, // We don't support changing the input stream
 /* sound_effect */ 245: Opcode, // We don't support sounds
-/* read_char */ 246: opcode_builder( Pauser, function() { return 'e.read_char(' + this.args() + ',' + this.storer.v + ')'; } ),
+/* read_char */ 246: opcode_builder( Pauser, function() { return 'e.read_char(' + ( this.args() || '1' ) + ',' + this.storer.v + ')'; } ),
 /* scan_table */ 247: opcode_builder( BrancherStorer, function() { return 'e.scan_table(' + this.args() + ')'; } ),
 /* not */ 248: opcode_builder( Storer, function( a ) { return 'e.S2U(~' + a + ')'; } ),
 /* call_vn */ 249: Caller,

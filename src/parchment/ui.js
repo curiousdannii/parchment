@@ -3,7 +3,7 @@
 Parchment UI
 ============
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -23,8 +23,8 @@ var $body = $( 'body' ),
 results_link = '<p><a href="' + location.href + '?story=http://mirror.ifarchive.org/',
 map_results_callback = function( story )
 {
-	return results_link + story.path + '">' + story.desc.entityify() + '</a></p>';
-},
+	return results_link + story.path + '">' + story.desc + '</a></p>';
+};
 
 // A class for dialog boxes
 Dialog = Object.subClass({

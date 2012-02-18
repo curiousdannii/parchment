@@ -3,7 +3,7 @@
 The Parchment Library
 =====================
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 

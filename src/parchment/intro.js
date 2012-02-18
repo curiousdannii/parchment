@@ -3,7 +3,7 @@
 Parchment Intro: utility functions and various other things that need to be set up
 ==================================================================================
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -131,8 +131,33 @@ load_vm = function()
 	var self = this,
 	i = 0,
 	dependency,
-	scripts = [],
-	deferred;
+	deferred,
+	
+	// Ensure that the files are loaded in the correct order (Debug only)
+	/* DEBUG */
+		scripts = [$.Deferred()],
+		script_callback = function()
+		{
+			if ( self.files.length == 0 )
+			{
+				scripts[0].resolve();
+				return;
+			}
+			var dependency = parchment.options.lib_path + self.files.shift();
+			if ( /\.js$/.test( dependency ) )
+			{
+				$.getScript( dependency, script_callback );
+			}
+			// CSS
+			else
+			{
+				parchment.library.ui.stylesheet_add( self.id, dependency );
+				script_callback();
+			}
+		};
+	/* ELSEDEBUG
+		scripts = [];
+	/* ENDDEBUG */
 	
 	// We've loaded this VM before, so return the Deferred
 	if ( this.loaded )
@@ -144,20 +169,24 @@ load_vm = function()
 	deferred = this.loaded = $.Deferred();
 	
 	// Load all the dependencies
-	while ( i < this.files.length )
-	{
-		dependency = parchment.options.lib_path + this.files[i++];
-		// JS
-		if ( /\.js$/.test( dependency ) )
+	/* DEBUG */
+		script_callback();
+	/* ELSEDEBUG
+		while ( i < this.files.length )
 		{
-			scripts.push( $.getScript( dependency ) );
+			dependency = parchment.options.lib_path + this.files[i++];
+			// JS
+			if ( /\.js$/.test( dependency ) )
+			{
+				scripts.push( $.getScript( dependency ) );
+			}
+			// CSS
+			else
+			{
+				ui.stylesheet_add( this.id, dependency );
+			}
 		}
-		// CSS
-		else
-		{
-			ui.stylesheet_add( this.id, dependency );
-		}
-	}
+	/* ENDDEBUG */
 	
 	// Use jQuery.when() to get a promise for all of the scripts
 	$.when.apply( this, scripts )
