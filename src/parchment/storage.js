@@ -1,9 +1,10 @@
 /*
 
-Storage system
-==============
+A simple key/value storage system using
+IndexedDB, LocalStorage and Flash Shared Objects
+================================================
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2011-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -17,117 +18,103 @@ TODO:
 
 */
 
-var storage = (function( window, $ ){
+var storage_factory = (function(){
 
-var storage = {},
-
-// JSON compatibility
-JSON_parse = JSON ? JSON.parse : $.parseJSON,
-JSON_stringify = JSON ? JSON.stringify : function( value )
-{
-	var i = 0,
-	partial = [],
-	temp;
-	
-	// A crude implementation of JSON.stringify
-	switch ( typeof value )
-	{
-		case 'string':
-			return JSON_stringify_quote( value );
-        case 'number':
-        case 'boolean':
-            return String( value );
-		case 'object':
-			if ( !value )
-			{
-				return 'null';
-			}
-			// Array
-			if ( Object.prototype.toString.apply( value ) == '[object Array]' )
-			{
-				while( i < value.length )
-				{
-					partial.push( JSON_stringify( value[i++] ) || 'null' );
-				}
-				return '[' + partial.join() + ']';
-			}
-			// Object
-			for ( i in value )
-			{
-				//if ( Object.hasOwnProperty.call(value, i) )
-				//{
-					if ( temp = JSON_stringify( value[i] ) )
-					{
-						partial.push( JSON_stringify_quote( i ) + ':' + temp );
-					}
-				//}
-			}
-			return '{' + partial.join() + '}';
-	}
-},
-// Very crude quoter
-JSON_stringify_quote = function( string )
-{
-	return '"' + string.replace( /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\uffff]/g, function( a ) {
-		return '\\u' + ( '0000' + a.charCodeAt( 0 ).toString( 16 ) ).slice( -4 );
-	} ) + '"';
-},
-
-// First get our potential storage objects
-//indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB,
+var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
 localStorage = window.localStorage,
-persist,
 
-request,
-
-build_storage = function()
-{
-	// Firstly try IndexedDB
-	/*if ( indexedDB )
+//IndexedDB class
+IndexedDBClass = Object.subClass({
+	init: function( db, callback )
 	{
-		// Open our DB
-		try
-		{
-			request = indexedDB.open( 'p' );
-		}
-		catch (e)
-		{
-			indexedDB = 0;
-			return build_storage();
-		};
-	}*/
-	
-	// Otherwise try localStorage
-	if ( localStorage )
-	{
-		persist = !LOCAL || !$.browser.mozilla;
-	}
-	// Or just use an object
-	else
-	{
-		localStorage = {};
-	}
-	
-	// Set the API
-	extend( storage, {
-		persist: persist,
+		var self = this;
+		this.db = db;
+		// Error handler?
 		
-		get: function( key, callback )
+		// Set the version
+		if ( db.version == '1' )
 		{
-			//callback( JSON_parse( localStorage[key] ) );
-			var data = localStorage['parchment' + key];
-			return /^[[{]/.test( data ) ? JSON_parse( data ) : data;
-		},
-		set: function( key, val )
-		{
-			localStorage['parchment' + key] = typeof val == 'string' ? val : JSON_stringify( val );
+			callback( this );
 		}
-	});
+		else
+		{
+			db.setVersion( '1' ).onsuccess = function()
+			{
+				// Add our object store
+				db.createObjectStore( 'data' );
+				callback( self );
+			};
+		}
+	},
+	get: function( key, callback, keyprefix )
+	{
+		var transaction = this.db.transaction( 'data' ),
+		objectStore = transaction.objectStore( 'data' ),
+		data = {},
+		i = 0;
+		
+		// Get several keys at once
+		if ( keyprefix != undefined )
+		{
+			// Run the callback once all the data has been retrieved
+			transaction.oncomplete = function()
+			{
+				callback( data );
+			}
+			// Make a request for each key
+			while ( i < key.length )
+			{
+				(function( key ) {
+					objectStore.get( keyprefix + key ).onsuccess = function( event )
+					{
+						data[key] = event.target.result;
+					};
+				})( key[i++] );
+			}
+		}
+		// Or just one
+		else
+		{
+			objectStore.get( key ).onsuccess = function( event )
+			{
+				callback( event.target.result );
+			};
+		}
+	},
+	set: function( key, value )
+	{
+		this.db
+			.transaction( 'data', 1 /* IDBTransaction.READ_WRITE */ )
+			.objectStore( 'data' )
+			.put( value, key );
+	}
+}),
+
+storage_factory = function( dbname, callback )
+{
+	// Nothing cool works from file: :(
+	if ( LOCAL )
+	{
+	}
+	// Try IndexedDB
+	else if ( indexedDB )
+	{
+		var request = indexedDB.open( dbname );
+		
+		// Success! Create the storage object
+		request.onsuccess = function()
+		{
+			new IndexedDBClass( request.result, callback );
+		};
+		// No luck, so kill our IndexedDB reference
+		request.onerror = function()
+		{
+			indexedDB = undefined;
+			storage_factory( dbname, callback );
+		};
+	}
 };
 
-build_storage();
+return storage_factory;
 
-// We return the storage object now, but it will get filled in later
-return storage;
-
-})( this, jQuery );
+})();

@@ -141,6 +141,7 @@ UI = Object.subClass({
 			opts.callback = callback;
 		}
 		new Dialog( opts );
+		console.error( message, detail );
 	},
 	
 	endmodal: function()

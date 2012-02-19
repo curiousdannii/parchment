@@ -34,9 +34,15 @@ $(function()
 	parchment.options.debug = urloptions.debug;
 	/* ENDDEBUG */
 	
-	// Load the library
-	library = parchment.library = new Library( Story );
-	library.load();
+	// Create a storage object
+	storage_factory( 'parchment', function( storage_instance )
+	{
+		storage = parchment.storage = storage_instance;
+		library = parchment.library = new Library( Story );
+		// Start and fetch the library, and then finally load the library.
+		// Have we nested enough callbacks yet?
+		library.fetch( function(){ library.load(); } );
+	});
 
 	// Add the Analytics tracker, but only if we're at iplayif.com
 	if ( /iplayif.com/.test( location.host ) )

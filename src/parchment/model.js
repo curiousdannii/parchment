@@ -14,7 +14,7 @@ http://code.google.com/p/parchment
 After exploring some JS MVC options I've decided to try writing my own. I'm not opposed to using another, and might consider more options again in the future, if this proves insufficient.
 
 TODO:
-	Do we ever save(1)? If not, then remove propagate option
+	Model.init calls fetch but isn't passed a callback itself, does this matter?
 
 */
 
@@ -33,20 +33,20 @@ var Model = Object.subClass({
 			for ( Class in has )
 			{
 				this[Class] = new Collection( Model.models[Class], this );
-				this[Class].fetch( has[Class] );
+				this[Class].fetch( function(){}, has[Class] );
 			}
 		}
 		
 		if ( this._init_data )
 		{
-			this.data();
+			this.data( function(){} );
 		}
 		
 		this._id = this._id || Model.id++
 	},
 	
 	// Save an instance to localStorage
-	save: function( propagate )
+	save: function()
 	{
 		var data = {},
 		itemid,
@@ -70,11 +70,14 @@ var Model = Object.subClass({
 			{
 				if ( this[itemid].length )
 				{
-					hasdata[itemid] = this[itemid].save( propagate );
+					hasdata[itemid] = this[itemid].save();
 					savehas = 1;
 				}
 			}
-			data._has = savehas && hasdata;
+			if ( savehas )
+			{
+				data._has = hasdata;
+			}
 		}
 		storage.set( this._Class + this._id, data );
 	},
@@ -90,13 +93,26 @@ var Model = Object.subClass({
 	data: function( data )
 	{
 		var datastring = 'DATA' + this._Class + this._id;
-		if ( data != undefined )
+		
+		// data is a function callback -> get!
+		if ( typeof data == 'function' )
 		{
-			storage.set( datastring, data );
+			if ( this._data )
+			{
+				data( this._data );
+			}
+			else
+			{
+				storage.get( datastring, function( newdata ) {
+					this._data = newdata;
+					data( newdata );
+				});
+			}
 		}
 		else
 		{
-			return this._data = this._data || storage.get( datastring );
+			this._data = data;
+			storage.set( datastring, data );
 		}
 	}
 }),
@@ -111,28 +127,35 @@ Collection = Object.subClass.call( Array, {
 	
 	// Get the collection index from localStorage
 	// note: will first empty the collection
-	fetch: function( index )
+	fetch: function( callback, index )
 	{
-		var itemid, item,
+		var self = this,
 		i = this.length = 0;
-		index = index || storage.get( 'INDEX' + this.Class.Class );
 		if ( index )
 		{
-			while ( i < index.length )
+			storage.get( index, function( data )
 			{
-				itemid = index[i++];
-				item = storage.get( this.Class.Class + itemid );
-				if ( item )
+				for ( var key in data )
 				{
-					item._id = itemid;
-					this.add( new this.Class( item ) );
+					data[key]._id = key;
+					self.add( new self.Class( data[key] ), 1 );
 				}
-			}
+				callback();
+			}, this.Class.Class );
+		}
+		// Get the index from storage
+		else
+		{
+			storage.get( 'INDEX' + this.Class.Class, function( data ) {
+				// Is the [] needed here?
+				self.fetch( callback, data || [] );
+			});
 		}
 	},
 	
 	// Save the Collection back to localStorage
-	save: function( propagate )
+	// Note does not save collection members
+	save: function()
 	{
 		var data = [],
 		i = 0,
@@ -142,10 +165,6 @@ Collection = Object.subClass.call( Array, {
 		{
 			item = this[i++];
 			data.push( item._id );
-			if ( propagate )
-			{
-				item.save();
-			}
 		}
 		if ( this._parent )
 		{
@@ -154,12 +173,15 @@ Collection = Object.subClass.call( Array, {
 		storage.set( 'INDEX' + this.Class.Class, data );
 	},
 	
-	add: function( instance )
+	add: function( instance, nosave )
 	{
 		this.push( instance );
 		instance._parent = this;
-		instance.save();
-		( this._parent || this ).save();
+		if ( !nosave )
+		{
+			instance.save();
+			( this._parent || this ).save();
+		}
 	},
 	
 	// Find instances that match a property

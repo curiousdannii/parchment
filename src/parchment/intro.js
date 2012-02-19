@@ -67,6 +67,7 @@ topic = function( id )
 },
 
 // These will all be class instances, but there should only ever be one at once
+storage,
 ui,
 library,
 runner,

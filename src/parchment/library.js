@@ -53,7 +53,7 @@ Story = Model.subClass( 'Story', {
 	load: function()
 	{
 		var data = this.data(),
-		deferred = this.deferred = $.Deferred();
+		_deferred = this._deferred = $.Deferred();
 		
 		// We have the data, so resolve the Deferred
 		if ( data )
@@ -71,7 +71,7 @@ Story = Model.subClass( 'Story', {
 			this.download();
 		}
 		
-		return deferred;
+		return _deferred;
 	},
 	
 	// Download the file
@@ -89,7 +89,7 @@ Story = Model.subClass( 'Story', {
 			.done( function( data, textStatus, jqXHR )
 			{
 				// Resolve our deferred with the XHR
-				self.deferred.resolve( jqXHR );
+				self._deferred.resolve( jqXHR );
 				// Save the data to storage
 				self.data( jqXHR.responseText );
 			})
@@ -267,13 +267,11 @@ Blorb = IFF.subClass({
 
 // The Parchment Library class
 // Must be instantiated as library (from intro.js)
+// Call fetch() before calling load()
 Library = Collection.subClass({
 	// Set up the library
 	load: function()
 	{
-		// Update from localStorage
-		this.fetch();
-		
 		var vm = urloptions.vm,
 		
 		// Get the requested story, if there is one
