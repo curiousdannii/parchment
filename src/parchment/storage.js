@@ -23,8 +23,9 @@ var storage_factory = (function(){
 var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
 localStorage = window.localStorage,
 
-//IndexedDB class
+// IndexedDB class
 IndexedDBClass = Object.subClass({
+	persist: 1,
 	init: function( db, callback )
 	{
 		var self = this;
@@ -90,10 +91,51 @@ IndexedDBClass = Object.subClass({
 	}
 }),
 
+// LocalStorage/fake storage class
+LocalStorageClass = Object.subClass({
+	init: function( name )
+	{
+		this.name = name;
+		// If we don't have localStorage then fake it, but mark us as non-persistant
+		this.storage = localStorage || {};
+		this.persist = !!localStorage;
+	},
+	get: function( key, callback, keyprefix )
+	{
+		var rJSON = /^[[{]/,
+		data,
+		dataobj = {},
+		i = 0;
+		
+		// Get several keys at once
+		if ( keyprefix != undefined )
+		{
+			// Make a request for each key
+			while ( i < key.length )
+			{
+				data = this.storage[this.name + keyprefix + key[i]];
+				dataobj[key[i++]] = rJSON.test( data ) ? JSON.parse( data ) : data;
+			}
+			callback( dataobj );
+		}
+		// Or just one
+		else
+		{
+			data = this.storage[this.name + key];
+			callback( rJSON.test( data ) ? JSON.parse( data ) : data );
+		}
+	},
+	set: function( key, value )
+	{
+		this.storage[this.name + key] = typeof value == 'string' ? value : JSON.stringify( value );
+	}
+}),
+
 storage_factory = function( dbname, callback )
 {
+	// Use Flash if we have to
 	// Nothing cool works from file: :(
-	if ( LOCAL )
+	if ( LOCAL || ( !indexedDB && !localStorage ) )
 	{
 	}
 	// Try IndexedDB
@@ -112,6 +154,11 @@ storage_factory = function( dbname, callback )
 			indexedDB = undefined;
 			storage_factory( dbname, callback );
 		};
+	}
+	// LocalStorage/Fake
+	else
+	{
+		callback( new LocalStorageClass( dbname ) );
 	}
 };
 

@@ -3,7 +3,7 @@
 A simple Model and ORM system
 =============================
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2011-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -11,7 +11,7 @@ http://code.google.com/p/parchment
 
 /*
 
-After exploring some JS MVC options I've decided to try writing my own. I'm not opposed to using another, and might consider more options again in the future, if this proves insufficient.
+After exploring some JS ORM options I've decided to write my own. It's very basic but it gets the job done. Not bad for 200 lines of code.
 
 TODO:
 	Model.init calls fetch but isn't passed a callback itself, does this matter?
@@ -117,7 +117,7 @@ var Model = Object.subClass({
 	}
 }),
 
-// Collections are Object groups of Model instances
+// Collections are Arrays of Model instances
 Collection = Object.subClass.call( Array, {
 	init: function( Class, parent )
 	{
@@ -125,7 +125,7 @@ Collection = Object.subClass.call( Array, {
 		this._parent = parent;
 	},
 	
-	// Get the collection index from localStorage
+	// Get the collection index from storage
 	// note: will first empty the collection
 	fetch: function( callback, index )
 	{
@@ -147,13 +147,12 @@ Collection = Object.subClass.call( Array, {
 		else
 		{
 			storage.get( 'INDEX' + this.Class.Class, function( data ) {
-				// Is the [] needed here?
 				self.fetch( callback, data || [] );
 			});
 		}
 	},
 	
-	// Save the Collection back to localStorage
+	// Save the Collection back to storage
 	// Note does not save collection members
 	save: function()
 	{

@@ -52,24 +52,27 @@ Story = Model.subClass( 'Story', {
 	// Get the story file from storage, or download it
 	load: function()
 	{
-		var data = this.data(),
-		_deferred = this._deferred = $.Deferred();
+		var self = this,
+		_deferred = self._deferred = $.Deferred();
 		
-		// We have the data, so resolve the Deferred
-		if ( data )
-		{
-			// Fake an XHR, all we access are these properties
-			deferred.resolve({
-				responseText: data,
-				responseArray: this._array || ( this._array = file.text_to_array( data ) )
-			});
-		}
-		
-		// Otherwise download the file
-		else
-		{
-			this.download();
-		}
+		// Fetch the data if we can
+		this.data( function( data ) {
+			// We have the data, so resolve the Deferred
+			if ( data )
+			{
+				// Fake an XHR, all we access are these properties
+				_deferred.resolve({
+					responseText: data,
+					responseArray: self._array || ( self._array = file.text_to_array( data ) )
+				});
+			}
+			
+			// Otherwise download the file
+			else
+			{
+				self.download();
+			}
+		});
 		
 		return _deferred;
 	},
@@ -92,6 +95,7 @@ Story = Model.subClass( 'Story', {
 				self._deferred.resolve( jqXHR );
 				// Save the data to storage
 				self.data( jqXHR.responseText );
+				self._array = jqXHR.responseArray;
 			})
 			// We couldn't download the file - but offer the option to try again
 			.fail( function(){
