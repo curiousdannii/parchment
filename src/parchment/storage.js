@@ -20,8 +20,8 @@ TODO:
 
 var storage_factory = (function(){
 
-var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
-localStorage = window.localStorage,
+var indexedDB = !LOCAL && ( window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB ),
+localStorage = !LOCAL && window.localStorage,
 
 // IndexedDB class
 IndexedDBClass = Object.subClass({
@@ -135,7 +135,7 @@ storage_factory = function( dbname, callback )
 {
 	// Use Flash if we have to
 	// Nothing cool works from file: :(
-	if ( LOCAL || ( !indexedDB && !localStorage ) )
+	if ( !indexedDB && !localStorage )
 	{
 	}
 	// Try IndexedDB

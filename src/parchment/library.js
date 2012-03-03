@@ -18,14 +18,19 @@ TODO:
 
 */
 
-// Savefile
-var Savefile = Model.subClass( 'Savefile', {
-	_init_data: 1
+// Savefile (Glkfile)
+var Glkfile = Model.subClass( 'Glkfile', {
+	// modified
+	// name
 }),
 
 // Storyfile
 Story = Model.subClass( 'Story', {
-	_has: { 'Savefile': [] },
+	_has: { 'Glkfile': [] },
+	
+	// lastplay
+	// playcount
+	// url
 	
 	// Load this story and its VM
 	launch: function( vm )
@@ -270,9 +275,26 @@ Blorb = IFF.subClass({
 }),
 
 // The Parchment Library class
-// Must be instantiated as library (from intro.js)
-// Call fetch() before calling load()
-Library = Collection.subClass({
+// Must be instantiated as library/parchment.library (see outro.js)
+Library = Object.subClass({
+	// Fetch our stories and data files from storage
+	init: function()
+	{
+		var self = this;
+		Flow()
+			.par( function( next ) {
+				( self.Stories = new Collection( Story ) )
+					.fetch( next );
+			})
+			.par( function( next ) {
+				( self.Glkfiles = new Collection( Glkfile ) )
+					.fetch( next );
+			})
+			.seq( function() {
+				self.load();
+			});
+	},
+
 	// Set up the library
 	load: function()
 	{
@@ -319,6 +341,7 @@ Library = Collection.subClass({
 	get_story: function()
 	{
 		var options = parchment.options,
+		Stories = this.Stories,
 		
 		storyurl = urloptions.story,
 		backupurl,
@@ -355,12 +378,12 @@ Library = Collection.subClass({
 		}
 		
 		// Try to find this story in the library
-		story = this.find( 'url', storyurl )[0];
+		story = Stories.find( 'url', storyurl )[0];
 		
 		// Or create it if needed
 		if ( !story )
 		{
-			this.add( story = new Story({
+			Stories.add( story = new Story({
 				url: storyurl,
 				backup: backupurl
 			}) );

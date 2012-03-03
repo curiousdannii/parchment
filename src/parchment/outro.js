@@ -3,7 +3,7 @@
 Parchment load scripts
 ======================
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -35,13 +35,9 @@ $(function()
 	/* ENDDEBUG */
 	
 	// Create a storage object
-	storage_factory( 'parchment', function( storage_instance )
-	{
-		storage = parchment.storage = storage_instance;
-		library = parchment.library = new Library( Story );
-		// Start and fetch the library, and then finally load the library.
-		// Have we nested enough callbacks yet?
-		library.fetch( function(){ library.load(); } );
+	storage_factory( 'parchment', function( result ) {
+		storage = parchment.storage = result;
+		library = parchment.library = new Library();
 	});
 
 	// Add the Analytics tracker, but only if we're at iplayif.com

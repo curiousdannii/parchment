@@ -11,7 +11,7 @@ http://code.google.com/p/parchment
 
 /*
 
-After exploring some JS ORM options I've decided to write my own. It's very basic but it gets the job done. Not bad for 200 lines of code.
+After exploring some JS ORM options I've decided to write my own. It's very basic but it gets the job done. Not bad for ~200 lines of code.
 
 TODO:
 	Model.init calls fetch but isn't passed a callback itself, does this matter?
@@ -35,11 +35,6 @@ var Model = Object.subClass({
 				this[Class] = new Collection( Model.models[Class], this );
 				this[Class].fetch( function(){}, has[Class] );
 			}
-		}
-		
-		if ( this._init_data )
-		{
-			this.data( function(){} );
 		}
 		
 		this._id = this._id || Model.id++
@@ -131,17 +126,26 @@ Collection = Object.subClass.call( Array, {
 	{
 		var self = this,
 		i = this.length = 0;
+		
 		if ( index )
 		{
-			storage.get( index, function( data )
+			// If we have instances then get them from storage
+			if ( index.length )
 			{
-				for ( var key in data )
+				storage.get( index, function( data )
 				{
-					data[key]._id = key;
-					self.add( new self.Class( data[key] ), 1 );
-				}
+					for ( var key in data )
+					{
+						data[key]._id = key;
+						self.add( new self.Class( data[key] ), 1 );
+					}
+					callback();
+				}, this.Class.Class );
+			}
+			else
+			{
 				callback();
-			}, this.Class.Class );
+			}
 		}
 		// Get the index from storage
 		else

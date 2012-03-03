@@ -2,7 +2,7 @@
 
 # Parchment build script
 #
-# Copyright (c) 2008-2011 The Parchment Contributors
+# Copyright (c) 2008-2012 The Parchment Contributors
 # BSD licenced
 # http://code.google.com/p/parchment
 
@@ -11,6 +11,7 @@ includes = (
 	('.build/parchment.js', (
 		'src/lib/class.js',
 		'src/lib/iff.js',
+		'src/lib/gowiththeflow.js',
 		'src/structio/intro.js',
 		'src/structio/input.js',
 		'src/structio/textgrid.js',
