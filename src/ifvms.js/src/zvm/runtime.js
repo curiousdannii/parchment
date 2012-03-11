@@ -171,18 +171,16 @@ window.ZVM = Object.subClass( {
 	// 1.2 spec @gestalt
 	gestalt: function( id, arg )
 	{
-		if ( id == 1 )
+		switch ( id )
 		{
-			return 0x0102;
-		}
-		if ( id == 0x30 || id == 0x2000 )
-		{
-			return 1;
-		}
-		// These aren't really applicable, but 2 makes more sense than 1
-		if ( id == 0x2001 || id == 0x2002 )
-		{
-			return 2;
+			case 1:
+				return 0x0102;
+			case 0x2000:
+				return 1;
+			// These aren't really applicable, but 2 is closer than 1
+			case 0x2001:
+			case 0x2002:
+				return 2;
 		}
 		return 0;
 	},
@@ -320,7 +318,6 @@ window.ZVM = Object.subClass( {
 	// Manage output streams
 	output_stream: function( stream, addr )
 	{
-		var data, text;
 		stream = U2S( stream );
 		if ( stream == 1 )
 		{
@@ -337,20 +334,8 @@ window.ZVM = Object.subClass( {
 		}
 		if ( stream == -3 )
 		{
-			data = this.streams[2].shift();
+			var data = this.streams[2].shift(),
 			text = this.text.text_to_zscii( data[1] );
-			this.m.setUint16( data[0], text.length );
-			this.m.setBuffer( data[0] + 2, text );
-		}
-		// eval() stream
-		if ( stream == 5 )
-		{
-			this.streams[4].unshift( [ addr, '' ] );
-		}
-		if ( stream == -5 )
-		{
-			data = this.streams[4].shift();
-			text = this.text.text_to_zscii( '' + window['eval']( data[1] ) );
 			this.m.setUint16( data[0], text.length );
 			this.m.setBuffer( data[0] + 2, text );
 		}
@@ -363,11 +348,6 @@ window.ZVM = Object.subClass( {
 		if ( this.streams[2].length )
 		{
 			this.streams[2][0][1] += text;
-		}
-		// eval() stream gets it next
-		else if ( this.streams[4].length )
-		{
-			this.streams[4][0][1] += text;
 		}
 		// Don't print if stream 1 was switched off (why would you do that?!)
 		else if ( this.streams[0] )
