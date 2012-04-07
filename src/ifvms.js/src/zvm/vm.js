@@ -317,7 +317,7 @@ var ZVM_core = {
 	// Return control to the ZVM runner to perform some action
 	act: function( code, options )
 	{
-		var options = options || {};
+		options = options || {};
 		
 		// Flush the buffer
 		this.ui.flush();

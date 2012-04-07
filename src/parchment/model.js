@@ -38,6 +38,12 @@ var Model = Object.subClass({
 		}
 		
 		this._id = this._id || Model.id++
+		
+		// Save data too
+		if ( this._data )
+		{
+			this.data( this._data );
+		}
 	},
 	
 	// Save an instance to localStorage
@@ -51,8 +57,8 @@ var Model = Object.subClass({
 		
 		for ( itemid in this )
 		{
-			// Don't save undefined props, _ props, Collections or functions!
-			if ( this[itemid] != undefined && itemid.charAt(0) != '_' && !Model.models[itemid] && typeof this[itemid] != 'function' )
+			// Don't save undefined props, _ props (excepting _length), Collections or functions!
+			if ( this[itemid] != undefined && !/^_(?!l)/.test( itemid ) && !Model.models[itemid] && typeof this[itemid] != 'function' )
 			{
 				data[itemid] = this[itemid];
 			}
@@ -80,7 +86,14 @@ var Model = Object.subClass({
 	// Set a property - please run this so that we will stay up to date
 	set: function( prop, value )
 	{
-		this[prop] = value;
+		if ( typeof prop == 'string' )
+		{
+			this[prop] = value;
+		}
+		else
+		{
+			extend( this, prop );
+		}
 		this.save();
 	},
 	
@@ -108,6 +121,7 @@ var Model = Object.subClass({
 		{
 			this._data = data;
 			storage.set( datastring, data );
+			this.set( '_length', data.length );
 		}
 	}
 }),
@@ -224,5 +238,5 @@ extend( Model, {
 	models: {},
 	
 	// Default ID
-	id: ( new Date() ).getTime(),
+	id: ( new Date() ).getTime()
 });

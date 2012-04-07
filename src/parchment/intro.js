@@ -127,12 +127,19 @@ parchment = window.parchment = {
 },
 
 // Load a VM's dependent files - attached by vms.add()
-load_vm = function()
+load_vm = function( callback )
 {
+	// We've loaded this VM before, so run the callback immediately
+	if ( this.loaded )
+	{
+		return callback( this );
+	}
+	
+	this.loaded = 1;
+	
 	var self = this,
 	i = 0,
 	dependency,
-	deferred,
 	
 	// Ensure that the files are loaded in the correct order (Debug only)
 	/* DEBUG */
@@ -160,15 +167,6 @@ load_vm = function()
 		scripts = [];
 	/* ENDDEBUG */
 	
-	// We've loaded this VM before, so return the Deferred
-	if ( this.loaded )
-	{
-		return this.loaded;
-	}
-	
-	// This is our first time, so make a Deferred
-	deferred = this.loaded = $.Deferred();
-	
 	// Load all the dependencies
 	/* DEBUG */
 		script_callback();
@@ -191,12 +189,16 @@ load_vm = function()
 	
 	// Use jQuery.when() to get a promise for all of the scripts
 	$.when.apply( this, scripts )
-		// When all the scripts are loaded, then resolve our deferred with this vm
-		.done( function(){ deferred.resolve( self ); } );
+		// When all the scripts are loaded, then run the callback function with this vm
+		.done( function(){ callback( self ); } );
 		//.fail( scripts_fail );
-		
-	return deferred;
 };
+
+// Callback to show an error if a VM's dependant scripts could be successfully loaded
+// Currently not usable as errors are not detected :(
+/*scripts_fail = function(){
+	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
+};*/
 
 // VM helper functions - here is as good a place as any to define them
 extend( parchment.vms, {

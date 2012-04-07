@@ -347,7 +347,6 @@ Text = Object.subClass({
 		
 		addr_start = addr,
 		dict = {},
-		seperators_len,
 		entry_len,
 		endaddr,
 		anentry,

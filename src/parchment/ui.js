@@ -40,7 +40,7 @@ Dialog = Object.subClass({
 		temp,
 		modal = this.modal = $( '<div class="modal">' ),
 			
-		div = $( '<form class="dialog">' )
+		form = $( '<form class="dialog">' )
 			.addClass( opts.type )
 			.submit( function()
 			{
@@ -52,7 +52,7 @@ Dialog = Object.subClass({
 		
 		if ( opts.title )
 		{
-			div.append( '<p class="title">' + opts.title + '</p>' );
+			form.append( '<p class="title">' + opts.title + '</p>' );
 		}
 		
 		// Go through the content
@@ -64,14 +64,27 @@ Dialog = Object.subClass({
 			{
 				$( '<p>' )
 					.html( component )
-					.appendTo( div );
+					.appendTo( form );
+			}
+			
+			// Input text box
+			if ( component.type == 'input' )
+			{
+				$( '<p>' )
+					.append(
+						$( '<input>', {
+							
+						})
+					)
+					.appendTo( form );
+				
 			}
 			
 			// Action buttons
-			else if ( component.type == 'actions' )
+			if ( component.type == 'actions' )
 			{
 				j = 0;
-				temp = $( '<p>' ).appendTo( div );
+				temp = $( '<p>' ).appendTo( form );
 				while ( j < component.labels.length )
 				{
 					$( '<input>', {
@@ -79,7 +92,7 @@ Dialog = Object.subClass({
 						value: component.labels[j++],
 						click: function()
 						{
-							div.data( 'action', $( this ).val() );
+							form.data( 'action', $( this ).val() );
 						}
 					})
 						.appendTo( temp );
@@ -87,10 +100,10 @@ Dialog = Object.subClass({
 			}
 			
 			// Links
-			else if ( component.type == 'link' )
+			if ( component.type == 'link' )
 			{
 				component.type = undefined;
-				div.append( $( '<p>' ).append( $( '<a>', component ) ) );
+				form.append( $( '<p>' ).append( $( '<a>', component ) ) );
 			}
 		}
 		
@@ -123,7 +136,8 @@ UI = Object.subClass({
 		var opts = {
 			type: 'error',
 			title: message,
-			content: []
+			content: [],
+			callback: callback
 		};
 		if ( detail )
 		{
@@ -135,10 +149,6 @@ UI = Object.subClass({
 				type: 'actions',
 				labels: [action]
 			});
-		}
-		if ( callback )
-		{
-			opts.callback = callback;
 		}
 		new Dialog( opts );
 		console.error( message, detail );

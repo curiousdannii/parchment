@@ -15,12 +15,15 @@ http://code.google.com/p/parchment
 TODO:
 	Flash support: default for LOCAL, because loading extra files is no harm
 		Offer to Undum developer when complete
+	Auto convert localStorage to IndexedDB
 
 */
 
 var storage_factory = (function(){
 
-var indexedDB = !LOCAL && ( window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB ),
+// For file:, no built in storage support :(
+var LOCAL = location.protocol == 'file:',
+indexedDB = !LOCAL && ( window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB ),
 localStorage = !LOCAL && window.localStorage,
 
 // IndexedDB class

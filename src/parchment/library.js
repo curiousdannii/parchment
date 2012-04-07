@@ -22,6 +22,14 @@ TODO:
 var Glkfile = Model.subClass( 'Glkfile', {
 	// modified
 	// name
+
+	// Get the savefile from storage
+	load: function( callback )
+	{
+		// Fetch the data if we can
+		this.data( function( data ) { callback( data ); } );
+	},
+
 }),
 
 // Storyfile
@@ -33,8 +41,11 @@ Story = Model.subClass( 'Story', {
 	// url
 	
 	// Load this story and its VM
-	launch: function( vm )
+	launch: function( vm, savefile )
 	{
+		var self = this,
+		flow = Flow();
+		
 		// Get a VM if we can
 		vm = parchment.vms.match( vm || this.vm, this.url );
 		
@@ -44,21 +55,30 @@ Story = Model.subClass( 'Story', {
 			return ui.error( 'Story type is not supported', 'Unfortunately Parchment can\'t run this story. Please try a desktop interpreter instead.' );
 		}
 		
-		// Get a promise which will resolve when the story and VM are both finished loading
-		$.when( this.load(), vm.load() )
-			// And then launch the VM!
-			.done( launch_callback );
+		// Load the story and VM, and then finally launch it
+		flow
+			.par( function( next ) { self.load( next ); } )
+			.par( function( next ) { vm.load( next ); } );
+		if ( savefile )
+		{
+			flow.par( function( next ) { savefile.load( next ); } );
+		}	
+		flow.seq( function( next, results )
+		{
+			launch_callback.apply( self, results );
 		
-		// Update some stats
-		this.set( 'lastplay', ( new Date() ).getTime() );
-		this.set( 'playcount', ( this.playcount || 0 ) + 1 );
+			// Update some stats
+			self.set({
+				lastplay: ( new Date() ).getTime(),
+				playcount: ( self.playcount || 0 ) + 1
+			});
+		});
 	},
 	
 	// Get the story file from storage, or download it
-	load: function()
+	load: function( callback )
 	{
-		var self = this,
-		_deferred = self._deferred = $.Deferred();
+		var self = this;
 		
 		// Fetch the data if we can
 		this.data( function( data ) {
@@ -66,7 +86,7 @@ Story = Model.subClass( 'Story', {
 			if ( data )
 			{
 				// Fake an XHR, all we access are these properties
-				_deferred.resolve({
+				callback({
 					responseText: data,
 					responseArray: self._array || ( self._array = file.text_to_array( data ) )
 				});
@@ -75,15 +95,13 @@ Story = Model.subClass( 'Story', {
 			// Otherwise download the file
 			else
 			{
-				self.download();
+				self.download( callback );
 			}
 		});
-		
-		return _deferred;
 	},
 	
 	// Download the file
-	download: function()
+	download: function( callback )
 	{
 		// Re-show the indicator if that's needed
 		if ( !ui.modal )
@@ -97,7 +115,7 @@ Story = Model.subClass( 'Story', {
 			.done( function( data, textStatus, jqXHR )
 			{
 				// Resolve our deferred with the XHR
-				self._deferred.resolve( jqXHR );
+				callback( jqXHR );
 				// Save the data to storage
 				self.data( jqXHR.responseText );
 				self._array = jqXHR.responseArray;
@@ -107,14 +125,14 @@ Story = Model.subClass( 'Story', {
 				ui.error(
 					'Parchment could not load the story',
 					'Please check your connection, and that the URL is correct',
-					'Retry', function() { self.download(); }
+					'Retry', function() { self.download( callback ); }
 				);
 			});
 	}
 }),
 
-// Launcher. Will be run by jQuery.when(). jqXHR is args[2]
-launch_callback = function( storydata, vm )
+// Launcher. Will be run by jQuery.when().
+launch_callback = function( storydata, vm, savefile )
 {
 	// Hide the load indicator
 	ui.endmodal();
@@ -124,8 +142,6 @@ launch_callback = function( storydata, vm )
 		parchment.options,
 		vm.engine
 	);
-	
-	var savefile = location.hash;
 	
 	// Add the callback
 	runner.toParchment = function( event ) { library.fromRunner( runner, event ); };
@@ -137,11 +153,11 @@ launch_callback = function( storydata, vm )
 	});
 	
 	// Restore if we have a savefile
-	if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
+	if ( savefile )
 	{
 		runner.fromParchment({
 			code: 'restore',
-			data: file.base64_decode( savefile.slice( 1 ) )
+			data: file.base64_decode( savefile )
 		});
 	}
 	// Restart if we don't
@@ -150,12 +166,6 @@ launch_callback = function( storydata, vm )
 		runner.fromParchment({ code: 'restart' });
 	}
 },
-
-// Callback to show an error if a VM's dependant scripts could be successfully loaded
-// Currently not usable as errors are not detected :(
-/*scripts_fail = function(){
-	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
-};*/
 
 // A blorbed story file
 Blorb = IFF.subClass({
@@ -299,6 +309,11 @@ Library = Object.subClass({
 	load: function()
 	{
 		var vm = urloptions.vm,
+		Savefiles = this.Glkfiles,
+		savefile,
+		savefiledata = location.hash || '#', // Set this now to simplify the check below - Now we'll either have data or '#'
+		i = 0,
+		flow = Flow(),
 		
 		// Get the requested story, if there is one
 		story = this.get_story();
@@ -326,10 +341,38 @@ Library = Object.subClass({
 			story.set( 'vm', vm );
 		}
 		
+		// Check for a url hash savefile
+		if ( savefiledata != '#' )
+		{
+			savefiledata = file.base64_decode( savefiledata.slice( 1 ) );
+			
+			// Check if we've already got this savefile
+			Savefiles = Savefiles.find( '_length', savefiledata.length );
+			if ( Savefiles.length )
+			{
+				while ( i < Savefiles.length )
+				{
+					flow.par( function( callback )
+					{
+						
+					}
+				}
+			}
+			// Otherwise add a new savefile
+			else
+			{
+				story.Glkfile.add( savefile = new Glkfile({
+					modified: ( new Date() ).getTime(),
+					name: 'Bookmark',
+					_data: savefiledata
+				}) );
+			}
+		}
+		
 		// Launch the story
 		try
 		{
-			story.launch( vm );
+			story.launch( vm, savefile );
 		}
 		catch (e)
 		{
@@ -404,6 +447,10 @@ Library = Object.subClass({
 				title: 'Save',
 				content: [
 					{
+						type: 'input',
+						label: 'Save name'
+					},
+					{
 						type: 'actions',
 						labels: ['Save', 'Cancel']
 					},
@@ -412,7 +459,7 @@ Library = Object.subClass({
 						text: 'Bookmark',
 						href: '#' + file.base64_encode( event.data ),
 						target: '_blank',
-						// Stop the cancel putton from saying we didn't save
+						// Stop the cancel button from saying we didn't save
 						click: function() { $( '.modal input[value=Cancel]' ).off( 'click' ); }
 					}
 				],

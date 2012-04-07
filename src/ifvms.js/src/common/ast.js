@@ -415,7 +415,7 @@ RoutineContext = Context.subClass({
 // Easily build a new opcode from a class
 opcode_builder = function( Class, func, flags )
 {
-	var flags = flags || {};
+	flags = flags || {};
 	if ( func )
 	{
 		/*if ( func.pop )
