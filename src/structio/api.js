@@ -20,14 +20,8 @@ TODO:
 
 */
 
-// Function to replace initial spaces with entities the browsers will respect. &ensp; seems a better width than &nbsp;
-var space_replacer = function( spaces )
-{
-	return '\n' + Array( spaces.length ).join( '&ensp;' );
-},
-
 // Root stream handler. Some structures (like text grids) could have alternative handlers
-basic_stream_handler = function( e )
+var basic_stream_handler = function( e )
 {
 	var order = e.order,
 	struct = e.io.structures[order.name] || { node: 'span' },
@@ -38,18 +32,11 @@ basic_stream_handler = function( e )
 	elem = $( '<' + node + '>' )
 		.appendTo( e.target )
 		.addClass( order.name )
-		.css( order.css || {} );
+		.css( order.css || {} )
+		.text( text || '' );
 	if ( order.css && order.css.reverse )
 	{
 		do_reverse( elem );
-	}
-	// Add the text, if we've been given any
-	if ( text )
-	{
-		// Fix initial spaces, but not for tt (which will actually mess it up)
-		// For tt's, fix all spaces so that they will still wrap
-		text = node == 'tt' ? text.replace( /( +)/g, '<span class="space">$1</span>' ) : text.replace( /\n +(?=\S)/g, space_replacer );
-		elem.html( text.replace( /\n/g, '<br>' ) );
 	}
 	
 	// If we have a custom function to run, do so
