@@ -179,8 +179,8 @@ var TextGrid = Object.subClass({
 						row++;
 						col = 0;
 						
-						// Add a row if needed
-						if ( row >= lines.length )
+						// Add a row if needed, ie. we must still have text to go
+						if ( row >= lines.length && j < text.length )
 						{
 							this.addline();
 						}
