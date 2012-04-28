@@ -3,7 +3,7 @@
 Z-Machine UI
 ============
 
-Copyright (c) 2011 The ifvms.js team
+Copyright (c) 2012 The ifvms.js team
 BSD licenced
 http://github.com/curiousdannii/ifvms.js
 
@@ -12,6 +12,7 @@ http://github.com/curiousdannii/ifvms.js
 /*
 
 Note: is used by both ZVM and Gnusto. In the case of Gnusto the engine is actually GnustoRunner.
+	The engine must have a StructIO modified env
 	
 */
 
@@ -65,14 +66,20 @@ convert_true_colour = function( colour )
 };
 
 return Object.subClass({
-	
+
 	colours: colours,
-	
+		
 	init: function( engine, headerbit )
 	{
 		this.e = engine;
 		this.buffer = '';
 		this.styles = {};
+		// Set our initial colours, or assume black on white
+		this.env = {
+			fgcolour: engine.env.fgcolour || '#000',
+			bgcolour: engine.env.bgcolour || '#fff'
+		};
+		;;; this.reverse = 0;
 		// Bit 0 is for @set_style, bit 1 for the header, and bit 2 for @set_font
 		this.mono = headerbit;
 		
@@ -107,12 +114,33 @@ return Object.subClass({
 		});
 	},
 	
-	// Convert RGB to a true colour - RGB is an array of colour components
-	convert_RGB: function( RGB )
+	// Convert RGB to a true colour - RGB is a css colour code. Both rgb() and #000 formats are supported.
+	convert_RGB: function( code )
 	{
-		return Math.round( RGB[2] / 8.226 ) << 10 | Math.round( RGB[1] / 8.226 ) << 5 | Math.round( RGB[0] / 8.226 );
+		var round = Math.round,
+		data = /(\d+),\s*(\d+),\s*(\d+)|#(\w{1,2})(\w{1,2})(\w{1,2})/.exec( code ),
+		result;
+		
+		// Nice rgb() code
+		if ( data[1] )
+		{
+			result =  [ data[1], data[2], data[3] ];
+		}
+		else
+		{
+			// Messy CSS colour code
+			result = [ parseInt( data[4], 16 ), parseInt( data[5], 16 ), parseInt( data[6], 16 ) ];
+			// Stretch out compact #000 codes to their full size
+			if ( code.length == 4 )
+			{
+				result = [ result[0] << 4 | result[0], result[1] << 4 | result[1], result[2] << 4 | result[2] ];
+			}
+		}
+		
+		// Convert to a 15bit colour
+		return round( result[2] / 8.226 ) << 10 | round( result[1] / 8.226 ) << 5 | round( result[0] / 8.226 );
 	},
-	
+
 	erase_line: function( value )
 	{
 		if ( value == 1 )
@@ -207,18 +235,22 @@ return Object.subClass({
 	set_style: function( stylebyte )
 	{
 		var styles = this.styles;
+		var doreverse;
+		var temp;
 		
 		this.flush();
 		
 		// Setting the style to Roman will clear the others
 		if ( stylebyte == 0 )
 		{
-			styles.reverse = styles['font-weight'] = styles['font-style'] = undefined;
+			doreverse = this.reverse;
+			this.reverse = styles['font-weight'] = styles['font-style'] = undefined;
 			this.mono &= 0xFE;
 		}
 		if ( stylebyte & 0x01 )
 		{
-			styles.reverse = 1;
+			doreverse = !this.reverse;
+			this.reverse = 1;
 		}
 		if ( stylebyte & 0x02 )
 		{
@@ -232,6 +264,14 @@ return Object.subClass({
 		{
 			this.mono |= 0x01;
 		}
+		
+		// Swap colours
+		if ( doreverse )
+		{
+			temp = styles.color || this.env.fgcolour;
+			styles.color = styles['background-color'] || this.env.bgcolour;
+			styles['background-color'] = temp;
+		}
 	},
 	
 	// Set true colours
@@ -240,8 +280,17 @@ return Object.subClass({
 		var styles = this.styles,
 		newforeground = styles.color,
 		newbackground = styles['background-color'];
+		var temp;
 		
 		this.flush();
+		
+		// Swap colours if reversed
+		if ( this.reverse )
+		{
+			temp = foreground;
+			foreground = background;
+			background = temp;
+		}
 		
 		if ( foreground == 0xFFFF )
 		{
@@ -259,6 +308,13 @@ return Object.subClass({
 		else if ( background < 0x8000 )
 		{
 			newbackground = convert_true_colour( background );
+		}
+
+		// When reversed we must set colours
+		if ( this.reverse )
+		{
+			newforeground = newforeground || this.env.bgcolour;
+			newbackground = newbackground || this.env.fgcolour;
 		}
 		
 		// Set the colours

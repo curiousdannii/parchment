@@ -12,7 +12,6 @@ http://code.google.com/p/parchment
 /*
 
 TODO:
-	Live reverse
 	Calculate bodylineheight with the rest of the metrics?
 
 */
@@ -28,16 +27,6 @@ var extend = function( old, add )
 		old[name] = add[name];
 	}
 	return old;
-},
-
-// Swap reverse colours - manually called in api.js and textgrid.js
-do_reverse = function( elem )
-{
-	// Swap the fore and back ground colours
-	elem.css({
-		color: elem.css( 'bgcolor' ),
-		'background-color': elem.css( 'color' )
-	});
 },
 
 rBadBackground = /inh|tra|(\d+, ?){3}0/,

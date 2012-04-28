@@ -3,7 +3,7 @@
 Text grid (ie, status) windows
 ==============================
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -48,7 +48,6 @@ var TextGrid = Object.subClass({
 		styles = this.styles,
 		env = this.io.env,
 		line, text, temp,
-		styleelem,
 		stylecode,
 		oldheight = lines.length;
 		
@@ -147,14 +146,10 @@ var TextGrid = Object.subClass({
 				stylecode = undefined;
 				if ( order.css )
 				{
-					styleelem = $( '<tt>' )
+					stylecode = $( '<tt>' )
 						.appendTo( elem )
-						.css( order.css );
-					if ( order.css.reverse )
-					{
-						do_reverse( styleelem );
-					}
-					stylecode = styleelem.attr( 'style' );
+						.css( order.css )
+						.attr( 'style' );
 					if ( stylecode )
 					{
 						stylecode = ' style="' + stylecode + '"';

@@ -3,7 +3,7 @@
 StructIO
 ========
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -34,10 +34,6 @@ var basic_stream_handler = function( e )
 		.addClass( order.name )
 		.css( order.css || {} )
 		.text( text || '' );
-	if ( order.css && order.css.reverse )
-	{
-		do_reverse( elem );
-	}
 	
 	// If we have a custom function to run, do so
 	if ( struct.func )
@@ -46,10 +42,7 @@ var basic_stream_handler = function( e )
 	}
 		
 	return false;
-},
-
-// Pattern for getting the RGB components from a colour
-RGB_pattern = /(\d+),\s*(\d+),\s*(\d+)/,
+};
 
 // The public API
 // .input() must be set by whatever uses StructIO
@@ -73,8 +66,8 @@ StructIO = Object.subClass({
 			charheight: charheight,
 			charwidth: charwidth,
 			width: widthinchars,
-			fgcolour: RGB_pattern.exec( element.css( 'color' ) ).slice( 1 ),
-			bgcolour: RGB_pattern.exec( element.css( 'bgcolor' ) ).slice( 1 )
+			fgcolour: element.css( 'color' ),
+			bgcolour: element.css( 'bgcolor' )
 		});
 		// Set the container's width: +2 to account for the 1px of padding the structures inside will receive to hide obnoxious serifs
 		element.width( widthinchars * charwidth + 2 );

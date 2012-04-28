@@ -3,7 +3,7 @@
 Gnusto runner
 =============
 
-Copyright (c) 2011 The Parchment Contributors
+Copyright (c) 2012 The Parchment Contributors
 BSD licenced
 http://code.google.com/p/parchment
 
@@ -17,6 +17,7 @@ var GnustoRunner = Object.subClass({
 		var self = this;
 		engine = window.engine = this.e = new GnustoEngine( window.console && function() { console.log( msg ); } || function(){} );
 		this.io = new StructIO( env );
+		this.env = this.io.env;
 		
 		// Set the appropriate event handlers
 		this.io.TextInput.callback = function( event ) { self.inputEvent( event ); };
