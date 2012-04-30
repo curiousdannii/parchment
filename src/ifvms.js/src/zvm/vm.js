@@ -253,7 +253,7 @@ var ZVM_core = {
 	// Run
 	run: function()
 	{
-		var now = Date.now(),
+		var now = new Date,
 		pc,
 		count = 0;
 		
@@ -270,7 +270,7 @@ var ZVM_core = {
 			
 			// Or if more than five seconds has passed, however only check every 50k times
 			// What's the best time for this?
-			if ( ++count % 50000 == 0 && ( Date.now() - now ) > 5000 )
+			if ( ++count % 50000 == 0 && ( (new Date) - now ) > 5000 )
 			{
 				this.act( 'tick' );
 				return;
@@ -295,7 +295,8 @@ var ZVM_core = {
 				console.log( code );
 			}
 			// We use eval because Firebug can't profile new Function
-			var func = eval( '(function JIT_' + context.pc + '(e){' + code + '})' );
+			// The 0, is to make IE8 work. h/t Secrets of the Javascript Ninja
+			var func = eval( '(0,function JIT_' + context.pc + '(e){' + code + '})' );
 			
 			// Extra stuff for debugging
 			func.context = context;
