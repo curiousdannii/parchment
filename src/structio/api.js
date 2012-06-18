@@ -94,6 +94,7 @@ StructIO = Object.subClass({
 	{
 		var order, code, i,
 		target = this.target,
+		TextInput = this.TextInput,
 		temp;
 		
 		// Process the orders
@@ -144,13 +145,19 @@ StructIO = Object.subClass({
 			if ( code == 'read' )
 			{
 				order.target = target;
-				this.TextInput.getLine( order );
+				TextInput.getLine( order );
 			}
 			
 			// Character input
 			if ( code == 'char' )
 			{
-				this.TextInput.getChar( order );
+				TextInput.getChar( order );
+			}
+			
+			// When quitting, scroll to the bottom in case something was printed since the last input
+			if ( code == 'quit' )
+			{
+				TextInput.scroll();
 			}
 		}
 	}
