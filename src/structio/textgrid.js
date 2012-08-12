@@ -72,7 +72,7 @@ var TextGrid = Object.subClass({
 					if ( order.lines != 0 )
 					{
 						// Fix bad heights (that would split a multi-line status) by increasing the requested height to the first blank line
-						while ( /\S/.test( lines[order.lines].join( '' ) ) && order.lines < lines.length )
+						while ( order.lines < lines.length && /\S/.test( lines[order.lines].join( '' ) ) )
 						{
 							order.lines++;
 						}
@@ -115,10 +115,22 @@ var TextGrid = Object.subClass({
 				col = 0;
 			}
 			
+			// Set the cursor position
+			// Not that our coordinates are -1 compared to the Z-Machine
 			if ( code == 'cursor' )
 			{
 				row = order.to[0];
 				col = order.to[1];
+				
+				// It is illegal to position the cursor outside the window, but some games do (ex, Lost Pig's Hints)
+				if ( row < 0 )
+				{
+					row = 0;
+				}
+				if ( col < 0 )
+				{
+					col = 0;
+				}
 				
 				// Add a row(s) if needed
 				while ( row >= lines.length )
@@ -155,6 +167,7 @@ var TextGrid = Object.subClass({
 						stylecode = ' style="' + stylecode + '"';
 					}
 				}
+				// The <tt> will be removed in .write()
 				
 				// Add the text to the arrays
 				text = order.text;
