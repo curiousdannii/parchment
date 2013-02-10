@@ -117,6 +117,7 @@ Text = Object.subClass({
 			table[i] = String.fromCharCode( i );
 			reverse[i] = i++;
 		}
+		table[ 92 ] = '\\\\'; // escape backslashes
 		this.unicode_table = table;
 		this.reverse_unicode_table = reverse;
 	},
