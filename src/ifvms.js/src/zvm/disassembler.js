@@ -158,7 +158,7 @@ var disassemble = function( engine )
 		{
 			// Decode and escape text for JITing
 			temp = engine.text.decode( pc );
-			operands.push( temp.replace( /\n/g, '\\n' ).replace( /"/g, '\\"' ) );
+			operands.push( temp.replace( /\\/g, '\\\\' ).replace( /\n/g, '\\n' ).replace( /"/g, '\\"' ) );
 			pc = temp.pc;
 		}
 		
