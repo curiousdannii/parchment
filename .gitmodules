@@ -1,0 +1,3 @@
+[submodule "src/ifvms.js"]
+	path = src/ifvms.js
+	url = git://github.com/curiousdannii/ifvms.js.git
