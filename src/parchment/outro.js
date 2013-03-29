@@ -8,9 +8,6 @@ BSD licenced
 http://code.google.com/p/parchment
 
 */
-(function(window, $){
-
-var parchment = window.parchment;
 
 // Load Parchment, start it all up!
 $(function()

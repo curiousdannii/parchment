@@ -3,13 +3,19 @@
 Parchment
 =========
 
-Built: BUILDDATE
-
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2013 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
+
+// Wrap all of Parchment in a closure/namespace, and enable strict mode
+(function( window, $ ){ 'use strict';
+
+if ( typeof DEBUG === 'undefined' )
+{
+	var DEBUG = 1;
+}
 
 // Don't append a timestamp to XHR requests
 // Converter for use with the binary dataType prefilter in file.js
