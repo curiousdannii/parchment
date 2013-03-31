@@ -46,8 +46,6 @@ Text = Object.subClass({
 		alphabet_addr = memory.getUint16( 0x34 ),
 		unicode_addr = engine.extension_table( 3 ),
 		unicode_len = unicode_addr && memory.getUint8( unicode_addr++ ),
-		abbreviations,
-		abbr_array = [],
 		i = 0, l = 96;
 		
 		this.e = engine;
@@ -64,15 +62,14 @@ Text = Object.subClass({
 			: this.text_to_zscii( unescape( '%E4%F6%FC%C4%D6%DC%DF%BB%AB%EB%EF%FF%CB%CF%E1%E9%ED%F3%FA%FD%C1%C9%CD%D3%DA%DD%E0%E8%EC%F2%F9%C0%C8%CC%D2%D9%E2%EA%EE%F4%FB%C2%CA%CE%D4%DB%E5%C5%F8%D8%E3%F1%F5%C3%D1%D5%E6%C6%E7%C7%FE%F0%DE%D0%A3%u0153%u0152%A1%BF' ), 1 ) );
 		
 		// Abbreviations
-		abbreviations = memory.getUint16( 0x18 );
-		if ( abbreviations )
+		this.abbreviations = memory.getUint16( 0x18 );
+		if ( this.abbreviations )
 		{
 			while ( i < l )
 			{
-				abbr_array.push( this.decode( memory.getUint16( abbreviations + 2 * i++ ) * 2, 0, 1 ) );
+				this.decode( memory.getUint16( this.abbreviations + 2 * i++ ) * 2 );
 			}
 		}
-		this.abbr = abbr_array;
 		
 		// Parse the standard dictionary
 		this.dictionaries = {};
@@ -134,6 +131,7 @@ Text = Object.subClass({
 		alphabet = 0,
 		result = [],
 		resulttexts = [],
+		usesabbrev,
 		tenbit,
 		tempi,
 		unicodecount = 0;
@@ -178,7 +176,8 @@ Text = Object.subClass({
 			else if ( zchar < 4 )
 			{
 				result.push( -1 );
-				resulttexts.push( this.abbr[ 32 * ( zchar - 1 ) + buffer[i++] ] );
+				resulttexts.push( this.decode( memory.getUint16( this.abbreviations + 2 * ( 32 * ( zchar - 1 ) + buffer[i++] ) ) * 2 ) );
+				usesabbrev = 1;
 			}
 			// Shift characters
 			else if ( zchar < 6 )
@@ -235,10 +234,14 @@ Text = Object.subClass({
 		// Cache and return. Use String() so that .pc will be preserved
 		result = new String( this.zscii_to_text( result, resulttexts ) );
 		result.pc = addr;
-		this.e.jit[start_addr] = result;
+		/*this.e.jit[start_addr] = result;
 		if ( !nowarn && start_addr < this.e.staticmem )
 		{
 			console.warn( 'Caching a string in dynamic memory: ' + start_addr );
+		}*/
+		if ( !usesabbrev && start_addr >= this.e.staticmem )
+		{
+			this.e.jit[start_addr] = result;
 		}
 		return result;
 	},

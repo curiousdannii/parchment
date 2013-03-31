@@ -368,6 +368,12 @@ window.ZVM = Object.subClass( {
 		}
 	},
 	
+	// Print text from an address
+	print_addr: function( addr )
+	{
+		this.print( this.jit[addr] || this.text.decode( addr ) );
+	},
+	
 	print_obj: function( obj )
 	{
 		var proptable = this.m.getUint16( this.objects + 14 * obj + 12 );
