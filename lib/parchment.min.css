@@ -3,11 +3,12 @@
 Parchment
 =========
 
-Built: 2012-04-07
+Built: 2013-04-04
 
-Copyright (c) 2008-2012 The Parchment Contributors
+Copyright (c) 2008-2013 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
-html{overflow-y:scroll;-webkit-text-size-adjust:none;}body{background:#FFF;color:#000;font-family:Georgia,Palatino,serif;font-size:16px;margin:0 0 8px;text-align:center;}#parchment{margin:0 auto;text-align:left;}#gameport{line-height:1.4;margin:0 auto;text-align:left;width:80%;}.dialog{background:#fff;border:3px solid #ddd;border-radius:10px;-webkit-box-shadow:5px 5px 10px #777;box-shadow:5px 5px 10px #777;left:30%;padding:0 20px;position:fixed;top:20%;width:40%;}.load{text-align:left;}.panel input{display:block;margin:0 auto;width:50%;}.error{background:red;color:white;padding:10px;margin:10px;}#parchment{white-space:pre-wrap;}.TextInput{background:none;border:0;color:inherit;display:inline;font:inherit;outline:0;padding:0;}.CharInput{left:-999em;position:absolute;}.TextGrid{position:fixed;z-index:2;}.box{position:absolute;z-index:1;}.main,.TextGrid{padding:0 1px;}tt{font-family:monospace;line-height:1;}
+
+html{overflow-y:scroll;-webkit-text-size-adjust:none}body{background:#FFF;color:#000;font-family:Georgia,Palatino,serif;font-size:16px;margin:0 0 8px;text-align:center}#parchment{margin:0 auto;text-align:left}#gameport{line-height:1.4;margin:0 auto;text-align:left;width:80%}.dialog{background:#fff;border:3px solid #ddd;border-radius:10px;-webkit-box-shadow:5px 5px 10px #777;box-shadow:5px 5px 10px #777;left:30%;padding:0 20px;position:fixed;top:20%;width:40%}.load{text-align:left}.panel input{display:block;margin:0 auto;width:50%}.error{background:red;color:#fff;padding:10px;margin:10px}#parchment{white-space:pre-wrap}.TextInput{background:0;border:0;color:inherit;display:inline;font:inherit;outline:0;padding:0}.CharInput{left:-999em;position:absolute}.TextGrid{position:fixed;z-index:2}.box{position:absolute;z-index:1}.main,.TextGrid{padding:0 1px}tt{font-family:monospace;line-height:1}

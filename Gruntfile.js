@@ -131,12 +131,32 @@ module.exports = function( grunt )
 				}
 			},
 		},
+		
+		cssmin: {
+			parchment: {
+				options: {
+					banner: grunt.file.read( "src/parchment/header.txt" ),
+				},
+				files: {
+					'lib/parchment.min.css': [ 'lib/parchment.debug.css' ],
+				},
+			},
+			glkote: {
+				options: {
+					banner: grunt.file.read( "src/quixe/glkote/header.txt" ),
+				},
+				files: {
+					'lib/glkote.min.css': [ 'lib/glkote.debug.css' ],
+				},
+			},
+		},
 	});
 
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
+	grunt.loadNpmTasks( 'grunt-contrib-cssmin' );
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-update-submodules' );
 
-	grunt.registerTask( 'default', [ 'update_submodules', 'concat', 'jshint', 'uglify' ] );
+	grunt.registerTask( 'default', [ 'update_submodules', 'concat', 'jshint', 'uglify', 'cssmin' ] );
 };

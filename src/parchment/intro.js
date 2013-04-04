@@ -9,13 +9,13 @@ https://github.com/curiousdannii/parchment
 
 */
 
-// Wrap all of Parchment in a closure/namespace, and enable strict mode
-(function( window, $ ){ 'use strict';
-
 if ( typeof DEBUG === 'undefined' )
 {
-	var DEBUG = 1;
+	DEBUG = true;
 }
+
+// Wrap all of Parchment in a closure/namespace, and enable strict mode
+(function( window, $ ){ 'use strict';
 
 // Don't append a timestamp to XHR requests
 // Converter for use with the binary dataType prefilter in file.js
