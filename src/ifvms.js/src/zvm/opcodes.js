@@ -125,7 +125,7 @@ opcodes = {
 /* rfalse */ 177: opcode_builder( Stopper, function() { return 'e.ret(0)'; } ),
 // Reconsider a generalised class for @print/@print_ret?
 /* print */ 178: opcode_builder( Opcode, function( text ) { return 'e.print_addr(' + text + ')'; }, { printer: 1 } ),
-/* print_ret */ 179: opcode_builder( Stopper, function( text ) { return 'e.print_addr(' + text + ');e.ret(1)'; }, { printer: 1 } ),
+/* print_ret */ 179: opcode_builder( Stopper, function( text ) { return 'e.print_addr(' + text + ');e.print("\\n");e.ret(1)'; }, { printer: 1 } ),
 /* nop */ 180: Opcode,
 /* restart */ 183: opcode_builder( Stopper, function() { return 'e.act("restart")'; } ),
 /* ret_popped */ 184: opcode_builder( Stopper, function( a ) { return 'e.ret(' + a + ')'; }, { post: function() { this.operands.push( new Variable( this.e, 0 ) ); } } ),
