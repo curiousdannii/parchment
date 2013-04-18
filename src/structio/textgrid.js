@@ -176,13 +176,13 @@ var TextGrid = Object.subClass({
 				{
 					temp = text.charAt( j++ );
 					// Regular character
-					if ( temp != '\n' )
+					if ( temp != '\r' )
 					{
 						lines[row][col] = temp;
 						styles[row][col++] = stylecode;
 					}
 					// New line, or end of a line
-					if ( temp == '\n' || col == env.width )
+					if ( temp == '\r' || col == env.width )
 					{
 						row++;
 						col = 0;

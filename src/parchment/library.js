@@ -218,6 +218,7 @@ Library = Object.subClass({
 		options = parchment.options,
 		
 		storyfile = urloptions.story,
+		storyName,
 		url,
 		vm = urloptions.vm,
 		i = 0;

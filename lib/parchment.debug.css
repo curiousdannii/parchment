@@ -1,0 +1,153 @@
+/*
+
+Parchment
+=========
+
+Built: 2013-04-04
+
+Copyright (c) 2008-2013 The Parchment Contributors
+BSD licenced
+https://github.com/curiousdannii/parchment
+
+*/
+
+/* 
+
+General Parchment styles
+========================
+
+Copyright (c) 2008-2011 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
+
+html
+{
+	overflow-y: scroll;
+	-webkit-text-size-adjust: none;
+}
+
+body
+{
+	background: #FFF;
+	color: #000;
+	font-family: Georgia, Palatino, serif;
+	font-size: 16px;
+	margin: 0 0 8px;
+	text-align: center;
+}
+
+#parchment
+{
+	margin: 0 auto;
+	text-align: left;
+}
+
+#gameport
+{
+	line-height: 1.4;
+	margin: 0 auto;
+	text-align: left;
+	width: 80%;
+}
+
+/* General dialogs */
+.dialog
+{
+	background: #fff;
+	border: 3px solid #ddd;
+	border-radius: 10px;
+	-webkit-box-shadow: 5px 5px 10px #777;
+	box-shadow: 5px 5px 10px #777;
+	left: 30%;
+	padding: 0px 20px;
+	position: fixed;
+	top: 20%;
+	width: 40%;
+}
+
+/* Load indicator */
+.load
+{
+	text-align: left;
+}
+
+/* Front page panels */
+
+/* Load any web story file */
+.panel input
+{
+	display: block;
+	margin: 0 auto;
+	width: 50%;
+}
+
+.error {
+    background: red;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+}
+/* 
+
+StructIO styles
+===============
+
+Copyright (c) 2008-2012 The Parchment Contributors
+BSD licenced
+http://code.google.com/p/parchment
+
+*/
+
+#parchment
+{
+	white-space: pre-wrap;
+}
+
+/* Line input */
+.TextInput
+{
+	background: none;
+	border: 0;
+	color: inherit;
+	display: inline;
+	font: inherit;
+	outline: 0;
+	padding: 0;
+}
+
+/* Character input (to be added to the above) */
+.CharInput
+{
+	left: -999em;
+	position: absolute;
+}
+
+/* Text grid window */
+.TextGrid
+{
+	position: fixed;
+	z-index: 2;
+}
+
+/* Floating boxes */
+.box
+{
+	position: absolute;
+	z-index: 1;
+}
+
+/* Main window */
+.main, .TextGrid
+{
+	/* Extra padding in case some serifs stick outside the status window */
+	padding: 0 1px;
+}
+
+/* Monospace text */
+tt
+{
+	font-family: monospace;
+	line-height: 1;
+}

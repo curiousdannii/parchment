@@ -3,11 +3,11 @@
 Gnusto
 ======
 
-Built: BUILDDATE
+Built: <%= grunt.template.today('yyyy-mm-dd') %>
 
-Copyright (c) 2003-2012 The Gnusto Contributors
+Copyright (c) 2003-<%= grunt.template.today('yyyy') %> The Gnusto Contributors
 GNU GPL licenced
-http://github.com/curiousdannii/gnusto
+https://github.com/curiousdannii/gnusto
 
 String.prototype.quote() taken from "Remedial Javascript" by Douglas Crockford: http://javascript.crockford.com/remedial.html
 

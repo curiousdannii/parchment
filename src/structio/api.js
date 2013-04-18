@@ -33,7 +33,7 @@ var basic_stream_handler = function( e )
 		.appendTo( e.target )
 		.addClass( order.name )
 		.css( order.css || {} )
-		.text( text || '' );
+		.text( text ? text.replace( /\r/g, '\n' ) : '' );
 	
 	// If we have a custom function to run, do so
 	if ( struct.func )

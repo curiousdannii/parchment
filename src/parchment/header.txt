@@ -3,10 +3,10 @@
 Parchment
 =========
 
-Built: BUILDDATE
+Built: <%= grunt.template.today('yyyy-mm-dd') %>
 
-Copyright (c) 2008-2012 The Parchment Contributors
+Copyright (c) 2008-<%= grunt.template.today('yyyy') %> The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
