@@ -100,10 +100,16 @@ module.exports = function( grunt )
 		
 		uglify: {
 			options: {
+				beautify: {
+					ascii_only: true,
+				},
 				compress: {
 					global_defs: {
 						DEBUG: false,
 					},
+				},
+				mangle: {
+					'eval': true,
 				},
 				preserveComments: function( node, token ) { return (/Built/).test( token.value ); },
 				report: false,

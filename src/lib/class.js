@@ -92,4 +92,6 @@ Object.subClass = function( prop )
 	return Class;
 };
 
+window.Class = Object;
+
 })();
