@@ -65,6 +65,28 @@ module.exports = function( grunt )
 					'lib/zvm.debug.js': [
 						'src/ifvms.js/dist/zvm.js'
 					],
+					'.build/(manifest).txt': [
+						'src/parchment/(manifest).txt'
+					],
+				},
+			},
+		},
+		
+		cssmin: {
+			parchment: {
+				options: {
+					banner: grunt.file.read( "src/parchment/header.txt" ),
+				},
+				files: {
+					'lib/parchment.min.css': [ 'lib/parchment.debug.css' ],
+				},
+			},
+			glkote: {
+				options: {
+					banner: grunt.file.read( "src/quixe/glkote/header.txt" ),
+				},
+				files: {
+					'lib/glkote.min.css': [ 'lib/glkote.debug.css' ],
 				},
 			},
 		},
@@ -87,10 +109,10 @@ module.exports = function( grunt )
 				
 				// Environment
 				browser: true,
+				node: true,
 				nonstandard: true,
 				predef: [
 					'DEBUG',
-					'module',
 				],
 			},
 			all: [
@@ -138,22 +160,18 @@ module.exports = function( grunt )
 			},
 		},
 		
-		cssmin: {
-			parchment: {
-				options: {
-					banner: grunt.file.read( "src/parchment/header.txt" ),
-				},
-				files: {
-					'lib/parchment.min.css': [ 'lib/parchment.debug.css' ],
-				},
-			},
-			glkote: {
-				options: {
-					banner: grunt.file.read( "src/quixe/glkote/header.txt" ),
-				},
-				files: {
-					'lib/glkote.min.css': [ 'lib/glkote.debug.css' ],
-				},
+		zip: {
+			inform7: {
+				compression: 'DEFLATE',
+				dest: 'lib/parchment-for-inform7.zip',
+				src: [
+					'lib/jquery.min.js',
+					'lib/parchment.min.css',
+					'lib/parchment.min.js',
+					'lib/zvm.min.js',
+					'.build/(manifest).txt',
+				],
+				router: function( path ) { return 'Parchment/' + require( 'path' ).basename( path ); },
 			},
 		},
 	});
@@ -163,6 +181,11 @@ module.exports = function( grunt )
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-update-submodules' );
+	grunt.loadNpmTasks( 'grunt-zip' );
 
-	grunt.registerTask( 'default', [ 'update_submodules', 'concat', 'jshint', 'uglify', 'cssmin' ] );
+	grunt.registerTask( 'default', [ 'update_submodules', 'parchment', 'inform7' ] );
+
+	grunt.registerTask( 'inform7', [ 'zip' ] );
+
+	grunt.registerTask( 'parchment', [ 'concat', 'jshint', 'cssmin', 'uglify' ] );
 };
