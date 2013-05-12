@@ -49,7 +49,7 @@ z
 	<link rel="stylesheet" type="text/css" href="interpreter/parchment.min.css">
 	<script>
 		parchment_options = {
-			default_story: [ "[STORYFILE]", "interpreter/[ENCODEDSTORYFILE]" ],
+			default_story: [ "interpreter/[ENCODEDSTORYFILE]" ],
 			lib_path: 'interpreter/',
 			lock_options: 1,
 			lock_story: 1,
