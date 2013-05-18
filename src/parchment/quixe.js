@@ -18,9 +18,9 @@ parchment.add_vm({
 	// Files to load
 	files: DEBUG ? [
 		'../src/quixe/prototype-1.6.1.js',
-		'qlkote.debug.js',
+		'glkote.debug.js',
 		'quixe.debug.js',
-		'qlkote.min.css'
+		'glkote.min.css'
 	] : [
 		'prototype.min.js',
 		'glkote.min.js',
