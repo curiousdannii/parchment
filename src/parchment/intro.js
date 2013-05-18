@@ -37,7 +37,7 @@ jQuery.ajaxPrefilter( 'script', function( options /*, originalOptions, jqXHR*/ )
 });
 
 // The home for Parchment to live in
-var parchment = {
+window.parchment = {
 
 	// The default parchment options
 	options: {
@@ -69,10 +69,10 @@ var parchment = {
 
 	// Classes etc
 	lib: {}
-},
+};
 
 // Isolate the query string options we have
-urloptions = (function( options ) {
+var urloptions = (function( options ) {
 	var i = 0, result = {}, temp;
 	if ( options[0] == '' )
 	{
