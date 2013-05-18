@@ -20,7 +20,7 @@ parchment.add_vm({
 		'../src/quixe/prototype-1.6.1.js',
 		'glkote.debug.js',
 		'quixe.debug.js',
-		'glkote.min.css'
+		'glkote.debug.css'
 	] : [
 		'prototype.min.js',
 		'glkote.min.js',

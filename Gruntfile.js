@@ -140,9 +140,18 @@ module.exports = function( grunt )
 				files: {
 					'lib/parchment.min.js': [ 'lib/parchment.debug.js' ],
 					'lib/gnusto.min.js': [ 'lib/gnusto.debug.js' ],
-					'lib/quixe.min.js': [ 'lib/quixe.debug.js' ],
 					'lib/glkote.min.js': [ 'lib/glkote.debug.js' ],
 				},
+			},
+			quixe: {
+				options: {
+					mangle: {
+						'eval': false,
+					},
+				},
+				files: {
+					'lib/quixe.min.js': [ 'lib/quixe.debug.js' ],
+				}
 			},
 			zvm: {
 				options: {
