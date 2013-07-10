@@ -20,10 +20,23 @@ TODO:
 
 var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
+useDomStorage = !!window.localStorage,
+savekey = !useDomStorage || urloptions.story + '-save',
 
 // Callback to show an error when the story file wasn't loaded
 story_get_fail = function(){
 	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
+},
+
+// Restores a save if available. Returns false if not
+get_save_data = function() 
+{
+	// First, default to using a hash file (in case you have a link), then try DOM storage
+	var savefile = location.hash.slice( 1 );
+	if ( !savefile && useDomStorage ) {
+		savefile = window.localStorage[savekey];
+	}
+	return savefile;
 },
 
 // Launcher. Will be run by jQuery.when(). jqXHR is args[2]
@@ -38,7 +51,7 @@ launch_callback = function( args )
 		args[2].vm.engine
 	),
 	
-	savefile = location.hash;
+	savefile = get_save_data();
 	
 	// Add the callback
 	runner.toParchment = function( event ) { args[2].library.fromRunner( runner, event ); };
@@ -50,11 +63,12 @@ launch_callback = function( args )
 	});
 	
 	// Restore if we have a savefile
-	if ( savefile && savefile != '#' ) // IE will set location.hash for an empty fragment, FF won't
+	if ( savefile )
 	{
+		// TODO: let the user clear her save 
 		runner.fromParchment({
 			code: 'restore',
-			data: file.base64_decode( savefile.slice( 1 ) )
+			data: file.base64_decode( savefile )
 		});
 	}
 	// Restart if we don't
@@ -395,19 +409,39 @@ Library = Object.subClass({
 	// An event from a runner
 	fromRunner: function( runner, event )
 	{
-		var code = event.code,
-		savefile = location.hash;
+		var code = event.code;
 		
 		if ( code == 'save' )
 		{
-			location.hash = file.base64_encode( event.data );
+			var savedata = file.base64_encode( event.data ),
+				retry = 2,
+				succeeded = false;
+			
+			while (useDomStorage && retry) {
+				try {
+					window.localStorage[savekey] = savedata;
+					succeeded = true;
+					break;
+				} catch (e) {
+					// Not enough space to save the game. Make room by deleting all other saves
+					// TODO: come up with something better
+					window.localStorage.clear();
+					retry--;
+				}
+			}
+			
+			// Save as hash if local storage isn't allowed or not working
+			if (!useDomStorage || !succeeded) {
+				location.hash = savedata;
+			}
 		}
 		
 		if ( code == 'restore' )
 		{
-			if ( savefile && savefile != '#' )
+			var savefile = get_save_data();
+			if ( savefile )
 			{
-				event.data = file.base64_decode( savefile.slice( 1 ) );
+				event.data = file.base64_decode( savefile );
 			}
 		}
 		
