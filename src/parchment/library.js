@@ -21,22 +21,10 @@ TODO:
 var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
 useDomStorage = !!window.localStorage,
-savekey = !useDomStorage || urloptions.story + '-save',
 
 // Callback to show an error when the story file wasn't loaded
 story_get_fail = function(){
 	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
-},
-
-// Restores a save if available. Returns false if not
-get_save_data = function() 
-{
-	// First, default to using a hash file (in case you have a link), then try DOM storage
-	var savefile = location.hash.slice( 1 );
-	if ( !savefile && useDomStorage ) {
-		savefile = window.localStorage[savekey];
-	}
-	return savefile;
 },
 
 // Launcher. Will be run by jQuery.when(). jqXHR is args[2]
@@ -51,7 +39,7 @@ launch_callback = function( args )
 		args[2].vm.engine
 	),
 	
-	savefile = get_save_data();
+	savefile = args[2].library.get_save_data();
 	
 	// Add the callback
 	runner.toParchment = function( event ) { args[2].library.fromRunner( runner, event ); };
@@ -61,6 +49,9 @@ launch_callback = function( args )
 		code: 'load',
 		data: ( new parchment.lib.Story( args[2].responseArray ) ).data
 	});
+	
+	// Store the downloaded file in local storage
+	args[2].library.stories.add(args[2].library.storyfile, "", args[2].responseArray);
 	
 	// Restore if we have a savefile
 	if ( savefile )
@@ -203,16 +194,95 @@ parchment.lib.Story = IFF.subClass({
 
 // Story file cache
 var StoryCache = Object.subClass({
-	// Add a story to the cache
-	add: function(story)
-	{
-		this[story.ifid] = story;
-		if (story.url)
-			this.url[story.url] = story;
+	maxsavedstories: 1,
+	storycachekey: "STORY_CACHE",
+	init: function() {
+		if (!useDomStorage) return;
+		var storylist;
+		try {
+			storylist = JSON.parse(window.localStorage[this.storycachekey]);
+		} catch (e) {
+			// Bail out if the locally stored data is incorrect
+			return;
+		}
+		if (storylist.length > this.maxsavedstories) return;
+		
+		// Load the cached stories
+		for (var i = 0, len = storylist.length; i < len; i++) {
+			var storydata = storylist[i];
+			if (storydata.url && window.localStorage.key(storydata.url)) {
+				this.cachedstories.push(new CachedStory(storydata));
+			}
+		}
 	},
-	url: {}
+	// Add a story to the cache
+	add: function(url, title, data)
+	{
+		if (!useDomStorage || this.isStoryCached(url)) return;
+		var newstory = new CachedStory({
+			url: url,
+			title: title			
+		});
+		
+		if (this.cachedstories.length >= this.maxsavedstories) {
+			window.localStorage.removeItem(this.cachedstories[0].url)
+			try {
+				window.localStorage[newstory.url] = data;
+				this.cachedstories[0] = newstory;	
+			} catch (e) {
+				
+			}
+		} else {
+			try {
+				window.localStorage[newstory.url] = data;
+				this.cachedstories.push(newstory);
+			} catch (e) {
+				
+			}
+		}
+		
+		this.update();
+	},
+	useStoryFromUrl: function(url)
+	{
+		var cachedstory = this.findstoryFromUrl(url);
+		if (cachedstory) {
+			cachedstory.lastused = new Date();
+			this.update();
+		}
+	},
+	findStoryFromUrl: function(url) {
+		for (var i = 0, len = this.cachedstories.length; i < len; i++) {
+			if (this.cachedstories[i].url === url) {
+				return this.cachedstories[i];
+			}
+		}
+		return null;
+	},
+	isStoryCached: function(url) {
+		return !!this.findStoryFromUrl(url);
+	},
+	update: function() {
+		this.cachedstories.sort(function (a, b) {
+			return a.lastused - b.lastused;
+		});
+		window.localStorage[this.storycachekey] = JSON.stringify(this.cachedstories);
+	},
+	cachedstories: []
 }),
 
+CachedStory = Object.subClass({
+	init: function(cachedstorydata) {
+		this.url = cachedstorydata.url;
+		this.title = cachedstorydata.title;
+		this.lastused = cachedstorydata.lastused;
+		
+		if (!this.url) throw "Must supply a valid URL"
+	},
+	getStoryData: function() {
+		return window.localStorage[this.url];
+	}
+}),
 // The Parchment Library class
 Library = Object.subClass({
 	// Set up the library
@@ -265,6 +335,10 @@ Library = Object.subClass({
 		
 		// Show the load indicator
 		$( 'body' ).append( self.ui.load_indicator );
+		
+		// Set up the key tracking local saved gamess
+		self.savekey = storyfile + '-save';
+		self.storyfile = storyfile;
 		
 		// Normalise the storyfile array
 		if ( !$.isArray( storyfile ) )
@@ -329,20 +403,28 @@ Library = Object.subClass({
 	launch: function( vm, storyfile )
 	{
 		var self = this,
-		
 		// Load the story file
 		actions = [
-			
-			$.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
-				// Attach the library for the launcher to use (yay for chaining)
-				.done( function( data, textStatus, jqXHR )
-				{
-					jqXHR.library = self;
-					jqXHR.vm = vm;
-				})
-				// Some error in downloading
-				.fail( story_get_fail )
-			
+			(function () {
+				if (self.stories.isStoryCached(storyfile)) {
+					var storydata = self.stories.useStoryFromUrl(storyfile).getStoryData();
+					return $.Deferred().resolveWith(storydata ,"OK", {
+						responseArray: storydata,
+						library: self,
+						vm: vm,
+					});
+				} else {
+					return $.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
+					// Attach the library for the launcher to use (yay for chaining)
+					.done( function( data, textStatus, jqXHR )
+					{
+						jqXHR.library = self;
+						jqXHR.vm = vm;
+					})
+					// Some error in downloading
+					.fail( story_get_fail );
+				}
+			})()
 		],
 		
 		// Get the scripts if they haven't been loaded already
@@ -424,9 +506,14 @@ Library = Object.subClass({
 					break;
 				} catch (e) {
 					// Not enough space to save the game. Make room by deleting all other saves
-					// TODO: come up with something better
-					window.localStorage.clear();
-					retry--;
+					var shouldClear = confirm("We don't have enough room to save your game. Would you like to clear all saved games (for any story) and try again?");
+					if (shouldClear) {
+						window.localStorage.clear();
+						retry--;
+					} else {
+						// Don't try again. This will cause a hash to be used for saving
+						retry = 0;
+					}		
 				}
 			}
 			
@@ -438,7 +525,7 @@ Library = Object.subClass({
 		
 		if ( code == 'restore' )
 		{
-			var savefile = get_save_data();
+			var savefile = this.get_save_data();
 			if ( savefile )
 			{
 				event.data = file.base64_decode( savefile );
@@ -446,6 +533,17 @@ Library = Object.subClass({
 		}
 		
 		runner.fromParchment( event );
+	},
+	
+	// Restores a save if available
+	get_save_data: function() 
+	{
+		// First, default to using a hash file (in case you have a link), then try DOM storage
+		var savefile = location.hash.slice( 1 );
+		if ( !savefile && useDomStorage ) {
+			savefile = window.localStorage[this.savekey];
+		}
+		return savefile;
 	},
 	
 	// Loaded stories and savefiles
