@@ -21,37 +21,35 @@ TODO:
 var rtitle = /([-\w\s_]+)(\.[\w]+(\.js)?)?$/,
 rjs = /\.js$/,
 useDomStorage = !!window.localStorage,
+useIndexedDb = !!window.indexedDb,
 
 // Callback to show an error when the story file wasn't loaded
 story_get_fail = function(){
 	throw new FatalError( 'Parchment could not load the story. Check your connection, and that the URL is correct.' );
 },
 
-// Launcher. Will be run by jQuery.when(). jqXHR is args[2]
+// Launcher. Will be run by jQuery.when()
 launch_callback = function( args )
 {
 	// Hide the load indicator
 	$( '.load' ).detach();
 	
 	// Create a runner
-	var runner = window.runner = new ( window[args[2].vm.runner] || Runner )(
+	var runner = window.runner = new ( window[args.vm.runner] || Runner )(
 		parchment.options,
-		args[2].vm.engine
+		args.vm.engine
 	),
 	
-	savefile = args[2].library.get_save_data();
+	savefile = args.library.get_save_data();
 	
 	// Add the callback
-	runner.toParchment = function( event ) { args[2].library.fromRunner( runner, event ); };
+	runner.toParchment = function( event ) { args.library.fromRunner( runner, event ); };
 	
 	// Load it up!
 	runner.fromParchment({
 		code: 'load',
-		data: ( new parchment.lib.Story( args[2].responseArray ) ).data
+		data: ( new parchment.lib.Story( args.storydata ) ).data
 	});
-	
-	// Store the downloaded file in local storage
-	args[2].library.stories.add(args[2].library.storyfile, "", args[2].responseArray);
 	
 	// Restore if we have a savefile
 	if ( savefile )
@@ -74,7 +72,7 @@ launch_callback = function( args )
 /*scripts_fail = function(){
 	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
 };*/
-
+window.indexedDb = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 // A story file
 parchment.lib.Story = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
@@ -192,8 +190,15 @@ parchment.lib.Story = IFF.subClass({
 */	}
 });
 
+var create_story_cache = function() {
+    if (useIndexedDb && false) { // TODO: IndexedDb is disabled for now
+        return new DbStoryCache();
+    }
+    return new DomStoryCache();
+},
+
 // Story file cache
-var StoryCache = Object.subClass({
+DomStoryCache = Object.subClass({
 	maxsavedstories: 1,
 	storycachekey: "STORY_CACHE",
 	init: function() {
@@ -218,38 +223,47 @@ var StoryCache = Object.subClass({
 	// Add a story to the cache
 	add: function(url, title, data)
 	{
-		if (!useDomStorage || this.isStoryCached(url)) return;
-		var newstory = new CachedStory({
-			url: url,
-			title: title			
-		});
-		
-		if (this.cachedstories.length >= this.maxsavedstories) {
-			window.localStorage.removeItem(this.cachedstories[0].url)
-			try {
-				window.localStorage[newstory.url] = data;
-				this.cachedstories[0] = newstory;	
-			} catch (e) {
-				
-			}
-		} else {
-			try {
-				window.localStorage[newstory.url] = data;
-				this.cachedstories.push(newstory);
-			} catch (e) {
-				
-			}
-		}
-		
-		this.update();
+		if (useDomStorage && !this.isStoryCached(url)) {
+            var newstory = new CachedStory({
+                url: url,
+                title: title			
+            });
+            
+            if (this.cachedstories.length >= this.maxsavedstories) {
+                window.localStorage.removeItem(this.cachedstories[0].url)
+                try {
+                    window.localStorage[newstory.url] = JSON.stringify(data);
+                    this.cachedstories[0] = newstory;	
+                } catch (e) {
+                    
+                }
+            } else {
+                try {
+                    window.localStorage[newstory.url] = JSON.stringify(data);
+                    this.cachedstories.push(newstory);
+                } catch (e) {
+                    
+                }
+            }
+            
+            this.update();
+        }
+        
+        return this.getDummyDeferred(data);
 	},
+    getDummyDeferred: function(data) {
+        var deferred = $.Deferred();
+        deferred.resolve(data);
+        return deferred.promise();
+    },
 	useStoryFromUrl: function(url)
 	{
-		var cachedstory = this.findstoryFromUrl(url);
+		var cachedstory = this.findStoryFromUrl(url);
 		if (cachedstory) {
 			cachedstory.lastused = new Date();
 			this.update();
 		}
+        return cachedstory;
 	},
 	findStoryFromUrl: function(url) {
 		for (var i = 0, len = this.cachedstories.length; i < len; i++) {
@@ -280,7 +294,7 @@ CachedStory = Object.subClass({
 		if (!this.url) throw "Must supply a valid URL"
 	},
 	getStoryData: function() {
-		return window.localStorage[this.url];
+		return JSON.parse(window.localStorage[this.url]);
 	}
 }),
 // The Parchment Library class
@@ -302,8 +316,8 @@ Library = Object.subClass({
 		options = parchment.options,
 		
 		storyfile = urloptions.story,
-		storyName,
 		url,
+        storyname,
 		vm = urloptions.vm,
 		i = 0;
 		
@@ -339,22 +353,14 @@ Library = Object.subClass({
 		// Set up the key tracking local saved gamess
 		self.savekey = storyfile + '-save';
 		self.storyfile = storyfile;
-		
-		// Normalise the storyfile array
-		if ( !$.isArray( storyfile ) )
-		{
-			storyfile = [ storyfile, 0 ];
-		}
-		url = storyfile[0];
-		self.url = url;
 
-		storyName = rtitle.exec( url );
-		storyName = storyName ? storyName[1] + " - Parchment" : "Parchment";
+        storyname = rtitle.exec( storyfile );
+		self.storyname = storyname ? storyname[1] : "";
 		
 		// Change the page title
 		if ( options.page_title )
 		{
-			window.document.title = storyName;
+			window.document.title = storyname ? storyname[1] + " - Parchment" : "Parchment";
 		}
 		
 		// Check the story cache first
@@ -374,7 +380,7 @@ Library = Object.subClass({
 			{
 				for ( ; i < parchment.vms.length; i++ )
 				{
-					if ( parchment.vms[i].match.test( url ) )
+					if ( parchment.vms[i].match.test( storyfile ) )
 					{
 						vm = parchment.vms[i];
 						break;
@@ -408,21 +414,26 @@ Library = Object.subClass({
 			(function () {
 				if (self.stories.isStoryCached(storyfile)) {
 					var storydata = self.stories.useStoryFromUrl(storyfile).getStoryData();
-					return $.Deferred().resolveWith(storydata ,"OK", {
-						responseArray: storydata,
-						library: self,
-						vm: vm,
-					});
+					return $.Deferred().resolve({
+                        library: self,
+                        vm: vm,
+                        storydata: storydata
+                    });
 				} else {
-					return $.ajax( storyfile[0], { dataType: 'binary', legacy: storyfile[1] } )
+					return $.ajax( storyfile, { dataType: 'binary' } )
 					// Attach the library for the launcher to use (yay for chaining)
-					.done( function( data, textStatus, jqXHR )
+					.pipe( function( data, textStatus, jqXHR )
 					{
-						jqXHR.library = self;
-						jqXHR.vm = vm;
-					})
-					// Some error in downloading
-					.fail( story_get_fail );
+                        // Store the downloaded file in local storage
+                        return self.stories.add(self.storyfile, self.storyname, jqXHR.responseArray);
+					}, story_get_fail) // Some error in downloading
+                    .pipe(function (storydata) {
+                        return {
+                            library: self,
+                            vm: vm,
+                            storydata: storydata
+                        };
+                    }, story_get_fail);
 				}
 			})()
 		],
@@ -547,7 +558,7 @@ Library = Object.subClass({
 	},
 	
 	// Loaded stories and savefiles
-	stories: new StoryCache(),
+	stories: create_story_cache(),
 	savefiles: {}
 });
 
