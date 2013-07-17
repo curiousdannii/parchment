@@ -185,7 +185,7 @@ parchment.lib.Story = IFF.subClass({
 });
 
 var create_story_cache = function() {
-	if (useindexedDB) {
+	if (useindexedDB && false) {
 		return new DbStoryCache();
 	}
 	return new DomStoryCache();
@@ -199,23 +199,30 @@ DbStoryCache = Object.subClass({
 	version: 1, // Increment this and "upgradeneeded" whenever the schema changes
 	initializeCache: function() {
 		var self = this,
-        deferred = $.Deferred(),
-        req = indexedDB.open(this.dbname, this.version);
+        deferred = $.Deferred();
 		
-		req.addEventListener("upgradeneeded", function (e) {
-			var db = e.target.result;
-			db.createObjectStore(self.storycachekey, {keyName: "url"});
-			db.createObjectStore(self.storydatakey, {keyName: "url"});
-		}, false);
-		
-		req.addEventListener("success", function (e) {
-			self.db = e.target.result;
+		// Allow subsequent calls to this API
+		if (!self.db) {
+	        var req = indexedDB.open(this.dbname, this.version);
+			
+			req.addEventListener("upgradeneeded", function (e) {
+				var db = e.target.result;
+				var storycache = db.createObjectStore(self.storycachekey, {keyName: "url"});
+				storycache.createIndex("lastused", "lastused");
+				var storydata = db.createObjectStore(self.storydatakey, {keyName: "url"});
+			}, false);
+			
+			req.addEventListener("success", function (e) {
+				self.db = e.target.result;
+				deferred.resolve(self);
+			}, false);
+			
+			req.addEventListener("error", function (e) {
+				deferred.reject(e);
+			}, false);
+		} else {
 			deferred.resolve(self);
-		}, false);
-		
-		req.addEventListener("error", function (e) {
-			deferred.reject(e);
-		}, false);
+		}
 		
 		return deferred.promise();
 	},
@@ -226,17 +233,20 @@ DbStoryCache = Object.subClass({
 	add: function (url, title, data) {
 		this.checkInitialize();
 		var deferred = $.Deferred(),
-		req = this.db.transaction([this.storycachekey, this.storydatakey], "readwrite");
+		trans = this.db.transaction([this.storycachekey, this.storydatakey], "readwrite");
 		
-		req.objectStore(this.storycachekey).put({ title: title }, url); // Use an extensible schema for the metadata
-		req.objectStore(this.storydatakey).put(data, url) // Don't need an extensible key for cached data
+		// Use an extensible schema for the metadata
+		trans.objectStore(this.storycachekey).put({ title: title, lastused: new Date() }, url);
 		
-		req.addEventListener("complete", function (e) {
-			if (req.commit) req.commit(); // Necessary for IE9
+		 // Don't need an extensible key for cached data, so the raw array is stored alone
+		trans.objectStore(this.storydatakey).put(data, url);
+		
+		trans.addEventListener("complete", function (e) {
+			if (trans.commit) trans.commit(); // Necessary for IE9
 			deferred.resolve(data);
 		});
 		
-		req.addEventListener("error", function (e) {
+		trans.addEventListener("error", function (e) {
 			deferred.reject(e);
 		}, false);
 		
@@ -245,20 +255,62 @@ DbStoryCache = Object.subClass({
 	useStoryFromUrl: function (url) {
 		this.checkInitialize();
 		var deferred = $.Deferred(),
-		req = this.db.transaction([this.storydatakey], "readonly").objectStore(this.storydatakey).get(url)
+		trans = this.db.transaction([this.storycachekey, this.storydatakey], "readwrite");
+
+		// Retrieve the binary story data
+		var datareq = trans.objectStore(this.storydatakey).get(url);
 		
-		req.addEventListener("success", function (e) {
-			var storydata = e.target.result;
-			if (storydata) {
-				deferred.resolve(e.target.result);
+		// Get metadata about the file, update its last used time
+		var storycache = trans.objectStore(this.storycachekey);
+		storycache.get(url).addEventListener("success", function (e) {
+			if (e.target.result) {
+				var newdata = e.target.result;
+				newdata.lastused = new Date();
+				storycache.put(newdata, url);
+			}
+		}, false)
+		
+		// Fires when the metadata has been retrieved and updated, and the story binary exists
+		trans.addEventListener("complete", function (e) {
+			if (trans.commit) trans.commit(); // Necessary for IE9
+			if (datareq.result) { // Note that we don't actually verify metadata exists. If the user has the story, why worry?
+				deferred.resolve(datareq.result);
 			} else {
 				deferred.reject(false);
 			}
-		}, false);
-			
-		req.addEventListener("error", function (e) {
+		});
+		
+		trans.addEventListener("error", function (e) {
 			deferred.reject(e);
 		}, false);
+		
+		return deferred.promise();
+	},
+	getStories: function (limit) {
+		this.checkInitialize();
+		var deferred = $.Deferred(),
+		trans = this.db.transaction([this.storycachekey], "readonly");
+		
+		var itemsFound = 0;
+		trans.objectStore(this.storycachekey).index("lastused").openCursor().addEventListener("success", function (e) {
+			var result = e.target.result;
+			if (result) {
+				itemsFound++;
+				result.value.url = result.primaryKey;
+				deferred.notify(result.value);
+				if (!limit || itemsFound <= limit) {
+					result.continue();
+				}
+			}
+		}, false)
+		
+		trans.addEventListener("complete", function () {
+			deferred.resolve();
+		}, false);
+		
+		trans.addEventListener("error", function (e) {
+			deferred.reject(e);
+		}, false)
 		
 		return deferred.promise();
 	}
@@ -344,6 +396,14 @@ DomStoryCache = Object.subClass({
 		}
 		
 		return this.getDummyDeferred(false, true);
+	},
+	getStories: function (limit) {
+		var deferred = $.Deferred();
+		for (var i = 0, len = Math.min(this.cachedstories.length, limit); i < len; i++) {
+			deferred.notify(this.cachedstories[i]);
+		}
+		deferred.resolve();
+		return deferred.promise();
 	},
 	update: function() {
 		this.cachedstories.sort(function (a, b) {
