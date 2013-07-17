@@ -48,7 +48,6 @@ launch_callback = function( args )
 	// Restore if we have a savefile
 	if ( savefile )
 	{
-		// TODO: let the user clear her save 
 		runner.fromParchment({
 			code: 'restore',
 			data: file.base64_decode( savefile )
@@ -66,8 +65,8 @@ launch_callback = function( args )
 /*scripts_fail = function(){
 	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
 };*/
-window.indexedDb = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-var useIndexedDb = !!window.indexedDb;
+window.indexedDB = window.indexedDB || window.mozindexedDB || window.webkitindexedDB || window.msindexedDB;
+var useindexedDB = !!window.indexedDB;
 // A story file
 parchment.lib.Story = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
@@ -186,21 +185,22 @@ parchment.lib.Story = IFF.subClass({
 });
 
 var create_story_cache = function() {
-    if (useIndexedDb) {
-        return new DbStoryCache();
-    }
-    return new DomStoryCache();
+	if (useindexedDB) {
+		return new DbStoryCache();
+	}
+	return new DomStoryCache();
 },
 
+// Stores stories using indexedDB
 DbStoryCache = Object.subClass({
 	storycachekey: "STORY_CACHE",
 	storydatakey: "STORY_DATA",
 	dbname: "STORE_CACHE_DB",
-	version: 1, // Update this and "upgradeneeded" whenever the schema changesd
+	version: 1, // Increment this and "upgradeneeded" whenever the schema changes
 	initializeCache: function() {
 		var self = this,
-			deferred = $.Deferred(),
-			req = indexedDb.open(this.dbname, this.version);
+        deferred = $.Deferred(),
+        req = indexedDB.open(this.dbname, this.version);
 		
 		req.addEventListener("upgradeneeded", function (e) {
 			var db = e.target.result;
@@ -224,9 +224,9 @@ DbStoryCache = Object.subClass({
 		return true;
 	},
 	add: function (url, title, data) {
-		this.checkInitialize();	
+		this.checkInitialize();
 		var deferred = $.Deferred(),
-			req = this.db.transaction([this.storycachekey, this.storydatakey], "readwrite");
+		req = this.db.transaction([this.storycachekey, this.storydatakey], "readwrite");
 		
 		req.objectStore(this.storycachekey).put({ title: title }, url); // Use an extensible schema for the metadata
 		req.objectStore(this.storydatakey).put(data, url) // Don't need an extensible key for cached data
@@ -242,28 +242,18 @@ DbStoryCache = Object.subClass({
 		
 		return deferred.promise();
 	},
-	isStoryCached: function (url) {
-		this.checkInitialize();
-		var deferred = $.Deferred(),
-			req = this.db.transaction([this.storycachekey], "readonly").objectStore(this.storycachekey).get(url)
-		
-		req.addEventListener("success", function (e) {
-			deferred.resolve(!!e.target.result);
-		}, false);
-			
-		req.addEventListener("error", function (e) {
-			deferred.reject(e);
-		}, false);
-		
-		return deferred.promise();
-	},
 	useStoryFromUrl: function (url) {
 		this.checkInitialize();
 		var deferred = $.Deferred(),
-			req = this.db.transaction([this.storydatakey], "readonly").objectStore(this.storydatakey).get(url)
+		req = this.db.transaction([this.storydatakey], "readonly").objectStore(this.storydatakey).get(url)
 		
 		req.addEventListener("success", function (e) {
-			deferred.resolve(e.target.result);
+			var storydata = e.target.result;
+			if (storydata) {
+				deferred.resolve(e.target.result);
+			} else {
+				deferred.reject(false);
+			}
 		}, false);
 			
 		req.addEventListener("error", function (e) {
@@ -298,74 +288,62 @@ DomStoryCache = Object.subClass({
 	// Add a story to the cache
 	add: function(url, title, data)
 	{
-		if (useDomStorage && !this.isStoryCached(url)) {
-            var newstory = {
-                url: url,
+		if (useDomStorage) {
+			var newstory = {
+				url: url,
 				lastused: new Date(),
-                title: title,
-            };
-            
-            if (this.cachedstories.length >= this.maxsavedstories) {
-                window.localStorage.removeItem(this.cachedstories[0].url)
-                try {
-                    window.localStorage[newstory.url] = JSON.stringify(data);
-                    this.cachedstories[0] = newstory;	
-                } catch (e) {
-                    return this.getDummyDeferred(e, true)
-                }
-            } else {
-                try {
-                    window.localStorage[newstory.url] = JSON.stringify(data);
-                    this.cachedstories.push(newstory);
-                } catch (e) {
-                    return this.getDummyDeferred(e, true)
-                }
-            }
-            
+				title: title,
+			};
+			
+			if (this.cachedstories.length >= this.maxsavedstories) {
+				window.localStorage.removeItem(this.cachedstories[0].url)
+				try {
+					window.localStorage[newstory.url] = JSON.stringify(data);
+					this.cachedstories[0] = newstory;	
+				} catch (e) {
+					return this.getDummyDeferred(e, true)
+				}
+			} else {
+				try {
+					window.localStorage[newstory.url] = JSON.stringify(data);
+					this.cachedstories.push(newstory);
+				} catch (e) {
+					return this.getDummyDeferred(e, true)
+				}
+			}
+			
 			this.update();
-        }
-        
-        return this.getDummyDeferred(data);
+		}
+		
+		return this.getDummyDeferred(data);
 	},
-    getDummyDeferred: function(data, failed) {
-        var deferred = $.Deferred();
+	getDummyDeferred: function(data, failed) {
+		var deferred = $.Deferred();
 		if (failed) {
-        	deferred.reject(data);
+			deferred.reject(data);
 		} else {
 			deferred.resolve(data);
 		}
-        return deferred.promise();
-    },
+		return deferred.promise();
+	},
 	useStoryFromUrl: function(url)
 	{
-		var cachedstory = this.findStoryFromUrl(url);
-		if (cachedstory) {
-			cachedstory.lastused = new Date();
-			this.update();
-		} else {
-			
-		}
-		
-		var data;
-		try {
-			data = JSON.parse(window.localStorage[url])
-		} catch (e) {
-			return this.getDummyDeferred(e, true);
-		}
-			
-        return this.getDummyDeferred(data);
-	},
-	findStoryFromUrl: function(url) {
 		for (var i = 0, len = this.cachedstories.length; i < len; i++) {
-			if (this.cachedstories[i].url === url) {
-				return this.cachedstories[i];
+			var cachedstory = this.cachedstories[i];
+			if (cachedstory.url === url) {
+				cachedstory.lastused = new Date();
+				this.update();
+				var data;
+				try {
+					data = JSON.parse(window.localStorage[url])
+				} catch (e) {
+					return this.getDummyDeferred(e, true);
+				}
+				return this.getDummyDeferred(data);
 			}
 		}
-		return null;
-	},
-	isStoryCached: function(url) {
-		// Double check that the story is actually saved to local storage, and in our stored list of stories
-		return this.getDummyDeferred(!!this.findStoryFromUrl(url) && window.localStorage.key(url));
+		
+		return this.getDummyDeferred(false, true);
 	},
 	update: function() {
 		this.cachedstories.sort(function (a, b) {
@@ -405,7 +383,7 @@ Library = Object.subClass({
 		
 		storyfile = urloptions.story,
 		url,
-        storyname,
+		storyname,
 		vm = urloptions.vm,
 		i = 0;
 		
@@ -442,7 +420,7 @@ Library = Object.subClass({
 		self.savekey = storyfile + '-save';
 		self.storyfile = storyfile;
 
-        storyname = rtitle.exec( storyfile );
+		storyname = rtitle.exec( storyfile );
 		self.storyname = storyname ? storyname[1] : "";
 		
 		// Change the page title
@@ -507,8 +485,12 @@ Library = Object.subClass({
 			return $.ajax( storyfile, { dataType: 'binary' } )
 				.pipe( function( data, textStatus, jqXHR )
 				{
-                    // Store the downloaded file in local storage
-                    return self.stories.add(self.storyfile, self.storyname, jqXHR.responseArray).fail(function () {
+					// Store the downloaded file in local storage
+					return self.stories.add(self.storyfile, self.storyname, jqXHR.responseArray).pipe(
+					function (storydata) {
+						return storydata;
+					}, 
+					function () {
 						// If storage fails but download succeeds, return a succeeded
 						// deferred to the chain so that the program executes anyway
 						var alwaysSucceed = $.Deferred();
@@ -521,26 +503,17 @@ Library = Object.subClass({
 		actions = [
 			self.stories.initializeCache()
 			.pipe(function (cache) {
-				return self.stories.isStoryCached(storyfile);
-			}).pipe(function (isCached) {
-				if (isCached) {
-					return self.stories.useStoryFromUrl(storyfile);
-				} else {
-					// If it's not cached, fail this promise chain so that the AJAX code gets invoked
-					var failedDeferred = $.Deferred();
-					failedDeferred.reject(false);
-					return failedDeferred.promise();
-				}
+				return self.stories.useStoryFromUrl(storyfile);
 			})
 			// Try to download if the cache can't provide the story
 			.pipe(function (storydata) { return storydata; }, try_ajax) 
 			// Pass along the data if either download or cache succeeds. Abort if both fail
 			.pipe(function (storydata) {
-	            return {
-	                library: self,
-	                vm: vm,
-	                storydata: storydata
-	            };
+				return {
+					library: self,
+					vm: vm,
+					storydata: storydata
+				};
 			}, story_get_fail)
 		],
 		
@@ -618,7 +591,9 @@ Library = Object.subClass({
 			
 			while (useDomStorage && retry) {
 				try {
-					window.localStorage[savekey] = savedata;
+					// Normally we should turn anything that goes into localStorage into JSON.
+					// But, this is already a string
+					window.localStorage[this.savekey] = savedata;
 					succeeded = true;
 					break;
 				} catch (e) {
@@ -664,8 +639,7 @@ Library = Object.subClass({
 	},
 	
 	// Loaded stories and savefiles
-	stories: create_story_cache(),
-	savefiles: {}
+	stories: create_story_cache()
 });
 
 parchment.lib.Library = Library;
