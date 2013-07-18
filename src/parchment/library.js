@@ -65,8 +65,6 @@ launch_callback = function( args )
 /*scripts_fail = function(){
 	throw new FatalError( 'Parchment could not load everything it needed to run this story. Check your connection and try refreshing the page.' );
 };*/
-window.indexedDB = window.indexedDB || window.mozindexedDB || window.webkitindexedDB || window.msindexedDB;
-var useindexedDB = !!window.indexedDB;
 // A story file
 parchment.lib.Story = IFF.subClass({
 	// Parse a zblorb or naked zcode story file
@@ -185,8 +183,9 @@ parchment.lib.Story = IFF.subClass({
 });
 
 var create_story_cache = function() {
-	if (useindexedDB && false) {
-		return new DbStoryCache();
+	var dbProvider  = window.indexedDB || window.mozindexedDB || window.webkitindexedDB || window.msindexedDB;
+	if (!!dbProvider) {
+		return new DbStoryCache(dbProvider);
 	}
 	return new DomStoryCache();
 },
@@ -197,13 +196,16 @@ DbStoryCache = Object.subClass({
 	storydatakey: "STORY_DATA",
 	dbname: "STORE_CACHE_DB",
 	version: 1, // Increment this and "upgradeneeded" whenever the schema changes
+	init: function (dbProvider) {
+		this.dbProvider = dbProvider;
+	},
 	initializeCache: function() {
 		var self = this,
         deferred = $.Deferred();
 		
 		// Allow subsequent calls to this API
 		if (!self.db) {
-	        var req = indexedDB.open(this.dbname, this.version);
+	        var req = this.dbProvider.open(this.dbname, this.version);
 			
 			req.addEventListener("upgradeneeded", function (e) {
 				var db = e.target.result;
@@ -289,15 +291,16 @@ DbStoryCache = Object.subClass({
 	getStories: function (limit) {
 		this.checkInitialize();
 		var deferred = $.Deferred(),
-		trans = this.db.transaction([this.storycachekey], "readonly");
+		retval = [],
+		trans = this.db.transaction([this.storycachekey], "readonly")
 		
 		var itemsFound = 0;
-		trans.objectStore(this.storycachekey).index("lastused").openCursor().addEventListener("success", function (e) {
+		trans.objectStore(this.storycachekey).index("lastused").openCursor(null, "prev").addEventListener("success", function (e) {
 			var result = e.target.result;
 			if (result) {
 				itemsFound++;
 				result.value.url = result.primaryKey;
-				deferred.notify(result.value);
+				retval.push(result.value);
 				if (!limit || itemsFound <= limit) {
 					result.continue();
 				}
@@ -305,7 +308,7 @@ DbStoryCache = Object.subClass({
 		}, false)
 		
 		trans.addEventListener("complete", function () {
-			deferred.resolve();
+			deferred.resolve(retval);
 		}, false);
 		
 		trans.addEventListener("error", function (e) {
@@ -347,21 +350,16 @@ DomStoryCache = Object.subClass({
 				title: title,
 			};
 			
-			if (this.cachedstories.length >= this.maxsavedstories) {
-				window.localStorage.removeItem(this.cachedstories[0].url)
-				try {
-					window.localStorage[newstory.url] = JSON.stringify(data);
-					this.cachedstories[0] = newstory;	
-				} catch (e) {
-					return this.getDummyDeferred(e, true)
-				}
-			} else {
-				try {
-					window.localStorage[newstory.url] = JSON.stringify(data);
-					this.cachedstories.push(newstory);
-				} catch (e) {
-					return this.getDummyDeferred(e, true)
-				}
+			while (this.cachedstories.length >= this.maxsavedstories) {
+				var discarded = this.cachedstories.pop();
+				window.localStorage.removeItem(discarded.url);
+			}
+			
+			try {
+				window.localStorage[newstory.url] = JSON.stringify(data);
+				this.cachedstories.unshift(newstory);
+			} catch (e) {
+				return this.getDummyDeferred(e, true)
 			}
 			
 			this.update();
@@ -398,16 +396,13 @@ DomStoryCache = Object.subClass({
 		return this.getDummyDeferred(false, true);
 	},
 	getStories: function (limit) {
-		var deferred = $.Deferred();
-		for (var i = 0, len = Math.min(this.cachedstories.length, limit); i < len; i++) {
-			deferred.notify(this.cachedstories[i]);
-		}
-		deferred.resolve();
-		return deferred.promise();
+		var retval = limit ? this.cachedstories.slice(0, limit) : this.cachedstories;
+		return this.getDummyDeferred(retval);
 	},
 	update: function() {
 		this.cachedstories.sort(function (a, b) {
-			return a.lastused - b.lastused;
+			// Put most recently used at the top of the list
+			return b.lastused - a.lastused;
 		});
 		
 		try {

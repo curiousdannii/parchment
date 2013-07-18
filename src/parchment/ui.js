@@ -107,8 +107,13 @@ parchment.lib.UI = Object.subClass({
 			var storycache = this.library.stories;
 			storycache.initializeCache().pipe(function () {
 				return storycache.getStories(10); // TODO: move limit?
-			}).progress(function (story) {
-				recent_list.append( '<p><a href="' + location.href + '?story=' + story.url + '">' + story.title + '</a></p>' );
+			}).done(function (stories) {
+				var htmlstring = '', story;
+				for (var i = 0, len = stories.length; i < len; i++) {
+					story = stories[i];
+					htmlstring += '<p><a href="' + location.href + '?story=' + story.url + '">' + story.title + '</a></p>';
+				}
+				recent_list.append( htmlstring );
 			});
 			
 			// Load the archive json file
