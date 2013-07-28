@@ -25,14 +25,13 @@ var basic_stream_handler = function( e )
 {
 	var order = e.order,
 	struct = e.io.structures[order.name] || { node: 'span' },
-	node = order.node || struct.node,
+	node = order.node || ( order.props && order.props.node ) || struct.node,
 	text = order.text,
 	
 	// Create the new element and set everything that needs to be set
-	elem = $( '<' + node + '>' )
+	elem = $( '<' + node + '>', order.props || {} )
 		.appendTo( e.target )
 		.addClass( order.name )
-		.css( order.css || {} )
 		.text( text ? text.replace( /\r/g, '\n' ) : '' );
 	
 	// If we have a custom function to run, do so

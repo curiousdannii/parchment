@@ -36,6 +36,7 @@ module.exports = function( grunt )
 						'src/parchment/header.txt',
 						'src/parchment/parchment.css',
 						'src/structio/structio.css',
+						'src/ifvms.js/dist/zvm.css',
 					],
 					'lib/gnusto.debug.js': [
 						'src/gnusto/header.txt',

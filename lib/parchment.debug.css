@@ -3,7 +3,7 @@
 Parchment
 =========
 
-Built: 2013-04-04
+Built: 2013-07-28
 
 Copyright (c) 2008-2013 The Parchment Contributors
 BSD licenced
@@ -151,3 +151,58 @@ tt
 	font-family: monospace;
 	line-height: 1;
 }
+/*
+
+ZVM - the ifvms.js Z-Machine (versions 5 and 8)
+===============================================
+
+Copyright (c) 2011-2013 The ifvms.js team
+BSD licenced
+http://github.com/curiousdannii/ifvms.js
+
+*/
+
+/*
+
+These styles are required for the classes formatter
+
+*/
+
+.zvm-bold { font-weight: bold; }
+
+.zvm-italic { font-style: italic; }
+
+.zvm-mono { font-family: monospace; line-height: 1; }
+
+.zvm-fg-2 { color: #000; }
+.zvm-bg-2 { background-color: #000; }
+
+.zvm-fg-3 { color: #ef0000; }
+.zvm-bg-3 { background-color: #ef0000; }
+
+.zvm-fg-4 { color: #00d600; }
+.zvm-bg-4 { background-color: #00d600; }
+
+.zvm-fg-5 { color: #efef00; }
+.zvm-bg-5 { background-color: #efef00; }
+
+.zvm-fg-6 { color: #006bb5; }
+.zvm-bg-6 { background-color: #006bb5; }
+
+.zvm-fg-7 { color: #f0f; }
+.zvm-bg-7 { background-color: #f0f; }
+
+.zvm-fg-8 { color: #00efef; }
+.zvm-bg-8 { background-color: #00efef; }
+
+.zvm-fg-9 { color: #fff; }
+.zvm-bg-9 { background-color: #fff; }
+
+.zvm-fg-10 { color: #b5b5b5; }
+.zvm-bg-10 { background-color: #b5b5b5; }
+
+.zvm-fg-11 { color: #8c8c8c; }
+.zvm-bg-11 { background-color: #8c8c8c; }
+
+.zvm-fg-12 { color: #5a5a5a; }
+.zvm-bg-12 { background-color: #5a5a5a; }
