@@ -155,17 +155,26 @@ var TextGrid = Object.subClass({
 				}
 				
 				// Calculate the style attribute for this set of text
-				stylecode = undefined;
-				if ( order.css )
+				stylecode = '';
+				if ( order.props )
 				{
-					stylecode = $( '<tt>' )
-						.appendTo( elem )
-						.css( order.css )
-						.attr( 'style' );
-					if ( stylecode )
+					temp = $( '<tt>', order.props )
+						.appendTo( elem );
+					
+					text = temp.attr( 'style' );
+					if ( text )
 					{
-						stylecode = ' style="' + stylecode + '"';
+						stylecode += ' style="' + text + '"';
 					}
+					text = temp.attr( 'class' );
+					if ( text )
+					{
+						stylecode += ' class="' + text + '"';
+					}
+				}
+				if ( stylecode === '' )
+				{
+					stylecode = undefined;
 				}
 				// The <tt> will be removed in .write()
 				

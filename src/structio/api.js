@@ -26,13 +26,18 @@ var basic_stream_handler = function( e )
 	var order = e.order,
 	struct = e.io.structures[order.name] || { node: 'span' },
 	node = order.node || ( order.props && order.props.node ) || struct.node,
-	text = order.text,
 	
 	// Create the new element and set everything that needs to be set
 	elem = $( '<' + node + '>', order.props || {} )
-		.appendTo( e.target )
-		.addClass( order.name )
-		.text( text ? text.replace( /\r/g, '\n' ) : '' );
+		.appendTo( e.target );
+	if ( order.name )
+	{
+		elem.addClass( order.name );
+	}
+	if ( order.text )
+	{
+		elem.text( order.text.replace( /\r/g, '\n' ) );
+	}
 	
 	// If we have a custom function to run, do so
 	if ( struct.func )
@@ -130,13 +135,34 @@ StructIO = Object.subClass({
 			
 			if ( code == 'clear' )
 			{
-				var temp = order.name ? $( '.' + order.name ) : target;
+				var oldbg,
+				bg = order.bg,
+				temp = order.name ? $( '.' + order.name ) : target;
 				temp.empty();
+				
 				// Set the background colour
-				// If we're clearing the main window, then change <body> instead
-				if ( order.css && order.css['background-color'] )
+				if ( typeof bg !== 'undefined' )
 				{
-					( order.name == 'main' ? $body : temp ).css( 'background-color', order.css['background-color'] );
+					// If we're clearing the main window, then change <body> instead
+					if ( order.name == 'main' )
+					{
+						temp = $body;
+					}
+					// First remove an old background colour class
+					oldbg = /zvm-bg-\d+/.exec( temp.attr( 'class' ) );
+					if ( oldbg )
+					{
+						temp.removeClass( oldbg[0] );
+					}
+					// Add style
+					if ( isNaN( bg ) )
+					{
+						temp.css( 'background-color', bg );
+					}
+					else
+					{
+						temp.addClass( 'zvm-bg-' + bg );
+					}
 				}
 			}
 			
