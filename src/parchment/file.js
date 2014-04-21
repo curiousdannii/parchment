@@ -1,10 +1,13 @@
 /*
- * File functions and classes
- *
- * Copyright (c) 2008-2011 The Parchment Contributors
- * Licenced under the BSD
- * http://code.google.com/p/parchment
- */
+
+File functions and classes
+==========================
+
+Copyright (c) 2008-2014 The Parchment Contributors
+Licenced under the BSD
+http://code.google.com/p/parchment
+
+*/
 
 /*
 
@@ -55,6 +58,23 @@ if ( window.execScript )
 
 var chrome = /chrome\/(\d+)/i.exec( navigator.userAgent ),
 chrome_no_file = chrome && parseInt( chrome[1] ) > 4,
+
+// Turn Windows-1252 into ISO-8859-1
+// There are only 27 differences, so this is an reasonable strategy
+// If only we could override with ISO-8859-1...
+fixWindows1252 = function( string )
+{
+	return string
+		.replace( /\u20ac/g, '\x80' ).replace( /\u201a/g, '\x82' ).replace( /\u0192/g, '\x83' )
+		.replace( /\u201e/g, '\x84' ).replace( /\u2026/g, '\x85' ).replace( /\u2020/g, '\x86' )
+		.replace( /\u2021/g, '\x87' ).replace( /\u02c6/g, '\x88' ).replace( /\u2030/g, '\x89' )
+		.replace( /\u0160/g, '\x8a' ).replace( /\u2039/g, '\x8b' ).replace( /\u0152/g, '\x8c' )
+		.replace( /\u017d/g, '\x8e' ).replace( /\u2018/g, '\x91' ).replace( /\u2019/g, '\x92' )
+		.replace( /\u201c/g, '\x93' ).replace( /\u201d/g, '\x94' ).replace( /\u2022/g, '\x95' )
+		.replace( /\u2013/g, '\x96' ).replace( /\u2014/g, '\x97' ).replace( /\u02dc/g, '\x98' )
+		.replace( /\u2122/g, '\x99' ).replace( /\u0161/g, '\x9a' ).replace( /\u203a/g, '\x9b' )
+		.replace( /\u0153/g, '\x9c' ).replace( /\u017e/g, '\x9e' ).replace( /\u0178/g, '\x9f' );
+},
 
 // Text to byte array and vice versa
 text_to_array = function(text, array)
@@ -205,7 +225,6 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 	// Decode base64
 	if ( jqXHR.mode == 'base64' )
 	{
-		// Expose the decoded text if we have native decoding
 		if ( window.atob )
 		{
 			text = atob( data );
@@ -217,10 +236,11 @@ process_binary_XHR = function( data, textStatus, jqXHR )
 		}
 	}
 	
-	// Binary support through charset=x-user-defined
+	// Binary support through charset=windows-1252
 	else if ( jqXHR.mode == 'charset' )
 	{
-		array = text_to_array( data );
+		text = fixWindows1252( data );
+		array = text_to_array( text );
 	}
 	
 	// Access responseBody
@@ -300,7 +320,7 @@ $.ajaxPrefilter( 'text', function( options, originalOptions, jqXHR )
 	
 	if ( jqXHR.mode == 'charset' )
 	{
-		options.mimeType = 'text/plain; charset=x-user-defined';
+		options.mimeType = 'text/plain; charset=windows-1252';
 	}
 });
 

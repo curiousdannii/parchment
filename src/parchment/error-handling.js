@@ -2,7 +2,7 @@
 
 window.FatalError = function(message) {
   this.message = message;
-  this.traceback = this._makeTraceback(arguments.callee);
+  this.traceback = ''; //this._makeTraceback(arguments.callee);
   this.onError(this);
   
 	// Hide load indicator
