@@ -208,11 +208,7 @@ bytearray_to_array = function( bytearray )
 // XMLHttpRequest feature support
 xhr = jQuery.ajaxSettings.xhr(),
 support = {
-	// Unfortunately in Opera < 10.5 overrideMimeType() doesn't work
-	binary:
-		xhr.overrideMimeType && !( $.browser.opera && parseFloat( $.browser.version ) < 10.5 ) ? 'charset' :
-		'responseBody' in xhr ? 'responseBody' :
-		0
+	binary: xhr.overrideMimeType ? 'charset' : ( 'responseBody' in xhr ? 'responseBody' : 0 )
 },
 
 // Process a binary XHR
