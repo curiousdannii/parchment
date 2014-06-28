@@ -78,6 +78,7 @@ parchment.lib.UI = Object.subClass({
 	{
 		var panels = parchment.options.panels,
 		search_data, search_input, search_results,
+		recent_list,
 		
 		// Perform a search of the archive
 		dosearch = function()
@@ -92,15 +93,29 @@ parchment.lib.UI = Object.subClass({
 			// Fill the results div
 			search_results.html( $.map( results, map_results_callback ).join('') );
 		};
-		
-		// A search box
+
+		// A search box and list of recently played games
 		if ( $.inArray( 'search', panels ) != -1 )
 		{
-			this.panels.search = $( '<div class="panel search"><label for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search"><div></div></div>' );
+			this.panels.search = $( '<div class="panel search"><h3>Recently played:</h3><div class="recent-list"></div><h3>Search:</h3><label for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search"><div></div></div>' );
 			
+			recent_list = this.panels.search.find( '.recent-list' );
 			search_input = this.panels.search.find( 'input' );
 			search_results = search_input.next();
-				
+			
+			// Load recently used games
+			var storycache = this.library.stories;
+			storycache.initializeCache().pipe(function () {
+				return storycache.getStories(10); // TODO: move limit?
+			}).done(function (stories) {
+				var htmlstring = '', story;
+				for (var i = 0, len = stories.length; i < len; i++) {
+					story = stories[i];
+					htmlstring += '<p><a href="' + location.href + '?story=' + story.url + '">' + story.title + '</a></p>';
+				}
+				recent_list.append( htmlstring );
+			});
+			
 			// Load the archive json file
 			search_input.keydown(function(){
 				search_input.unbind( 'keydown' );
