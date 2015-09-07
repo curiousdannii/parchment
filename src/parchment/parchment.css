@@ -3,9 +3,9 @@
 General Parchment styles
 ========================
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2015 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -61,6 +61,10 @@ body
 }
 
 /* Front page panels */
+.panel
+{
+	text-align: center;
+}
 
 /* Load any web story file */
 .panel input

@@ -3,9 +3,9 @@
 Parchment UI
 ============
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2015 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -76,42 +76,12 @@ parchment.lib.UI = Object.subClass({
 	// Load panels for the front page
 	load_panels: function()
 	{
-		var panels = parchment.options.panels,
-		search_data, search_input, search_results,
+		var panels = parchment.options.panels;
 		
-		// Perform a search of the archive
-		dosearch = function()
+		// Look for stories at the IFDB
+		if ( $.inArray( 'ifdb', panels ) != -1 )
 		{
-			// Filter the archive
-			var key = RegExp( search_input.val().replace( ' ', '( )?' ), 'i' ),
-			results = $.grep( search_data, function( story ){
-				return key.test( story.path + story.desc );
-			});
-			// Limit to 30 results
-			results = results.slice( 0, 30 );
-			// Fill the results div
-			search_results.html( $.map( results, map_results_callback ).join('') );
-		};
-		
-		// A search box
-		if ( $.inArray( 'search', panels ) != -1 )
-		{
-			this.panels.search = $( '<div class="panel search"><label for="panel_search">Search the IF Archive for games you can play with Parchment. You might also like to search the <a href="http://ifdb.tads.org">IFDB</a> or the <a href="http://ifwiki.org">IF Wiki</a>.</label><input id="panel_search"><div></div></div>' );
-			
-			search_input = this.panels.search.find( 'input' );
-			search_results = search_input.next();
-				
-			// Load the archive json file
-			search_input.keydown(function(){
-				search_input.unbind( 'keydown' );
-				$.getJSON( 'stories/if-archive.json' )
-					.done(function( data ){
-						search_data = data;
-						// Attach the real handler once the archive's been downloaded, and then run it once
-						search_input.keyup( dosearch );
-						dosearch();
-					});
-			});
+			this.panels.ifdb = $( '<p class="panel">Find stories to play at the <a href="http://ifdb.tads.org/">Interactive Fiction Database</a>.' );
 		}
 		
 		// A form to load any story file

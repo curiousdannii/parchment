@@ -3,9 +3,9 @@
 Parchment
 =========
 
-Built: 2013-07-29
+Built: 2015-09-07
 
-Copyright (c) 2008-2013 The Parchment Contributors
+Copyright (c) 2008-2015 The Parchment Contributors
 BSD licenced
 https://github.com/curiousdannii/parchment
 
@@ -16,9 +16,9 @@ https://github.com/curiousdannii/parchment
 General Parchment styles
 ========================
 
-Copyright (c) 2008-2011 The Parchment Contributors
+Copyright (c) 2008-2015 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -74,6 +74,10 @@ body
 }
 
 /* Front page panels */
+.panel
+{
+	text-align: center;
+}
 
 /* Load any web story file */
 .panel input
@@ -94,9 +98,9 @@ body
 StructIO styles
 ===============
 
-Copyright (c) 2008-2012 The Parchment Contributors
+Copyright (c) 2015 The Parchment Contributors
 BSD licenced
-http://code.google.com/p/parchment
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -127,6 +131,7 @@ http://code.google.com/p/parchment
 /* Text grid window */
 .TextGrid
 {
+	line-height: 19px;
 	position: fixed;
 	z-index: 2;
 }
@@ -134,12 +139,13 @@ http://code.google.com/p/parchment
 /* Floating boxes */
 .box
 {
+	line-height: 19px;
 	position: absolute;
 	z-index: 1;
 }
 
 /* Main window */
-.main, .TextGrid
+.main, .TextGrid, .box
 {
 	/* Extra padding in case some serifs stick outside the status window */
 	padding: 0 1px;
