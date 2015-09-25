@@ -3,7 +3,7 @@
 Parchment
 =========
 
-Built: 2015-09-07
+Built: 2015-09-25
 
 Copyright (c) 2008-2015 The Parchment Contributors
 BSD licenced
@@ -136,16 +136,8 @@ https://github.com/curiousdannii/parchment
 	z-index: 2;
 }
 
-/* Floating boxes */
-.box
-{
-	line-height: 19px;
-	position: absolute;
-	z-index: 1;
-}
-
 /* Main window */
-.main, .TextGrid, .box
+.main, .TextGrid
 {
 	/* Extra padding in case some serifs stick outside the status window */
 	padding: 0 1px;

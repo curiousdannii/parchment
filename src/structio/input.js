@@ -189,6 +189,9 @@ TextInput = Object.subClass({
 		input = this.input,
 		prompt;
 		
+		// Trigger a custom event for anyone listening in for commands
+		$doc.trigger({ type: 'RequestingTextInput' });
+		
 		this.order = order;
 		this.mode = 'line';
 		
@@ -274,6 +277,9 @@ TextInput = Object.subClass({
 	{
 		this.order = order;
 		this.mode = 'char';
+		
+		// Trigger a custom event for anyone listening in for commands
+		$doc.trigger({ type: 'RequestingTextInput' });
 		
 		this.keyCode = this.charCode = 0;
 		
