@@ -3,7 +3,7 @@
 Text grid (ie, status) windows
 ==============================
 
-Copyright (c) 2015 The Parchment Contributors
+Copyright (c) 2016 The Parchment Contributors
 BSD licenced
 https://github.com/curiousdannii/parchment
 
@@ -64,6 +64,7 @@ var TextGrid = Object.subClass({
 	stream: function( orders )
 	{
 		var order, code, i, j,
+		self = this,
 		row = this.cursor[0],
 		col = this.cursor[1],
 		lines = this.lines,
@@ -71,13 +72,17 @@ var TextGrid = Object.subClass({
 		width = this.io.env.width,
 		text, temp,
 		stylecode,
-		oldheight;
+		oldheight = this.curheight;
 		
 		// Add a blank line or erase an existing one
 		function addOrEraseLine( row )
 		{
 			var line = [],
 			i = 0;
+			if ( typeof row === 'undefined' )
+			{
+				self.curheight++;
+			}
 			row = row || lines.length;
 			while ( i++ < width )
 			{
