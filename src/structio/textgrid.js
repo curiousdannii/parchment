@@ -35,28 +35,22 @@ var TextGrid = Object.subClass({
 		this.lines = [];
 		this.styles = [];
 		this.cursor = [0, 0]; // row, col
-		this.curheight = 0; // What the VM thinks the height is
-		this.maxheight = 0; // Maximum height the window has been extended to this turn
-		this.seenheight = 0; // Height the player saw last
 		
 		// Change the window's height to what is meant to be seen before an input event
-		// Using Zarf's algorithm from http://eblong.com/zarf/glk/quote-box.html
+		// Based on Zarf's algorithm from http://eblong.com/zarf/glk/quote-box.html
+		// But instead of a maxheight variable, use lines.length directly
+		this.vmheight = 0; // What the VM thinks the height is
+		this.seenheight = 0; // Height the player saw last
 		$doc.on( 'RequestingTextInput', function( e )
 		{
 			// If the player has seen the entire window we can shrink it
-			if ( self.seenheight == self.maxheight )
+			if ( self.seenheight === self.lines.length )
 			{
-				self.maxheight = self.curheight;
+				self.lines.length = self.vmheight;
+				// Update the HTML
+				self.write();
 			}
-			
-			// Set the true window height to maxheight
-			self.lines.length = self.maxheight;
-			self.seenheight = self.maxheight;
-			self.maxheight = self.curheight;
-			
-			// Update the HTML
-			self.write();
-			$( '.main' ).css( 'padding-top', self.elem.height() );
+			self.seenheight = self.lines.length;
 		});
 	},
 	
@@ -71,18 +65,18 @@ var TextGrid = Object.subClass({
 		styles = this.styles,
 		width = this.io.env.width,
 		text, temp,
-		stylecode,
-		oldheight = this.curheight;
+		stylecode;
 		
 		// Add a blank line or erase an existing one
 		function addOrEraseLine( row )
 		{
-			var line = [],
-			i = 0;
+			// Keep vmheight up to date
 			if ( typeof row === 'undefined' )
 			{
-				self.curheight++;
+				self.vmheight++;
 			}
+			var line = [],
+			i = 0;
 			row = row || lines.length;
 			while ( i++ < width )
 			{
@@ -99,30 +93,28 @@ var TextGrid = Object.subClass({
 			code = order.code;
 			
 			// Adjust the height of the grid
-			// Using Zarf's algorithm from http://eblong.com/zarf/glk/quote-box.html
 			if ( code == 'height' )
 			{
-				oldheight = this.curheight;
-				this.curheight = order.lines;
-				
-				// Increase what the maximum height of the window shown is
-				if ( this.curheight > this.maxheight )
+				// We handle an order of 0 specially so that it won't preserve previous turn's lines
+				if ( order.lines === 0 )
 				{
-					this.maxheight = this.curheight;
+					lines.length = 0;
+					this.vmheight = 0;
 				}
 				
-				// If the VM thinkings it is enlarging the window but the rows already exist, erase them
-				if ( this.curheight > oldheight )
+				// If the VM thinks it is enlarging the window but the rows already exist, erase them
+				if ( lines.length > order.lines )
 				{
-					j = oldheight;
-					while ( j < this.curheight )
+					j = this.vmheight;
+					while ( j < order.lines )
 					{
 						addOrEraseLine( j++ );
 					}
+					this.vmheight = order.lines;
 				}
 				
-				// Increase the true window height to maxheight
-				while ( this.maxheight > lines.length )
+				// Increase the window height to the requested height
+				while ( order.lines > lines.length )
 				{
 					addOrEraseLine();
 				}
@@ -245,13 +237,6 @@ var TextGrid = Object.subClass({
 		
 		// Update the HTML
 		this.write();
-		
-		// Try to adjust the main window's padding - for now guess what the window's class is
-		if ( lines.length != oldheight )
-		{
-			$( '.main' )
-				.css( 'padding-top', this.elem.height() );
-		}
 	},
 	
 	// Update the HTML
@@ -289,5 +274,8 @@ var TextGrid = Object.subClass({
 			}
 		}
 		this.elem.html( result );
+		
+		// Try to adjust the main window's padding - for now guess what the window's class is
+		$( '.main' ).css( 'padding-top', this.elem.height() );
 	}
 });
