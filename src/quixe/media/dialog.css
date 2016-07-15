@@ -31,7 +31,7 @@
 */
 #dialog {
   position: relative;
-  width: 360px;
+  width: 400px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 100px;
@@ -57,6 +57,7 @@
 
 #dialog .DiaBody {
   margin: 16px;
+  clear: both;
 }
 
 #dialog select {
@@ -70,6 +71,22 @@
 #dialog .DiaButtons {
   margin: 16px;
   text-align: right;
+}
+
+#dialog .DiaButtonsFloat {
+  margin-left: 16px;
+  margin-right: 16px;
+  float: right;
+}
+
+#dialog .DiaDisplayText {
+  height: 200px;
+  padding: 4px 8px;
+  overflow: scroll;   /* vertical scrollbar is mandatory */
+  overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+  font-size: 14px;
+  white-space: pre-wrap;
+  background: #FED;
 }
 
 /* End of Dialog default stylesheet. */
