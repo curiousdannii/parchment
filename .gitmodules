@@ -1,3 +1,6 @@
 [submodule "src/ifvms.js"]
 	path = src/ifvms.js
 	url = https://github.com/curiousdannii/ifvms.js.git
+[submodule "src/quixe"]
+	path = src/quixe
+	url = https://github.com/erkyrath/quixe.git
