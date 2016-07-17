@@ -16,16 +16,10 @@ parchment.add_vm({
 	match: /(ulx|glb|(g|glulx.+)(blorb|blb))(.js)?$/i,
 	
 	// Files to load
-	files: DEBUG ? [
-		'../src/quixe/prototype-1.6.1.js',
-		'glkote.debug.js',
-		'quixe.debug.js',
-		'glkote.debug.css'
-	] : [
-		'prototype.min.js',
+	files: [
 		'glkote.min.js',
 		'quixe.min.js',
-		'glkote.min.css'
+		DEBUG ? 'glkote.debug.css' : 'glkote.min.css'
 	],
 	
 	runner: 'QuixeRunner'

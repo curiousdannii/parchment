@@ -1,20 +1,3 @@
-/*
-
-GlkOte
-======
-
-Built: 2013-04-04
-
-GlkOte -- a Javascript display library for IF interfaces
-Dialog -- a Javascript load/save library for IF interfaces
-GlkAPI -- a Javascript Glk API for IF interfaces
-
-Designed by Andrew Plotkin <erkyrath@eblong.com>
-Copyright (c) 2008-2013 Andrew Plotkin
-<http://eblong.com/zarf/glk/glkote.html>
-
-*/
-
 /* GlkOte stylesheet for Quixe/I7 Template
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
@@ -33,14 +16,29 @@ Copyright (c) 2008-2013 Andrew Plotkin
   position: absolute;
   top: 0px;
   width: 100%;
-  background: #FF4040;
-  padding-bottom: 3px;
+  background: #FFA0A0;
+  border-bottom: 3px solid #FF4040;
+}
+
+#errorpane.WarningPane {
+  background: #B0B0FF;
+  border-bottom: 3px solid #6060FF;
+}
+
+#errorpane:hover {
+  background: rgba(255, 160, 160, 0.5);
+  border-bottom: 3px solid rgba(255, 64, 64, 0.3);
+}
+
+#errorpane.WarningPane:hover {
+  background: rgba(176, 176, 255, 0.5);
+  border-bottom: 3px solid rgba(96, 96, 255, 0.3);
 }
 
 #errorcontent {
-  padding: 8px;
+  font-size: 1.1em;
+  padding: 1em;
   text-align: center;
-  background: #FFA0A0;
 }
 
 #loadingpane {
@@ -48,15 +46,6 @@ Copyright (c) 2008-2013 Andrew Plotkin
   width: 100%;
   text-align: center;
   top: 20%;
-}
-
-#layouttestpane {
-  position: absolute;
-  visibility: hidden;
-  top: 0px;
-  /* Move this way off the screen. Even though it's hidden, Firefox has
-     a nasty habit of showing the inactive scroll bar. */
-  left: -1000px;
 }
 
 .WindowFrame {
@@ -71,7 +60,7 @@ Copyright (c) 2008-2013 Andrew Plotkin
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
   font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.4;
   padding: 6px 10px 6px 10px;
 }
@@ -83,7 +72,7 @@ Copyright (c) 2008-2013 Andrew Plotkin
   background: #D0D0C0;
   overflow: hidden;
   font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace; /* necessary! */
-  font-size: 12px;
+  font-size: 14px;
   padding: 6px 10px 6px 10px;
 }
 
@@ -112,6 +101,17 @@ Copyright (c) 2008-2013 Andrew Plotkin
   -moz-border-radius: 4px;
 }
 
+.PreviousMark {
+  /* This describes the small horizontal mark that appears in a window
+     when it needs paging. */
+  position: absolute;
+  background: #B09888;
+  height: 2px;
+  width: 12px;
+  top: 0px;
+  right: 0px;
+}
+
 .Input {
   /* This class mimicks the Style_input class. It also eliminates the 
      usual decoration of an <input> field, as much as possible. */
@@ -126,12 +126,44 @@ Copyright (c) 2008-2013 Andrew Plotkin
 
 .BufferWindow .Input {
   font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .GridWindow .Input {
   font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace; /* necessary! */
-  font-size: 12px;
+  font-size: 14px;
+}
+
+/* The following are used for image alignment (in buffer windows). */
+
+.ImageMarginLeft {
+  float: left;
+  margin-right: 0.5em;
+}
+
+.ImageMarginRight {
+  float: right;
+  margin-left: 0.5em;
+}
+
+.ImageInlineDown {
+  vertical-align: text-top;
+}
+
+.ImageInlineUp {
+  vertical-align: text-bottom;
+}
+
+.ImageInlineCenter {
+  vertical-align: middle;
+}
+
+.FlowBreak {
+  clear: both;
+}
+
+.GraphicsWindow canvas {
+  background-color: white;
 }
 
 /* The following are the standard Glk styles. */
@@ -152,7 +184,7 @@ Copyright (c) 2008-2013 Andrew Plotkin
 }
 
 .BufferWindow .Style_header {
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .Style_subheader {
@@ -217,7 +249,7 @@ Copyright (c) 2008-2013 Andrew Plotkin
 */
 #dialog {
   position: relative;
-  width: 360px;
+  width: 400px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 100px;
@@ -243,6 +275,7 @@ Copyright (c) 2008-2013 Andrew Plotkin
 
 #dialog .DiaBody {
   margin: 16px;
+  clear: both;
 }
 
 #dialog select {
@@ -256,6 +289,22 @@ Copyright (c) 2008-2013 Andrew Plotkin
 #dialog .DiaButtons {
   margin: 16px;
   text-align: right;
+}
+
+#dialog .DiaButtonsFloat {
+  margin-left: 16px;
+  margin-right: 16px;
+  float: right;
+}
+
+#dialog .DiaDisplayText {
+  height: 200px;
+  padding: 4px 8px;
+  overflow: scroll;   /* vertical scrollbar is mandatory */
+  overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+  font-size: 14px;
+  white-space: pre-wrap;
+  background: #FED;
 }
 
 /* End of Dialog default stylesheet. */

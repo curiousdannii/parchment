@@ -31,6 +31,7 @@ module.exports = function( grunt )
 						'src/parchment/ifvms.js',
 						'src/parchment/gnusto.js',
 						'src/parchment/outro.js',
+						'src/parchment/quixe-runner.js',
 					],
 					'lib/parchment.debug.css': [
 						'src/parchment/header.txt',
@@ -46,20 +47,13 @@ module.exports = function( grunt )
 						'src/ifvms.js/src/zvm/ui.js',
 						'src/gnusto/runner.js',
 					],
-					'lib/quixe.debug.js': [
-						'src/quixe/quixe/header.txt',
-						'src/quixe/quixe/quixe.js',
-						'src/quixe/quixe/gi_dispa.js',
+					'lib/quixe.min.js': [
+						'src/quixe/lib/quixe.min.js',
 					],
-					'lib/glkote.debug.js': [
-						'src/quixe/glkote/header.txt',
-						'src/quixe/glkote/glkote.js',
-						'src/quixe/glkote/dialog.js',
-						'src/quixe/glkote/glkapi.js',
-						'src/quixe/runner.js',
+					'lib/glkote.min.js': [
+						'src/quixe/lib/glkote.min.js',
 					],
 					'lib/glkote.debug.css': [
-						'src/quixe/glkote/header.txt',
 						'src/quixe/media/i7-glkote.css',
 						'src/quixe/media/dialog.css',
 					],
@@ -83,9 +77,6 @@ module.exports = function( grunt )
 				},
 			},
 			glkote: {
-				options: {
-					banner: grunt.file.read( "src/quixe/glkote/header.txt" ),
-				},
 				files: {
 					'lib/glkote.min.css': [ 'lib/glkote.debug.css' ],
 				},
@@ -141,18 +132,7 @@ module.exports = function( grunt )
 				files: {
 					'lib/parchment.min.js': [ 'lib/parchment.debug.js' ],
 					'lib/gnusto.min.js': [ 'lib/gnusto.debug.js' ],
-					'lib/glkote.min.js': [ 'lib/glkote.debug.js' ],
 				},
-			},
-			quixe: {
-				options: {
-					mangle: {
-						'eval': false,
-					},
-				},
-				files: {
-					'lib/quixe.min.js': [ 'lib/quixe.debug.js' ],
-				}
 			},
 			zvm: {
 				options: {
