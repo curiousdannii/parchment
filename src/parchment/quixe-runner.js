@@ -14,16 +14,13 @@ var QuixeRunner = Object.subClass({
 
 	init: function( env, engine )
 	{
-		// GlkOte settings
+		/*// GlkOte settings
 		this.options = {
 			inspacing: 0, // gap between windows
 			outspacing: 0, // gap between windows and edge of gameport
 			vm: Quixe, // default game engine
 			//io: Glk, // default display layer
-		};
-		
-		// Switch on the styles
-		parchment.library.ui.stylesheet_switch( 'quixe', 1 );
+		};*/
 		
 		// Add the html Glkote needs
 		jQuery( env.container ).html( '<div id="gameport"><div id="windowport"></div><div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div></div>' );
@@ -38,14 +35,15 @@ var QuixeRunner = Object.subClass({
 		// Load the story file
 		if ( code == 'load' )
 		{
-			Quixe.prepare( event.data, this.options );
+			//Quixe.prepare( event.data, this.options );
+			GiLoad.load_run( { set_page_title: true }, event.data, 'array' );
 		}
 
 		// (Re)start the engine
 		// For now ignore attempts to restore... GlkOte manages that itself
 		if ( code == 'restart' || code == 'restore' )
 		{
-			Glk.init( this.options );
+			//Glk.init( this.options );
 		}
 	},
 

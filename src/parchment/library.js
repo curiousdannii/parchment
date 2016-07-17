@@ -349,7 +349,7 @@ Library = Object.subClass({
 				// CSS
 				else
 				{
-					parchment.library.ui.stylesheet_add( vm.id, dependency );
+					parchment.library.ui.stylesheet_add( dependency );
 					script_callback();
 				}
 			},

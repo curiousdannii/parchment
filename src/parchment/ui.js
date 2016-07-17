@@ -38,12 +38,11 @@ parchment.lib.UI = Object.subClass({
 		this.load_indicator = $( '<div class="dialog load"><p>Parchment is loading.<p>&gt; <blink>_</blink></div>' );
 	},
 
-	// Stylesheet management
-	// Add some stylesheets, disabled at first
-	stylesheet_add: function( /* title, url, ... */ )
+	// Add some stylesheets
+	stylesheet_add: function( /* url, ... */ )
 	{
 		var args = arguments, i;
-		for ( i = 1; i < args.length; i++ )
+		for ( i = 0; i < args.length; i++ )
 		{
 			// The IE way...
 			if ( document.createStyleSheet )
@@ -54,23 +53,12 @@ parchment.lib.UI = Object.subClass({
 			else
 			{
 				$( '<link>', {
-					rel: 'alternate stylesheet',
+					rel: 'stylesheet',
 					href: args[i],
-					title: args[0],
-					type: 'text/css'
 				})
-					.appendTo( 'head' )
-					[0].disabled = true;
+					.appendTo( 'head' );
 			}
 		}
-	},
-	// Switch on/off a stylesheet
-	stylesheet_switch: function( title, enable )
-	{
-		$( 'link[rel*="stylesheet"][title="' + title + '"]' )
-			.each( function(){
-				this.disabled = !enable;
-			}); 
 	},
 	
 	// Load panels for the front page
