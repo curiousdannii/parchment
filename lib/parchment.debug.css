@@ -46,10 +46,13 @@ body
 
 #gameport
 {
+	height: 100%;
 	line-height: 1.4;
-	margin: 0 auto;
+	margin: 0;
+	overflow: hidden;
+	position: absolute;
 	text-align: left;
-	width: 80%;
+	width: 100%;
 }
 
 /* General dialogs */
