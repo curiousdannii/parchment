@@ -57,9 +57,6 @@ module.exports = function( grunt )
 						'src/quixe/media/i7-glkote.css',
 						'src/quixe/media/dialog.css',
 					],
-					'lib/zvm.debug.js': [
-						'src/ifvms.js/dist/zvm.js'
-					],
 					'.build/(manifest).txt': [
 						'src/parchment/(manifest).txt'
 					],
