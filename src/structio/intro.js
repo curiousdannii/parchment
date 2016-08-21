@@ -53,6 +53,10 @@ extend( $.cssHooks, {
 		// Get the resolved colour - no inherits or transparents allowed!
 		get: function( elem )
 		{
+		    if( elem === document ) {
+		        return $( 'html' ).css( 'background-color' );
+            }
+
 			var $elem = $( elem ),
 			background = $elem.css( 'background-color' );
 			// Getting the current background colour is hard: go through the parent elements until one with a real colour is found
@@ -69,7 +73,7 @@ extend( $.cssHooks, {
 			parent = $elem.parent();
 			$elem.css( 'background-color', value );
 			// Recurse up the tree
-			if ( rBadBackground.test( parent.css( 'background-color' ) ) )
+			if ( parent.get(0) !== document && rBadBackground.test( parent.css( 'background-color' ) ) )
 			{
 				parent.css( 'bgcolor', value );
 			}
