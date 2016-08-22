@@ -5,11 +5,11 @@
   "author": "Dannii Willis <curiousdannii@gmail.com>",
   "license": "GPL-3",
   "keywords": [
-    "intfiction",
+    "intfiction"
   ],
   "repository": "curiousdannii/parchment",
   "homepage": "https://github.com/curiousdannii/parchment",
-  "bugs":"https://code.google.com/p/parchment/issues/list",
+  "bugs": "https://code.google.com/p/parchment/issues/list",
   "dependencies": {
     "express": "~3.2.4"
   },
