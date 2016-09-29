@@ -28,5 +28,6 @@ npm install
 To build everything run the following:
 
 ```
+npm run build-zvm
 grunt
 ```
