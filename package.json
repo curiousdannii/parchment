@@ -10,9 +10,6 @@
   "repository": "curiousdannii/parchment",
   "homepage": "https://github.com/curiousdannii/parchment",
   "bugs": "https://code.google.com/p/parchment/issues/list",
-  "dependencies": {
-    "express": "~3.2.4"
-  },
   "devDependencies": {
     "browserify": "^13.1.0",
     "grunt": "~0.4.1",
