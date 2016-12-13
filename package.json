@@ -2,21 +2,14 @@
   "name": "parchment",
   "version": "0.1.0",
   "description": "The Interactive Fiction player for the web",
-  "author": {
-    "name": "The Parchment team",
-    "url": "https://github.com/curiousdannii/parchment/blob/master/CONTRIBUTORS"
-  },
-  "license": "BSD",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/curiousdannii/parchment.git"
-  },
-  "bugs": {
-    "url": "https://code.google.com/p/parchment/issues/list"
-  },
-  "dependencies": {
-    "express": "~3.2.4"
-  },
+  "author": "Dannii Willis <curiousdannii@gmail.com>",
+  "license": "GPL-3",
+  "keywords": [
+    "intfiction"
+  ],
+  "repository": "curiousdannii/parchment",
+  "homepage": "https://github.com/curiousdannii/parchment",
+  "bugs": "https://github.com/curiousdannii/parchment/issues",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-concat": "~0.2.0",
@@ -26,5 +19,8 @@
     "grunt-contrib-watch": "~0.3.1",
     "grunt-update-submodules": "~0.2.0",
     "grunt-zip": "~0.9.0"
+  },
+  "scripts": {
+    "build": "grunt"
   }
 }
