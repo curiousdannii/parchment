@@ -3,7 +3,7 @@ Parchment
 
 Parchment is the Interactive Fiction player for the web. To play a story with Parchment go to <http://iplayif.com>!
 
-Most of Parchment is BSD licenced, except for Gunch which is GPL 3. Please use Parchment freely, but consider helping the community by sharing any changes you make with us.
+Most of Parchment is BSD licenced, except for Gnusto which is GPL 2. Please use Parchment freely, but consider helping the community by sharing any changes you make with us.
 
 Parchment for Inform 7
 ----------------------
