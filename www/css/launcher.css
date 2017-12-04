@@ -4,6 +4,11 @@ Parchment style sheet
 
 */
 
+div.center
+{
+    text-align: center;
+}
+
 #glkote
 {
     border: 0;
