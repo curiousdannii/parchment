@@ -33,4 +33,8 @@
     </platform>
     <engine name="android" spec="^6.4.0" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
+    <plugin name="com-darryncampbell-cordova-plugin-intent" spec="0.0.15" />
+    <plugin name="cordova-plugin-filepath" spec="^1.1.0" />
+    <plugin name="cordova-plugin-file" spec="^5.0.0" />
+    <plugin name="com.napolitano.cordova.plugin.intent" spec="~0.1.2" />
 </widget>

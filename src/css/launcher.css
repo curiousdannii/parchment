@@ -9,6 +9,14 @@ div.center
     text-align: center;
 }
 
+.coderesult
+{
+    font-family: monospace;
+    overflow-wrap: break-word;
+    padding: 0 20px;
+    text-align: left;
+}
+
 #glkote
 {
     border: 0;
