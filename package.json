@@ -1,11 +1,11 @@
 {
   "name": "com.iplayif.parchment",
   "displayName": "Parchment",
-  "version": "1.0.0",
-  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "version": "2017.12.0",
+  "description": "Parchment Interactive Fiction Interpreter",
   "main": "index.js",
-  "author": "Apache Cordova Team",
-  "license": "Apache-2.0",
+  "author": "Dannii Willis <curiousdannii@gmail.com>",
+  "license": "MIT",
   "repository": "curiousdannii/parchment",
   "dependencies": {
     "com-darryncampbell-cordova-plugin-intent": "0.0.15",

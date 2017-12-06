@@ -22,7 +22,7 @@ async function launcher()
         const intent = await plugins.getIntent()
         $( '#welcome' ).append( `<p class="coderesult">intent: ${ JSON.stringify( intent ) }</p>` )
 
-         // We are being asked to open a file
+        // We are being asked to open a file
         if ( intent.action === 'android.intent.action.VIEW' )
         {
             const buffer = await file.readBufferFromIntent( intent )
@@ -34,9 +34,24 @@ async function launcher()
     }
     catch ( err )
     {
-        ons.notification.alert({
-            title: 'Startup error',
-            messageHTML: `<p class="coderesult">${ err }</p>`,
-        })
+        if ( err instanceof file.ContentUrlAccessError )
+        {
+            ons.notification.alert({
+                title: 'Unable to access file',
+                messageHTML: `Sorry, but we couldn't access that file. If you are trying to play a story from Dropbox or another cloud app, please try exporting or downloading the file locally.`,
+            })
+        }
+        else
+        {
+            let message = `<p class="coderesult">${ err.message || JSON.stringify( err ) }</p>`
+            if ( err.stack )
+            {
+                message += `<p class="coderesult">${ err.stack }</p>`
+            }
+            ons.notification.alert({
+                title: 'Startup error',
+                messageHTML: message,
+            })
+        }
     }
 }

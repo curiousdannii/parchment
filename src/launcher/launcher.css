@@ -13,8 +13,12 @@ div.center
 {
     font-family: monospace;
     overflow-wrap: break-word;
-    padding: 0 20px;
     text-align: left;
+}
+
+#welcome .coderesult
+{
+    padding: 0 20px;
 }
 
 #glkote
