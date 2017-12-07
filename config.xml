@@ -18,6 +18,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="file" />
+                <data android:pathPattern=".*\\.gblorb" />
+                <data android:pathPattern=".*\\.glb" />
                 <data android:pathPattern=".*\\.ulx" />
             </intent-filter>
             <intent-filter android:label="Parchment" android:name="Parchment">
@@ -27,6 +29,8 @@
                 <data android:scheme="file" />
                 <data android:scheme="content" />
                 <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.gblorb" />
+                <data android:pathPattern=".*\\.glb" />
                 <data android:pathPattern=".*\\.ulx" />
             </intent-filter>
         </config-file>

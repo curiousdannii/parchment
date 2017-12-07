@@ -2,7 +2,7 @@
 
 module.exports = {
     entry: {
-        launcher: './src/launcher/launcher.js',
+        launcher: './src/launcher/launcher.mjs',
     },
     output: {
         filename: '[name].js',

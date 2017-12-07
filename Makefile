@@ -39,5 +39,5 @@ www/launcher/onsenui.min.css: $(ONSENUI_ROOT)/package.json
 www/launcher/jquery.min.js: node_modules/jquery/package.json
 	cp node_modules/jquery/dist/jquery.min.js www/launcher/
 
-www/launcher/launcher.js: src/launcher/*.js
+www/launcher/launcher.js: src/common/*.mjs src/launcher/*.mjs
 	webpack
