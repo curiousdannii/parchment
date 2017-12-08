@@ -31,6 +31,23 @@ export const formats = [
         identify: view => view.getFourCC( 0 ) === 'Glul',
     },
 
+    {
+        id: 'zcode',
+        name: 'Z-Code',
+        blorbType: 'ZCOD',
+        extensions: ['z3', 'z4', 'z5', 'z8', 'zblorb', 'zlb'],
+        identify: view => { const version = view.getUint8( 0 ); return version >= 3 && version <= 8 },
+        engines: [
+            {
+                id: 'zvm',
+                name: 'ZVM',
+                className: 'ZVM',
+                dispatch: 'ifvms/dispatch.js',
+                vm: 'ifvms/zvm.min.js',
+            },
+        ],
+    },
+
 ]
 
 export const formatsByBlorbType = {}
@@ -55,7 +72,7 @@ export async function identify( buffer )
         if ( formatsByBlorbType[ blorb.exec.type ] )
         {
             return {
-                blorb: buffer,
+                //blorb: buffer,
                 data: blorb.exec.data,
                 format: formatsByBlorbType[ blorb.exec.type ],
             }
@@ -67,8 +84,15 @@ export async function identify( buffer )
     }
 
     const possibleFormats = formats.filter( format => format.identify( headerView ) )
-    return {
-        data: new Uint8Array( buffer ),
-        format: possibleFormats[0],
+    if ( possibleFormats.length )
+    {
+        return {
+            data: new Uint8Array( buffer ),
+            format: possibleFormats[0],
+        }
+    }
+    else
+    {
+        return null
     }
 }

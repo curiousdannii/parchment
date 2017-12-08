@@ -2,10 +2,12 @@
 
 module.exports = {
     entry: {
-        launcher: './src/launcher/launcher.mjs',
+        'launcher/launcher': './src/launcher/launcher.mjs',
+        'glkote/handler': './src/glkote/handler.mjs',
+        'glkote/worker': './src/glkote/worker.mjs',
     },
     output: {
         filename: '[name].js',
-        path: __dirname + '/www/launcher',
+        path: __dirname + '/www/',
     },
 }

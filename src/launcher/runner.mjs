@@ -11,14 +11,19 @@ https://github.com/curiousdannii/parchment
 
 import * as file from './filesystem.mjs'
 import * as formats from '../common/formats.mjs'
+import Game from './game.mjs'
 
 export async function loadStoryFromIntent( intent )
 {
     try
     {
         const buffer = await file.readBufferFromIntent( intent )
-        const format = await formats.identify( buffer )
-        $( '#welcome' ).append( `<p><b>Format:</b></p><p class="coderesult">${ JSON.stringify( format.format ) }</p>` )
+        const identification = await formats.identify( buffer )
+        if ( identification )
+        {
+            const game = new Game( intent.direct )
+            await game.start( identification )
+        }
     }
     catch ( err )
     {

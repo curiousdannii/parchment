@@ -1,0 +1,3 @@
+[submodule "src/upstream/glkote"]
+	path = src/upstream/glkote
+	url = https://github.com/curiousdannii/glkote.git

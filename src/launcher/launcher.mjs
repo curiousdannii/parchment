@@ -20,11 +20,11 @@ async function launcher()
     {
         await plugins.deviceready
         const intent = await plugins.getIntent()
-        $( '#welcome' ).append( `<p class="coderesult">intent: ${ JSON.stringify( intent ) }</p>` )
 
         // We are being asked to open a file
         if ( intent.action === 'android.intent.action.VIEW' )
         {
+            intent.direct = true
             await runner.loadStoryFromIntent( intent )
         }
     }
@@ -39,5 +39,6 @@ async function launcher()
             title: 'Startup error',
             messageHTML: message,
         })
+        $( '#welcome' ).append( message )
     }
 }

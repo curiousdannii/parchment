@@ -21,6 +21,12 @@
                 <data android:pathPattern=".*\\.gblorb" />
                 <data android:pathPattern=".*\\.glb" />
                 <data android:pathPattern=".*\\.ulx" />
+                <data android:pathPattern=".*\\.z3" />
+                <data android:pathPattern=".*\\.z4" />
+                <data android:pathPattern=".*\\.z5" />
+                <data android:pathPattern=".*\\.z8" />
+                <data android:pathPattern=".*\\.zblorb" />
+                <data android:pathPattern=".*\\.zlb" />
             </intent-filter>
             <intent-filter android:label="Parchment" android:name="Parchment">
                 <action android:name="android.intent.action.VIEW" />
@@ -32,6 +38,12 @@
                 <data android:pathPattern=".*\\.gblorb" />
                 <data android:pathPattern=".*\\.glb" />
                 <data android:pathPattern=".*\\.ulx" />
+                <data android:pathPattern=".*\\.z3" />
+                <data android:pathPattern=".*\\.z4" />
+                <data android:pathPattern=".*\\.z5" />
+                <data android:pathPattern=".*\\.z8" />
+                <data android:pathPattern=".*\\.zblorb" />
+                <data android:pathPattern=".*\\.zlb" />
             </intent-filter>
         </config-file>
     </platform>

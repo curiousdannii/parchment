@@ -9,11 +9,18 @@ div.center
     text-align: center;
 }
 
+.alert-dialog
+{
+    max-height: 95%;
+    overflow-y: auto;
+}
+
 .coderesult
 {
     font-family: monospace;
     overflow-wrap: break-word;
     text-align: left;
+    white-space: pre-line;
 }
 
 #welcome .coderesult
