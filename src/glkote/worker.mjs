@@ -17,8 +17,17 @@ let data
 let GlkAcceptFunc
 let vm
 
-const GlkOte = new MessageProxy( postMessage, 'GlkOte', [ 'error', 'extevent', 'getdomcontext', 'getinterface', 'glkote_set_dom_context', 'log', 'save_allstate', 'setdomcontext', 'update', 'warning' ],
+const GlkOte = new MessageProxy( postMessage, 'GlkOte', [ 'extevent', 'getdomcontext', 'getinterface', 'glkote_set_dom_context', 'log', 'save_allstate', 'setdomcontext', 'update', 'warning' ],
 {
+    // We can only post the error message
+    error: err => {
+        postMessage({
+            code: 'GlkOte',
+            func: 'error',
+            args: [ err.message ],
+        })
+    },
+
     init: data => {
         // Store a reference to the accept function
         GlkAcceptFunc = data.accept

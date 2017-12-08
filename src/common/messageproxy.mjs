@@ -26,9 +26,6 @@ export default class MessageProxy
                 })
             }
         }
-        for ( let func in advancedfuncs )
-        {
-            this[func] = advancedfuncs[func]
-        }
+        Object.assign( this, advancedfuncs )
     }
 }

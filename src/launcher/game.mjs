@@ -21,7 +21,7 @@ export default class Game
     {
         await ons.notification.alert({
             title: 'Error',
-            messageHtml: `<p class="coderesult">${ err.message }</p>`,
+            messageHTML: `<p class="coderesult">${ err.message }</p>`,
         })
         if ( !this.hasupdated )
         {
@@ -50,6 +50,7 @@ export default class Game
         {
             this.iframe.contentWindow.postMessage( messagedata, '*' )
         }
+        this.hasupdated = true
     }
 
     async setupIframe()

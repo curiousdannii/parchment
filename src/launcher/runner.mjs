@@ -19,10 +19,18 @@ export async function loadStoryFromIntent( intent )
     {
         const buffer = await file.readBufferFromIntent( intent )
         const identification = await formats.identify( buffer )
-        if ( identification )
+
+        if ( identification && identification.format.engines )
         {
             const game = new Game( intent.direct )
             await game.start( identification )
+        }
+        else
+        {
+            ons.notification.alert({
+                title: 'Unable to play file',
+                message: `Sorry, but we don't know how to play that kind of file.`,
+            })
         }
     }
     catch ( err )
