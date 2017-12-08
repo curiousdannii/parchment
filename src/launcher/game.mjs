@@ -35,6 +35,11 @@ export default class Game
         const messagedata = message.data
         const code = messagedata.code
 
+        if ( code === 'toolbar' )
+        {
+            this.page.classList.toggle( 'no-toolbar', messagedata.off )
+        }
+
         if ( code === 'Glk' )
         {
             this.worker.postMessage( messagedata )

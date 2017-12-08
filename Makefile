@@ -16,7 +16,7 @@ build: css dependencies glkote vms webpack
 
 css: www/launcher/launcher.css
 
-dependencies: www/launcher/onsenui.min.css \
+dependencies: www/launcher/onsenui.min.js \
 	www/common/jquery.min.js
 
 glkote: www/glkote/glkote.html
@@ -33,10 +33,12 @@ www/common/jquery.min.js: node_modules/jquery/package.json
 	mkdir -p www/common
 	cp node_modules/jquery/dist/jquery.min.js www/common/
 
-www/glkote/glkote.html: src/glkote/glkote.html src/upstream/glkote/*.js
+GLKOTE_ROOT = src/upstream/glkote
+www/glkote/glkote.html: src/glkote/glkote.html src/upstream/glkote/*.css src/upstream/glkote/*.js
 	mkdir -p www/glkote
 	cp src/glkote/glkote.html www/glkote/
-	cp src/upstream/glkote/glkapi.js src/upstream/glkote/glkote.js www/glkote/
+	cp $(GLKOTE_ROOT)/glkapi.js $(GLKOTE_ROOT)/glkote.js www/glkote/
+	cp $(GLKOTE_ROOT)/glkote.css $(GLKOTE_ROOT)/play.css www/glkote/
 
 www/ifvms/zvm.min.js: src/upstream/ifvms/zvm.min.js
 	mkdir -p www/ifvms
@@ -48,9 +50,9 @@ www/launcher/%.css: src/launcher/%.css
 
 # Update Onsen UI
 ONSENUI_ROOT = node_modules/onsenui
-ONSENUI_CSS = $(ONSENUI_ROOT)/css/onsenui.min.css $(ONSENUI_ROOT)/css/onsen-css-components.min.css
+ONSENUI_CSS = $(ONSENUI_ROOT)/css/onsenui-core.min.css $(ONSENUI_ROOT)/css/onsen-css-components.min.css
 ONSENUI_JS = $(ONSENUI_ROOT)/js/onsenui.min.js
-www/launcher/onsenui.min.css: $(ONSENUI_ROOT)/package.json
+www/launcher/onsenui.min.js: $(ONSENUI_ROOT)/package.json
 	mkdir -p www/launcher
 	cp $(ONSENUI_CSS) www/launcher/
 	cp $(ONSENUI_JS) www/launcher/

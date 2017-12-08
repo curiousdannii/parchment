@@ -1,6 +1,11 @@
 /*
 
 Parchment style sheet
+=====================
+
+Copyright (c) 2017 Dannii Willis
+MIT licenced
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -34,4 +39,40 @@ div.center
     display: block;
     height: 100%;
     width: 100%;
+}
+
+/* Hide the toolbar when scrolling */
+/* Approach inspired by https://codepen.io/IliaSky/pen/VjgBqQ and https://medium.com/@mariusc23/hide-header-on-scroll-down-show-on-scroll-up-67bbaae9a78c */
+
+#game
+{
+    box-sizing: border-box;
+    height: 100%;
+    padding-top: 56px;
+    position: relative;
+    transition: padding-top 0.3s ease-in-out;
+}
+
+#game.no-toolbar
+{
+    padding-top: 0;
+}
+
+#game ons-toolbar
+{
+    position: fixed;
+    top: 0;
+    transition: top 0.3s ease-in-out;
+}
+
+#game.no-toolbar ons-toolbar
+{
+    top: -56px;
+}
+
+#game .page__content
+{
+    height: 100%;
+    position: relative;
+    top: 0;
 }
