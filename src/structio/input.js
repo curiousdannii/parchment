@@ -124,8 +124,8 @@ TextInput = Object.subClass({
 		self.lastinput = $( '<span class="lastinput"/>' )
 			.appendTo( container );
 		
-		// Focus document clicks and keydowns
-		$doc.on( 'click.TextInput keydown.TextInput', function( ev )
+		// Focus document clicks, keydowns and keyup
+		$doc.on( 'click.TextInput keydown.TextInput keyup.TextInput', function( ev )
 		{
 			// Only intercept on things that aren't inputs and if the user isn't selecting text
 			if ( ev.target.nodeName != 'INPUT' && selection() == '' )
