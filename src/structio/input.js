@@ -124,8 +124,8 @@ TextInput = Object.subClass({
 		self.lastinput = $( '<span class="lastinput"/>' )
 			.appendTo( container );
 		
-		// Focus document clicks and keydowns
-		$doc.on( 'click.TextInput keydown.TextInput', function( ev )
+		// Focus document clicks, keydowns and keyup
+		$doc.on( 'click.TextInput keydown.TextInput keyup.TextInput', function( ev )
 		{
 			// Only intercept on things that aren't inputs and if the user isn't selecting text
 			if ( ev.target.nodeName != 'INPUT' && selection() == '' )
@@ -133,7 +133,7 @@ TextInput = Object.subClass({
 				// If the input box is close to the viewport then focus it
 				if ( $window.scrollTop() + $window.height() - input.offset().top > -60 )
 				{
-					window.scrollTo( 0, 9e9 );
+					window.scrollTo( 0, $doc.height() );
 					// Manually reset the target incase focus/trigger don't - we don't want the trigger to recurse
 					ev.target = input[0];
 					input.focus()
