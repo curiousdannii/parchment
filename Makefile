@@ -19,14 +19,14 @@ css: www/launcher/launcher.css
 dependencies: www/launcher/onsenui.min.js \
 	www/common/jquery.min.js
 
-glkote: www/glkote/glkote.html
+glkote: www/game/glkote.html
 
 run: build
 	cordova run
 
 vms: www/ifvms/zvm.min.js
 
-webpack: src/common/*.mjs src/glkote/*.mjs src/launcher/*.mjs
+webpack: src/common/*.mjs src/game/*.mjs src/launcher/*.mjs
 	webpack
 
 www/common/jquery.min.js: node_modules/jquery/package.json
@@ -34,11 +34,11 @@ www/common/jquery.min.js: node_modules/jquery/package.json
 	cp node_modules/jquery/dist/jquery.min.js www/common/
 
 GLKOTE_ROOT = src/upstream/glkote
-www/glkote/glkote.html: src/glkote/glkote.html src/upstream/glkote/*.css src/upstream/glkote/*.js
-	mkdir -p www/glkote
-	cp src/glkote/glkote.html www/glkote/
-	cp $(GLKOTE_ROOT)/glkapi.js $(GLKOTE_ROOT)/glkote.js www/glkote/
-	cp $(GLKOTE_ROOT)/glkote.css $(GLKOTE_ROOT)/play.css www/glkote/
+www/game/glkote.html: src/game/glkote.html src/upstream/glkote/*.css src/upstream/glkote/*.js
+	mkdir -p www/game
+	cp src/game/glkote.html www/game/
+	cp $(GLKOTE_ROOT)/glkapi.js $(GLKOTE_ROOT)/glkote.js www/game/
+	cp $(GLKOTE_ROOT)/glkote.css $(GLKOTE_ROOT)/play.css www/game/
 
 www/ifvms/zvm.min.js: src/upstream/ifvms/zvm.min.js
 	mkdir -p www/ifvms

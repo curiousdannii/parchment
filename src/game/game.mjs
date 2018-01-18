@@ -68,7 +68,7 @@ export default class Game
     async setupWorker( game )
     {
         // Relative to the .html, not to the .js
-        const worker = new Worker( 'glkote/worker.js', { name: game.format.engines[0].id } )
+        const worker = new Worker( 'game/worker.js', { name: game.format.engines[0].id } )
         worker.addEventListener( 'error', async err => await this.handleWorkerError( err ) )
         worker.addEventListener( 'message', message => this.onWorkerMessage( message ) )
         worker.postMessage({

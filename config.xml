@@ -47,8 +47,8 @@
             </intent-filter>
         </config-file>
     </platform>
-    <engine name="android" spec="^7.0.0" />
+    <plugin name="com-darryncampbell-cordova-plugin-intent" spec="0.0.16" />
+    <plugin name="cordova-plugin-file" spec="^6.0.1" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
-    <plugin name="com-darryncampbell-cordova-plugin-intent" spec="0.0.15" />
-    <plugin name="cordova-plugin-file" spec="^5.0.0" />
+    <engine name="android" spec="^7.0.0" />
 </widget>

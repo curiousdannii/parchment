@@ -1,3 +1,7 @@
+[submodule "src/upstream/asyncglk"]
+	path = src/upstream/asyncglk
+	url = https://github.com/curiousdannii/asyncglk.git
 [submodule "src/upstream/glkote"]
 	path = src/upstream/glkote
 	url = https://github.com/curiousdannii/glkote.git
+	

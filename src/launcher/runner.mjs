@@ -9,9 +9,9 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import * as file from './filesystem.mjs'
+import * as file from '../common/filesystem.mjs'
 import * as formats from '../common/formats.mjs'
-import Game from './game.mjs'
+import Game from '../game/game.mjs'
 
 export async function loadStoryFromIntent( intent )
 {
