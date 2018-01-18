@@ -3,7 +3,7 @@
 Worker controller
 =================
 
-Copyright (c) 2017 Dannii Willis
+Copyright (c) 2018 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -11,11 +11,14 @@ https://github.com/curiousdannii/parchment
 
 import MessageProxy from '../common/messageproxy.mjs'
 
-importScripts( './glkapi.js' )
+importScripts( './glkapi.js', './glkproxy.js' )
 
 let data
 let GlkAcceptFunc
 let vm
+
+const GlkApi = Glk
+Glk = new self['game/glkproxy']( GlkApi )
 
 const GlkOte = new MessageProxy( postMessage, 'GlkOte', [ 'extevent', 'getdomcontext', 'getinterface', 'glkote_set_dom_context', 'log', 'save_allstate', 'setdomcontext', 'update', 'warning' ],
 {
