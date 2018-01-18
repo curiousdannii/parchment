@@ -11,14 +11,12 @@ https://github.com/curiousdannii/parchment
 
 import MessageProxy from '../common/messageproxy.mjs'
 
-importScripts( './glkapi.js', './glkproxy.js' )
+importScripts( './glk.js' )
 
-let data
 let GlkAcceptFunc
 let vm
 
-const GlkApi = Glk
-Glk = new self['game/glkproxy']( GlkApi )
+const Glk = new self['game/glk']()
 
 const GlkOte = new MessageProxy( postMessage, 'GlkOte', [ 'extevent', 'getdomcontext', 'getinterface', 'glkote_set_dom_context', 'log', 'save_allstate', 'setdomcontext', 'update', 'warning' ],
 {
@@ -51,10 +49,9 @@ function onMessage( message )
 
     if ( code === 'prepare' )
     {
-        data = messagedata.data
         importScripts( '../' + messagedata.vm.vm )
-        vm = new self[ messagedata.vm.className ]()
-        vm.prepare( data, {
+        vm = self.vm = new self[ messagedata.vm.className ]()
+        vm.prepare( messagedata.data, {
             Glk: Glk,
         })
     }

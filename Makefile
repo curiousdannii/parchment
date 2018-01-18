@@ -37,7 +37,7 @@ GLKOTE_ROOT = src/upstream/glkote
 www/game/glkote.html: src/game/glkote.html src/upstream/glkote/*.css src/upstream/glkote/*.js
 	mkdir -p www/game
 	cp src/game/glkote.html www/game/
-	cp $(GLKOTE_ROOT)/glkapi.js $(GLKOTE_ROOT)/glkote.js www/game/
+	cp $(GLKOTE_ROOT)/glkote.js www/game/
 	cp $(GLKOTE_ROOT)/glkote.css $(GLKOTE_ROOT)/play.css www/game/
 
 www/ifvms/zvm.min.js: src/upstream/ifvms/zvm.min.js
