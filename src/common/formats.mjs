@@ -3,7 +3,7 @@
 File formats and VM settings
 ============================
 
-Copyright (c) 2017 Dannii Willis
+Copyright (c) 2018 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -29,6 +29,24 @@ export const formats = [
         blorbType: 'GLUL',
         extensions: ['gblorb', 'glb', 'ulx'],
         identify: view => view.getFourCC( 0 ) === 'Glul',
+        engines: [
+            {
+                id: 'git',
+                name: 'Git',
+                className: 'Git',
+                dispatch: 'emglken_dispatch.js',
+                path: 'emglken',
+                vm: 'git.js',
+            },
+            {
+                id: 'glulxe',
+                name: 'Glulxe',
+                className: 'Glulxe',
+                dispatch: 'emglken_dispatch.js',
+                path: 'emglken',
+                vm: 'glulxe.js',
+            },
+        ],
     },
 
     {
@@ -42,8 +60,9 @@ export const formats = [
                 id: 'zvm',
                 name: 'ZVM',
                 className: 'ZVM',
-                dispatch: 'ifvms/dispatch.js',
-                vm: 'ifvms/zvm.min.js',
+                //dispatch: 'dispatch.js',
+                path: 'ifvms',
+                vm: 'zvm.min.js',
             },
         ],
     },

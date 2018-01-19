@@ -24,7 +24,7 @@ glkote: www/game/glkote.html
 run: build
 	cordova run
 
-vms: www/ifvms/zvm.min.js
+vms: www/emglken/git.js www/ifvms/zvm.min.js
 
 webpack: src/common/*.mjs src/game/*.mjs src/launcher/*.mjs
 	webpack
@@ -39,6 +39,11 @@ www/game/glkote.html: src/game/glkote.html src/upstream/glkote/*.css src/upstrea
 	cp src/game/glkote.html www/game/
 	cp $(GLKOTE_ROOT)/glkote.js www/game/
 	cp $(GLKOTE_ROOT)/glkote.css $(GLKOTE_ROOT)/play.css www/game/
+
+EMGLKEN = src/upstream/emglken
+www/emglken/git.js: src/upstream/emglken/*.js
+	mkdir -p www/emglken
+	cp $(EMGLKEN)/*.js  $(EMGLKEN)/*.bin  $(EMGLKEN)/*.mem  $(EMGLKEN)/versions.json www/emglken/
 
 www/ifvms/zvm.min.js: src/upstream/ifvms/zvm.min.js
 	mkdir -p www/ifvms

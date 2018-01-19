@@ -18,6 +18,10 @@ let vm
 
 const Glk = new self['game/glk']()
 
+// Prevent undefined errors
+self.__dirname = null
+self.GiDispa = null
+
 const GlkOte = new MessageProxy( postMessage, 'GlkOte', [ 'extevent', 'getdomcontext', 'getinterface', 'glkote_set_dom_context', 'log', 'save_allstate', 'setdomcontext', 'update', 'warning' ],
 {
     // We can only post the error message
@@ -49,10 +53,18 @@ function onMessage( message )
 
     if ( code === 'prepare' )
     {
-        importScripts( '../' + messagedata.vm.vm )
+        const path = `../${ messagedata.vm.path }/`
+        importScripts( path + messagedata.vm.vm )
+        if ( messagedata.vm.dispatch )
+        {
+            importScripts( path + messagedata.vm.dispatch )
+        }
+
         vm = self.vm = new self[ messagedata.vm.className ]()
         vm.prepare( messagedata.data, {
-            Glk: Glk,
+            GiDispa,
+            Glk,
+            dirname: path,
         })
     }
 
@@ -60,8 +72,9 @@ function onMessage( message )
     {
         Glk.init({
             Dialog: {},
-            GlkOte: GlkOte,
-            vm: vm,
+            GiDispa,
+            GlkOte,
+            vm,
         })
     }
 

@@ -3,11 +3,13 @@
 Game controller
 ===============
 
-Copyright (c) 2017 Dannii Willis
+Copyright (c) 2018 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
+
+import { httpd } from '../common/plugins.mjs'
 
 export default class Game
 {
@@ -62,13 +64,14 @@ export default class Game
     {
         this.page = await this.nav[ this.direct ? 'replacePage' : 'pushPage' ]( 'game.html', { animation: 'none' } )
         this.iframe = document.getElementById( 'glkote' )
+        this.iframe.src = httpd.url + '/game/glkote.html'
         window.addEventListener( 'message', message => this.onIframeMessage( message ) )
     }
 
     async setupWorker( game )
     {
         // Relative to the .html, not to the .js
-        const worker = new Worker( 'game/worker.js', { name: game.format.engines[0].id } )
+        const worker = new Worker( httpd.url + '/game/worker.js', { name: game.format.engines[0].id } )
         worker.addEventListener( 'error', async err => await this.handleWorkerError( err ) )
         worker.addEventListener( 'message', message => this.onWorkerMessage( message ) )
         worker.postMessage({

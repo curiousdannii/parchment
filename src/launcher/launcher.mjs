@@ -3,13 +3,13 @@
 The Parchment launcher
 ======================
 
-Copyright (c) 2017 Dannii Willis
+Copyright (c) 2018 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import * as plugins from './plugins.mjs'
+import * as plugins from '../common/plugins.mjs'
 import * as runner from './runner.mjs'
 
 launcher()
@@ -18,7 +18,8 @@ async function launcher()
 {
     try
     {
-        await plugins.deviceready
+        await plugins.deviceready()
+        await plugins.startHttpd()
         const intent = await plugins.getIntent()
 
         // We are being asked to open a file
@@ -40,5 +41,6 @@ async function launcher()
             messageHTML: message,
         })
         $( '#welcome' ).append( message )
+        throw err
     }
 }
