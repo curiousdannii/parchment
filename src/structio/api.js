@@ -131,6 +131,13 @@ StructIO = Object.subClass({
 						io: this,
 						order: order
 					});
+				// Trigger for If-recorder
+				$doc.trigger(
+				{
+					type: 'TextOutput',
+					io: this,
+					output: order
+				});
 			}
 			
 			if ( code == 'clear' )
