@@ -66,6 +66,7 @@
 }
 
 .BufferLine {
+  white-space: pre-wrap; /* required for spaces to work right */
 }
 
 .GridWindow {
@@ -163,6 +164,7 @@
 }
 
 .GraphicsWindow canvas {
+  display: block;
   background-color: white;
 }
 
@@ -298,6 +300,7 @@
 }
 
 #dialog .DiaDisplayText {
+  font-family: inherit;
   height: 200px;
   padding: 4px 8px;
   overflow: scroll;   /* vertical scrollbar is mandatory */

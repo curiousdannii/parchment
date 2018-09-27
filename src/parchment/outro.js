@@ -40,7 +40,7 @@ $(function()
 	// Add the Analytics tracker, but only if we're at iplayif.com
 	if ( location.href.indexOf( 'iplayif.com' ) != -1 )
 	{
-		$.getScript( 'http://google-analytics.com/ga.js', function(){_gat._getTracker( 'UA-7949545-3' )._trackPageview();} );
+		$.getScript( 'https://google-analytics.com/ga.js', function(){_gat._getTracker( 'UA-7949545-3' )._trackPageview();} );
 	}
 });
 

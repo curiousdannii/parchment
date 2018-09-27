@@ -64,7 +64,7 @@ window.parchment = {
 		panels: [ 'ifdb', 'url', 'about' ],
 		
 		// URL of proxy server to use for files we can't directly load
-		proxy_url: 'https://zcode.appspot.com/proxy/'
+		proxy_url: 'https://proxy.iplayif.com/proxy/'
 	},
 
 	// Classes etc
