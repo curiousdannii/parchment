@@ -11,7 +11,7 @@ https://github.com/curiousdannii/parchment
 
 html
 {
-	overflow-y: scroll;
+	overflow-y: auto;
 	-webkit-text-size-adjust: none;
 }
 
