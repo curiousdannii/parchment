@@ -160,7 +160,7 @@ TextInput = Object.subClass({
 		
 		// Find the element which we calculate scroll offsets from
 		// For now just decide by browser
-		self.scrollParent = /edge/i.test( navigator.userAgent ) ? $body : $( 'html' );
+		self.scrollParent = $( 'html, body' );
 	},
 	
 	// Cleanup so we can deconstruct
