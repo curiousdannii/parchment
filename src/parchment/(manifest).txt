@@ -47,6 +47,12 @@ z
 	<script src="interpreter/jquery.min.js"></script>
 	<script src="interpreter/parchment.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="interpreter/parchment.min.css">
+	<style type="text/css">
+		#gameport {
+			width: auto;
+			overflow: visible;
+		}
+	</style>
 	<script>
 		parchment_options = {
 			default_story: [ "interpreter/[ENCODEDSTORYFILE]" ],
