@@ -1,4 +1,4 @@
-/* 
+/*
 
 StructIO styles
 ===============
@@ -24,6 +24,11 @@ https://github.com/curiousdannii/parchment
 	font: inherit;
 	outline: 0;
 	padding: 0;
+}
+
+.lastinput
+{
+	display: inline-block;
 }
 
 /* Character input (to be added to the above) */

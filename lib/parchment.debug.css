@@ -3,7 +3,7 @@
 Parchment
 =========
 
-Built: 2019-09-16
+Built: 2019-09-25
 
 Copyright (c) 2008-2019 The Parchment Contributors
 BSD licenced
@@ -96,7 +96,7 @@ body
     padding: 10px;
     margin: 10px;
 }
-/* 
+/*
 
 StructIO styles
 ===============
@@ -122,6 +122,11 @@ https://github.com/curiousdannii/parchment
 	font: inherit;
 	outline: 0;
 	padding: 0;
+}
+
+.lastinput
+{
+	display: inline-block;
 }
 
 /* Character input (to be added to the above) */
