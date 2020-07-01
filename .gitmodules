@@ -1,0 +1,9 @@
+[submodule "src/upstream/ifvms.js"]
+	path = src/upstream/ifvms.js
+	url = git@github.com:curiousdannii/ifvms.js.git
+[submodule "src/upstream/glkote"]
+	path = src/upstream/glkote
+	url = git@github.com:curiousdannii/glkote.git
+[submodule "src/upstream/quixe"]
+	path = src/upstream/quixe
+	url = https://github.com/erkyrath/quixe.git
