@@ -6,4 +6,4 @@
 	url = git@github.com:curiousdannii/glkote.git
 [submodule "src/upstream/quixe"]
 	path = src/upstream/quixe
-	url = https://github.com/erkyrath/quixe.git
+	url = git@github.com:curiousdannii/quixe.git
