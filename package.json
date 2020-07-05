@@ -19,5 +19,8 @@
     "copy-webpack-plugin": "^6.0.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12"
+  },
+  "scripts": {
+    "package-inform7": "zip -j dist/parchment-for-inform7.zip dist/\\(manifest\\).txt dist/dialog.css dist/glkote.css dist/jquery.min.js dist/main.js dist/resourcemap.js dist/waiting.gif"
   }
 }
