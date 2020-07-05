@@ -4,7 +4,7 @@ module.exports = {
     entry: './src/index.js',
     mode: 'production',
     optimization: {
-        minimize: false
+        //minimize: false
     },
     output: {
         filename: 'main.js',
@@ -17,11 +17,11 @@ module.exports = {
     plugins: [
         new CopyPlugin({
             patterns: [
+                { from: 'src/(manifest).txt', to: '' },
                 { from: 'src/upstream/glkote/dialog.css', to: '' },
                 { from: 'src/upstream/glkote/jquery.min.js', to: '' },
                 { from: 'src/upstream/glkote/waiting.gif', to: '' },
-                { from: 'src/upstream/glkote/glkote.css', to: '' },
-                { from: 'tests/troll.zblorb.js', to: '' },
+                { from: 'src/upstream/quixe/media/resourcemap.js', to: '' },
             ],
         })
     ],
