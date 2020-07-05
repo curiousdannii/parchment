@@ -20,7 +20,7 @@ module.exports = {
                 { from: 'src/upstream/glkote/dialog.css', to: '' },
                 { from: 'src/upstream/glkote/jquery.min.js', to: '' },
                 { from: 'src/upstream/glkote/waiting.gif', to: '' },
-                { from: 'src/upstream/quixe/media/i7-glkote.css', to: '' },
+                { from: 'src/upstream/glkote/glkote.css', to: '' },
                 { from: 'tests/troll.zblorb.js', to: '' },
             ],
         })
