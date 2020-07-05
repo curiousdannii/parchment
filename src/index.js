@@ -13,12 +13,12 @@ import Dialog from './upstream/glkote/dialog.js'
 import Glk from './upstream/glkote/glkapi.js'
 import GlkOte from './upstream/glkote/glkote.js'
 
-/*import Quixe from './upstream/quixe/src/quixe/quixe.js'
-import QuixeDispatch from './upstream/quixe/src/quixe/gi_dispa.js'
-import QuixeLoad from './upstream/quixe/src/quixe/gi_load.js'*/
-
 import ZVM from './upstream/ifvms.js/src/zvm.js'
 import ZVMDispatch from './upstream/ifvms.js/src/zvm/dispatch.js'
+
+import Quixe from './upstream/quixe/src/quixe/quixe.js'
+import QuixeDispatch from './upstream/quixe/src/quixe/gi_dispa.js'
+import QuixeLoad from './upstream/quixe/src/quixe/gi_load.js'
 
 // Text to byte array and vice versa
 function text_to_array(text)
@@ -53,7 +53,7 @@ function launch()
     }
     else if (/gblorb|ulx/.test(storyfilepath))
     {
-        format = 'glulxe'
+        format = 'glulx'
     }
     else
     {
@@ -89,6 +89,24 @@ function launch()
             vm.prepare(data_u8array, options)
             Glk.init(options)
         }
+
+        if (format === 'glulx')
+        {
+            window.GiDispa = QuixeDispatch.GiDispa
+            window.Glk = Glk
+            window.GlkOte = GlkOte
+
+            QuixeLoad.GiLoad.load_run({
+                Dialog: Dialog,
+                GiDispa: QuixeDispatch.GiDispa,
+                GlkOte: GlkOte,
+                io: Glk,
+                spacing: 0,
+                vm: Quixe.Quixe,
+            }, data_array, 'array')
+        }
+    }).catch(err => {
+        GlkOte.error(err)
     })
 }
 
