@@ -97,6 +97,7 @@ function launch()
             window.GlkOte = GlkOte
 
             QuixeLoad.GiLoad.load_run({
+                blorb_gamechunk_type: 'GLUL',
                 Dialog: Dialog,
                 GiDispa: QuixeDispatch.GiDispa,
                 GlkOte: GlkOte,
