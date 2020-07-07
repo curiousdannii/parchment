@@ -14,7 +14,7 @@
             $('#file-upload').change(async ev => {
                 const file = $('#file-upload').get(0).files[0]
                 const data = new Uint8Array(await file.arrayBuffer())
-                const textdata = data.map(x => String.fromCharCode(x)).join('')
+                const textdata = Array.from(data).map(x => String.fromCharCode(x)).join('')
                 const result = `processBase64Zcode('${btoa(textdata)}')`
                 $('#download-link')
                     .prop('href', `data:text/javascript,${result}`)
