@@ -17,11 +17,9 @@ module.exports = {
     plugins: [
         new CopyPlugin({
             patterns: [
-                { from: 'src/(manifest).txt', to: '' },
                 { from: 'src/upstream/glkote/dialog.css', to: '' },
                 { from: 'src/upstream/glkote/jquery.min.js', to: '' },
                 { from: 'src/upstream/glkote/waiting.gif', to: '' },
-                { from: 'src/upstream/quixe/media/resourcemap.js', to: '' },
             ],
         })
     ],
