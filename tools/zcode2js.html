@@ -2,32 +2,34 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<link rel="stylesheet" type="text/css" href="zcode2js.css">
 	<title>zcode2js</title>
-	<script src="../lib/jquery.min.js"></script>
-	<script src="../src/plugins/class.js"></script>
-	<script src="../src/plugins/iff.js"></script>
-	<script src="../src/parchment/file.js"></script>
-	<script src="zcode2js.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        body {max-width: 900px; margin: 0 auto;}
+        h1 {text-align: center;}
+        .hidden {display: none;}
+    </style>
+    <script type="text/javascript">
+        $(() => {
+            $('#file-upload').change(async ev => {
+                const file = $('#file-upload').get(0).files[0]
+                const data = new Uint8Array(await file.arrayBuffer())
+                const result = `processBase64Zcode('${ btoa(String.fromCharCode.apply( 1, data )) }')`
+                $('#download-link')
+                    .prop('href', `data:text/javascript,${result}`)
+                    .prop('download', `${file.name}.js`)
+                    .text(`${file.name}.js`)
+                    $('#results').show()
+            })
+        })
+    </script>
 </head>
 <body>
-<h1>zcode2js</h1>
-<div id="content">
-	<p>One of the minor downsides of having Parchment transparently use <tt>zcode.appspot.com</tt> to convert your Z-machine story, as described in <a href="zcode.html">zcode</a>, is that it takes additional time for the user's browser to ask the web service for your story, especially if the web service is overloaded with requests.  If you want to improve load time and reliability, you may want to consider converting your Z-machine story into a JavaScript representation Parchment can understand beforehand.  If you'd like to try this, please load your Z-code file in the field below.</p>
+    <h1>zcode2js</h1>
+	<p>In order for Parchment to run from a <code>file:</code> URL the storyfile must be converted to JS. If you use Inform 7, then it takes care of the conversion for you. If you want to convert a preexisting storyfile, then you can use this tool.</p>
 	<div class="input"><input id="file-upload" type="file" size="60"></div>
-	<div id="post-file-upload">
-		<p>You can download the Javascript version of your story by clicking <a id="js-file-download">here</a>.</p>
+	<div id="results" class="hidden">
+		<p>Result: <a id="download-link"></a></p>
 	</div>
-	<div id="post-file-upload-failed">
-		<p>My apologies for the inconvenience, but I can't seem to access the contents of the file you selected.  You may want to get <a href="http://www.getfirefox.com">Firefox 3</a>, which this page is guaranteed to work with.</p>
-	</div>
-	<p>Alternatively, if you like using the command-line, you can use the <a href="zcode2js.py">zcode2js.py</a> Python script.</p>
-	<p>Once you have the Javascript version of your story, you should upload it to a server.  Just make sure the file has a <tt>.js</tt> extension and enter the URL to the story in the field below.</p>
-	<div class="input"><input id="url-entry" type="text" size="60"></div>
-	<div id="post-url-entry">
-		<p>The link for playing your story is:</p>
-		<p><a id="play-url"></a></p>
-	</div>
-</div>
 </body>
 </html>
