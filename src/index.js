@@ -100,8 +100,11 @@ function launch()
                 blorb_gamechunk_type: 'GLUL',
                 Dialog: Dialog,
                 GiDispa: QuixeDispatch.GiDispa,
+                GiLoad: QuixeLoad.GiLoad,
                 GlkOte: GlkOte,
+                image_info_map: 'StaticImageInfo',
                 io: Glk,
+                set_page_title: false,
                 spacing: 0,
                 vm: Quixe.Quixe,
             }, data_array, 'array')
