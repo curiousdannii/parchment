@@ -143,7 +143,7 @@
 }
 
 .GridWindow .Input {
-  font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace; /* necessary! */
+  font-family: var(--glkote-mono-family); /* necessary! */
   font-size: 14px;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .Style_preformatted {
-  font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace;
+  font-family: var(--glkote-mono-family);
 }
 
 .Style_header {
