@@ -81,7 +81,7 @@ function launch()
             const options = {
                 vm: vm,
                 Dialog: Dialog,
-                Dispatch: ZVMDispatch,
+                GiDispa: new ZVMDispatch(),
                 Glk: Glk,
                 GlkOte: GlkOte,
             }

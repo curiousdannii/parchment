@@ -79,11 +79,14 @@
 }
 
 .GridWindow {
-  background: #D0D0C0;
   overflow: hidden;
-  font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace; /* necessary! */
+  font-family: var(--glkote-mono-family); /* necessary! */
   font-size: 14px;
   padding: 6px 10px 6px 10px;
+}
+
+.GridWindow .reverse {
+  background: #D0D0C0;
 }
 
 .GridLine {
