@@ -14,11 +14,6 @@ const webconfig = {
     output: {
         filename: 'web/[name].js',
     },
-    performance: {
-        hints: false,
-        maxEntrypointSize: 512000,
-        maxAssetSize: 512000
-    },
     plugins: [
         new CopyPlugin({
             patterns: [
