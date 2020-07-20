@@ -9,6 +9,14 @@
 :root {
   --glkote-mono-family: "Source Code Pro", Monaco, Courier, monospace;
   --glkote-prop-family: "Lora", Georgia, serif;
+  --glkote-buffer-bg: #fff;
+  --glkote-buffer-fg: #222;
+  --glkote-buffer-reverse-bg: #222;
+  --glkote-buffer-reverse-fg: #ddd;
+  --glkote-grid-bg: #fff;
+  --glkote-grid-fg: #222;
+  --glkote-grid-reverse-bg: #222;
+  --glkote-grid-reverse-fg: #ddd;
 }
 
 #windowport {
@@ -57,10 +65,11 @@
      can change that, but don't touch the position or margin. */
   position: absolute;
   margin: 0px;
-  background: white;
+  background: var(--glkote-buffer-bg);
 }
 
 .BufferWindow {
+  color: var(--glkote-buffer-fg);
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
   font-family: var(--glkote-prop-family);
@@ -70,8 +79,8 @@
 }
 
 .BufferWindow .reverse {
-  background-color: #000;
-  color: #ffe;
+  background: var(--glkote-buffer-reverse-bg);
+  color: var(--glkote-buffer-reverse-fg);
 }
 
 .BufferLine {
@@ -79,14 +88,21 @@
 }
 
 .GridWindow {
+  background: var(--glkote-grid-bg);
+  color: var(--glkote-grid-fg);
   overflow: hidden;
   font-family: var(--glkote-mono-family); /* necessary! */
   font-size: 14px;
   padding: 6px 10px 6px 10px;
 }
 
+.GridWindow.reverse {
+  background: var(--glkote-grid-reverse-bg);
+}
+
 .GridWindow .reverse {
-  background: #D0D0C0;
+  background: var(--glkote-grid-reverse-bg);
+  color: var(--glkote-grid-reverse-fg);
 }
 
 .GridLine {
@@ -177,7 +193,7 @@
 
 .GraphicsWindow canvas {
   display: block;
-  background-color: white;
+  background-color: var(--glkote-buffer-bg);
 }
 
 /* The following are the standard Glk styles. */
