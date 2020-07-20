@@ -1,7 +1,7 @@
 /*
 
-Parchment Luancher
-==================
+Parchment Launcher for Inform 7
+===============================
 
 Copyright (c) 2020 Dannii Willis
 MIT licenced
@@ -9,16 +9,9 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import Dialog from './upstream/glkote/dialog.js'
-import Glk from './upstream/glkote/glkapi.js'
-import GlkOte from './upstream/glkote/glkote.js'
-
-import ZVM from './upstream/ifvms.js/src/zvm.js'
-import ZVMDispatch from './upstream/ifvms.js/src/zvm/dispatch.js'
-
-import Quixe from './upstream/quixe/src/quixe/quixe.js'
-import QuixeDispatch from './upstream/quixe/src/quixe/gi_dispa.js'
-import QuixeLoad from './upstream/quixe/src/quixe/gi_load.js'
+import Dialog from '../upstream/glkote/dialog.js'
+import Glk from '../upstream/glkote/glkapi.js'
+import GlkOte from '../upstream/glkote/glkote.js'
 
 // Text to byte array and vice versa
 function text_to_array(text)
@@ -45,7 +38,7 @@ function launch()
     }
 
     // Discriminate
-    const storyfilepath = window.parchment_options.story[0]
+    const storyfilepath = window.parchment_options.default_story[0]
     let format
     if (/zblorb|z3|z4|z5|z8/.test(storyfilepath))
     {
@@ -60,28 +53,37 @@ function launch()
         return GlkOte.error('Unknown storyfile format')
     }
 
-    $.ajax({
+    // When running from a file: URL we must use <script> tags and nothing else
+    $.ajaxSetup({
         cache: true,
         crossDomain: true,
-        dataType: "jsonp",
-        jsonp: false,
-        jsonpCallback: "processBase64Zcode",
-        url: storyfilepath,
+    })
+
+    $.getScript(window.parchment_options.lib_path + (format === 'zcode' ? 'zvm.js' : 'quixe.js'))
+    .catch(err => {
+        GlkOte.error(`Error loading engine: ${err.status}`)
+    }).then(() => {
+        return $.ajax({
+            dataType: "jsonp",
+            jsonp: false,
+            jsonpCallback: "processBase64Zcode",
+            url: storyfilepath,
+        })
     }).catch(err => {
-        GlkOte.error(`Error loading storyfile: ${err.status}`)
+            GlkOte.error(`Error loading storyfile: ${err.status}`)
     }).then(data => {
         const base64_decoded = atob(data)
         const data_array = text_to_array(base64_decoded)
         
         if (format === 'zcode')
         {
-            const vm = new ZVM()
+            const vm = new window.ZVM()
             const data_u8array = Uint8Array.from(data_array)
 
             const options = {
                 vm: vm,
                 Dialog: Dialog,
-                GiDispa: new ZVMDispatch(),
+                GiDispa: new window.ZVMDispatch(),
                 Glk: Glk,
                 GlkOte: GlkOte,
             }
@@ -92,21 +94,20 @@ function launch()
 
         if (format === 'glulx')
         {
-            window.GiDispa = QuixeDispatch.GiDispa
             window.Glk = Glk
             window.GlkOte = GlkOte
 
-            QuixeLoad.GiLoad.load_run({
+            window.GiLoad.load_run({
                 blorb_gamechunk_type: 'GLUL',
                 Dialog: Dialog,
-                GiDispa: QuixeDispatch.GiDispa,
-                GiLoad: QuixeLoad.GiLoad,
+                GiDispa: window.GiDispa,
+                GiLoad: window.GiLoad,
                 GlkOte: GlkOte,
                 image_info_map: 'StaticImageInfo',
                 io: Glk,
                 set_page_title: false,
                 spacing: 0,
-                vm: Quixe.Quixe,
+                vm: window.Quixe,
             }, data_array, 'array')
         }
     }).catch(err => {

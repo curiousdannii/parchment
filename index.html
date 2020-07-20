@@ -3,15 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>Parchment</title>
-    <script src="jquery.min.js"></script>
-    <script src="main.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="glkote.css">
-    <link rel="stylesheet" href="dialog.css">
+    <script src="dist/web/jquery.min.js"></script>
+    <script src="dist/web/main.js"></script>
+    <link rel="stylesheet" href="src/web/style.css">
+    <link rel="stylesheet" href="src/web/glkote.css">
+    <link rel="stylesheet" href="dist/web/dialog.css">
     <meta name="viewport" content="width=device-width,user-scalable=no">
     <script>
         parchment_options = {
-            story: [ "./gargoyle-text.ulx.js" ],
+            default_story: [ "./test1.gblorb.js" ],
+            lib_path: 'dist/web/',
         };
     </script>
 </head>
@@ -23,7 +24,7 @@
             </noscript>
         </div>
         <div id="loadingpane">
-            <img src="waiting.gif" alt="LOADING"><br>
+            <img src="dist/web/waiting.gif" alt="LOADING"><br>
             <em>&nbsp;&nbsp;&nbsp;Loading...</em>
         </div>
         <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>

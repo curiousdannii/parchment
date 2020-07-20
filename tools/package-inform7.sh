@@ -1,14 +1,12 @@
 #!/bin/sh
 
-npx webpack
+npx webpack --config-name inform7
 
-mkdir -p dist/Parchment
-cp src/\(manifest\).txt dist/Parchment
-cp dist/dialog.css dist/Parchment
-cp dist/glkote.css dist/Parchment
-cp dist/jquery.min.js dist/Parchment
-cp dist/main.js dist/Parchment
-cp src/upstream/quixe/media/resourcemap.js dist/Parchment
-cp dist/waiting.gif dist/Parchment
+sed "s/DATE/$(date '+%Y.%m')/" src/inform7/manifest.txt > 'dist/inform7/Parchment/(manifest).txt'
+cp src/upstream/glkote/dialog.css dist/inform7/Parchment
+cp src/web/glkote.css dist/inform7/Parchment
+cp src/upstream/glkote/jquery.min.js dist/inform7/Parchment
+cp src/upstream/quixe/media/resourcemap.js dist/inform7/Parchment
+cp src/upstream/glkote/waiting.gif dist/inform7/Parchment
 
-cd dist && zip -r parchment-for-inform7.zip Parchment
+cd dist/inform7/ && zip -r parchment-for-inform7.zip Parchment
