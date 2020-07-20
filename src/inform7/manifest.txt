@@ -9,7 +9,7 @@
 ! of the play page:
 
 [INTERPRETERVERSION]
-Parchment for Inform 7
+Parchment for Inform 7 (DATE)
 []
 
 [INTERPRETERURL]
@@ -51,7 +51,8 @@ gz
     <script src="interpreter/resourcemap.js" type="text/javascript"></script>
     <script>
         parchment_options = {
-            story: [ "interpreter/[ENCODEDSTORYFILE]" ],
+            default_story: [ "interpreter/[ENCODEDSTORYFILE]" ],
+            lib_path: 'interpreter/',
         };
     </script>
 []
@@ -105,4 +106,6 @@ glkote.css
 jquery.min.js
 main.js
 resourcemap.js
+quixe.js
 waiting.gif
+zvm.js

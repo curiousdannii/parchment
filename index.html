@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Parchment</title>
+    <script src="dist/web/jquery.min.js"></script>
+    <script src="dist/web/main.js"></script>
+    <link rel="stylesheet" href="src/web/style.css">
+    <link rel="stylesheet" href="src/web/glkote.css">
+    <link rel="stylesheet" href="dist/web/dialog.css">
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    <script>
+        parchment_options = {
+            default_story: [ "./test1.gblorb.js" ],
+            lib_path: 'dist/web/',
+        };
+    </script>
+</head>
+<body>
+    <div id="gameport">
+        <div id="windowport">
+            <noscript>
+                <p>You'll need to turn on Javascript in your web browser to play this game.</p>
+            </noscript>
+        </div>
+        <div id="loadingpane">
+            <img src="dist/web/waiting.gif" alt="LOADING"><br>
+            <em>&nbsp;&nbsp;&nbsp;Loading...</em>
+        </div>
+        <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
+    </div>
+</body>
+</html>

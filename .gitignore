@@ -1,2 +1,8 @@
-dist
+dist/inform7/Parchment
 node_modules
+
+package-lock.json
+
+/*.js
+/*.ulx
+/*.z5
