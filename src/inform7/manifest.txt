@@ -48,6 +48,7 @@ gz
     <link rel="stylesheet" href="interpreter/dialog.css" type="text/css">
     <script src="interpreter/jquery.min.js"></script>
     <script src="interpreter/main.js"></script>
+    <script src="interpreter/ie.js" nomodule></script>
     <script src="interpreter/resourcemap.js" type="text/javascript"></script>
     <script>
         parchment_options = {
@@ -101,10 +102,10 @@ processBase64Zcode('
 ! Non-comment lines are the names of files which are copied across when the
 ! release is made. Anything not listed here won't be copied.
 
-dialog.css
-glkote.css
+ie.js
 jquery.min.js
 main.js
+parchment.css
 resourcemap.js
 quixe.js
 waiting.gif

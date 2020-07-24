@@ -16,11 +16,20 @@
   },
   "homepage": "https://github.com/curiousdannii/parchment#readme",
   "devDependencies": {
-    "copy-webpack-plugin": "^6.0.3",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "@rollup/stream": "git+https://github.com/andremacola/stream.git",
+    "esm": "^3.2.25",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-cli": "^2.3.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-terser": "^1.2.1",
+    "rollup": "^2.23.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "scripts": {
+    "gulp": "gulp",
     "inform7": "tools/package-inform7.sh"
   }
 }

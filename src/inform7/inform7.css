@@ -1,0 +1,4 @@
+/* Import all CSS for the Inform 7 template */
+
+@import url('../common/glkote.css');
+@import url('../upstream/glkote/dialog.css');

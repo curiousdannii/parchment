@@ -1,5 +1,5 @@
 /* Import all CSS for web */
 
 @import url('./parchment.css');
-@import url('./glkote.css');
+@import url('../common/glkote.css');
 @import url('../upstream/glkote/dialog.css');
