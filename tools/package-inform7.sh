@@ -1,10 +1,8 @@
 #!/bin/sh
 
-npx webpack --config-name inform7
+npm run gulp
 
 sed "s/DATE/$(date '+%Y.%m')/" src/inform7/manifest.txt > 'dist/inform7/Parchment/(manifest).txt'
-cp src/upstream/glkote/dialog.css dist/inform7/Parchment
-cp src/web/glkote.css dist/inform7/Parchment
 cp src/upstream/glkote/jquery.min.js dist/inform7/Parchment
 cp src/upstream/quixe/media/resourcemap.js dist/inform7/Parchment
 cp src/upstream/glkote/waiting.gif dist/inform7/Parchment
