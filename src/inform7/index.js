@@ -32,13 +32,15 @@ function text_to_array(text)
 
 function launch()
 {
-    if (!window.parchment_options)
+    const options = window.parchment_options
+
+    if (!options || !options.default_story)
     {
         return GlkOte.error('No storyfile specified')
     }
 
     // Discriminate
-    const storyfilepath = window.parchment_options.default_story[0]
+    const storyfilepath = options.default_story[0]
     let format
     if (/zblorb|z3|z4|z5|z8/.test(storyfilepath))
     {
@@ -59,7 +61,7 @@ function launch()
         crossDomain: true,
     })
 
-    $.getScript(window.parchment_options.lib_path + (format === 'zcode' ? 'zvm.js' : 'quixe.js'))
+    $.getScript(options.lib_path + (format === 'zcode' ? 'zvm.js' : 'quixe.js'))
     .catch(err => {
         GlkOte.error(`Error loading engine: ${err.status}`)
     }).then(() => {
@@ -80,16 +82,16 @@ function launch()
             const vm = new window.ZVM()
             const data_u8array = Uint8Array.from(data_array)
 
-            const options = {
+            const vm_options = Object.assign({}, options, {
                 vm: vm,
                 Dialog: Dialog,
                 GiDispa: new window.ZVMDispatch(),
                 Glk: Glk,
                 GlkOte: GlkOte,
-            }
+            })
 
-            vm.prepare(data_u8array, options)
-            Glk.init(options)
+            vm.prepare(data_u8array, vm_options)
+            Glk.init(vm_options)
         }
 
         if (format === 'glulx')
@@ -97,7 +99,7 @@ function launch()
             window.Glk = Glk
             window.GlkOte = GlkOte
 
-            window.GiLoad.load_run({
+            const vm_options = Object.assign({}, options, {
                 blorb_gamechunk_type: 'GLUL',
                 Dialog: Dialog,
                 GiDispa: window.GiDispa,
@@ -108,7 +110,9 @@ function launch()
                 set_page_title: false,
                 spacing: 0,
                 vm: window.Quixe,
-            }, data_array, 'array')
+            })
+
+            window.GiLoad.load_run(vm_options, data_array, 'array')
         }
     }).catch(err => {
         GlkOte.error(err)
