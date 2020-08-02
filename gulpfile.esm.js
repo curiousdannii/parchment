@@ -21,6 +21,10 @@ function css(opt)
 
 function js(opt)
 {
+    const terser_opts = {
+        module: opt.format === 'es',
+    }
+
     return opt.files.map(file => {
         const taskname = `${opt.target}-js-${file[0]}`
         gulp.task(taskname, () =>{
@@ -39,7 +43,7 @@ function js(opt)
             })
                 .pipe(source(`${file[0]}.js`))
                 .pipe(buffer())
-                .pipe(terser())
+                .pipe(terser(terser_opts))
                 .pipe(gulp.dest(opt.dest))
         })
         return taskname
@@ -57,12 +61,32 @@ const buildweb = gulp.parallel(
         dest: 'dist/web/',
         files: [
             ['ie', './src/common/ie.js'],
-            ['main', './src/inform7/index.js'],
-            ['quixe', './src/inform7/quixe.js'],
-            ['zvm', './src/inform7/zvm.js'],
+            ['main', './src/common/launcher.js'],
+            ['quixe', './src/common/quixe.js'],
+            ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
         target: 'web',
+    }),
+)
+
+const buildifcomp = gulp.parallel(
+    css({
+        dest: 'dist/ifcomp/',
+        output: 'web.css',
+        src: './src/web/web.css',
+        target: 'ifcomp',
+    }),
+    ...js({
+        dest: 'dist/ifcomp/',
+        files: [
+            ['ie', './src/common/ie.js'],
+            ['main', './src/common/launcher.js'],
+            ['quixe', './src/common/quixe.js'],
+            ['zvm', './src/common/zvm.js'],
+        ],
+        format: 'es',
+        target: 'ifcomp',
     }),
 )
 
@@ -86,6 +110,6 @@ const buildinform7 = gulp.parallel(
     }),
 )
 
-const build = gulp.parallel(buildweb, buildinform7)
+const build = gulp.parallel(buildweb, buildinform7, buildifcomp)
 
 export default build
