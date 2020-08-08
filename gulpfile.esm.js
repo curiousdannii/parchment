@@ -1,3 +1,4 @@
+import alias from '@rollup/plugin-alias'
 import buffer from 'vinyl-buffer'
 import cleanCSS from 'gulp-clean-css'
 import commonjs from 'rollup-plugin-commonjs'
@@ -6,6 +7,16 @@ import rename from 'gulp-rename'
 import rollup from '@rollup/stream'
 import source from 'vinyl-source-stream'
 import terser from 'gulp-terser'
+
+function copy(opt)
+{
+    const taskname = `${opt.target}-copy`
+    gulp.task(taskname, () => {
+        return gulp.src(opt.src)
+            .pipe(gulp.dest(opt.dest))
+    })
+    return taskname
+}
 
 function css(opt)
 {
@@ -38,6 +49,13 @@ function js(opt)
                     format: opt.format,
                 },
                 plugins: [
+                    alias({
+                        entries: [
+                            { find: 'crypto', replacement: '../../../common/dummy-node.js' },
+                            { find: 'fs', replacement: '../../../common/dummy-node.js' },
+                            { find: 'path', replacement: '../../../common/dummy-node.js' },
+                        ]
+                    }),
                     commonjs(),
                 ],
             })
@@ -51,6 +69,11 @@ function js(opt)
 }
 
 const buildweb = gulp.parallel(
+    copy({
+        dest: 'dist/web/',
+        src: './src/upstream/emglken/build/*.wasm',
+        target: 'web',
+    }),
     css({
         dest: 'dist/web/',
         output: 'web.css',
@@ -61,6 +84,7 @@ const buildweb = gulp.parallel(
         dest: 'dist/web/',
         files: [
             ['ie', './src/common/ie.js'],
+            ['glulxe', './src/upstream/emglken/src/glulxe.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
             ['zvm', './src/common/zvm.js'],
@@ -110,6 +134,6 @@ const buildinform7 = gulp.parallel(
     }),
 )
 
-const build = gulp.parallel(buildweb, buildinform7, buildifcomp)
+const build = gulp.parallel(buildweb, buildinform7)
 
 export default build
