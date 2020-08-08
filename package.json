@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/curiousdannii/parchment#readme",
   "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.1",
     "@rollup/stream": "git+https://github.com/andremacola/stream.git",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",

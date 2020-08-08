@@ -9,15 +9,17 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {fetch_file} from './file.js'
-
-import Dialog from '../upstream/glkote/dialog.js'
-import Glk from '../upstream/glkote/glkapi.js'
+import {fetch_storyfile, fetch_vm_resource} from './file.js'
+import formats from './formats.js'
 import GlkOte from '../upstream/glkote/glkote.js'
+
+const default_options = {
+    lib_path: 'dist/web/',
+}
 
 async function launch()
 {
-    const options = window.parchment_options
+    const options = Object.assign(default_options, window.parchment_options)
 
     if (!options || !options.default_story)
     {
@@ -27,70 +29,34 @@ async function launch()
     // Discriminate
     const storyfilepath = options.default_story[0]
     let format
-    if (/zblorb|z3|z4|z5|z8/.test(storyfilepath))
+    for (const formatspec of formats)
     {
-        format = 'zcode'
+        if (formatspec.extensions.test(storyfilepath))
+        {
+            format = formatspec
+            break
+        }
     }
-    else if (/gblorb|ulx/.test(storyfilepath))
-    {
-        format = 'glulx'
-    }
-    else
+    if (!format)
     {
         return GlkOte.error('Unknown storyfile format')
     }
+    const engine = format.engines[1]
 
     try
     {
-        const [file_data, vm_module] = await Promise.all([
-            fetch_file(storyfilepath),
-            import(`./${format === 'zcode' ? 'zvm.js' : 'quixe.js'}`),
+
+        const requires = await Promise.all([
+            fetch_storyfile(storyfilepath),
+            ...engine.load.map(path => fetch_vm_resource(options, path))
         ])
 
-        if (format === 'zcode')
-        {
-            const vm = new vm_module.ZVM()
-
-            const vm_options = Object.assign({}, options, {
-                vm: vm,
-                Dialog: Dialog,
-                GiDispa: new vm_module.ZVMDispatch(),
-                Glk: Glk,
-                GlkOte: GlkOte,
-            })
-
-            vm.prepare(file_data, vm_options)
-            Glk.init(vm_options)
-        }
-
-        if (format === 'glulx')
-        {
-            const data_array = Array.from(file_data)
-
-            window.GiDispa = vm_module.GiDispa
-            window.GiLoad = vm_module.GiLoad
-            window.Glk = Glk
-            window.GlkOte = GlkOte
-
-            const vm_options = Object.assign({}, options, {
-                blorb_gamechunk_type: 'GLUL',
-                Dialog: Dialog,
-                GiDispa: vm_module.GiDispa,
-                GiLoad: vm_module.GiLoad,
-                GlkOte: GlkOte,
-                image_info_map: 'StaticImageInfo',
-                io: Glk,
-                set_page_title: false,
-                spacing: 0,
-                vm: vm_module.Quixe,
-            })
-
-            vm_module.GiLoad.load_run(vm_options, data_array, 'array')
-        }
+        await engine.start(options, requires)
     }
     catch (err)
     {
         GlkOte.error(err)
+        throw err
     }
 }
 
