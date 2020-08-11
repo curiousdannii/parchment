@@ -1,6 +1,6 @@
 #!/bin/sh
 
-npm run gulp
+npm run gulp inform7
 
 sed "s/DATE/$(date '+%Y.%m')/" src/inform7/manifest.txt > 'dist/inform7/Parchment/(manifest).txt'
 cp src/upstream/glkote/jquery.min.js dist/inform7/Parchment

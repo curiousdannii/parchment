@@ -71,7 +71,7 @@ function js(opt)
 const buildweb = gulp.parallel(
     copy({
         dest: 'dist/web/',
-        src: './src/upstream/emglken/build/*.wasm',
+        src: './src/upstream/emglken/build/*(glulxe|tads)-core.wasm',
         target: 'web',
     }),
     css({
@@ -87,6 +87,7 @@ const buildweb = gulp.parallel(
             ['glulxe', './src/upstream/emglken/src/glulxe.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
+            ['tads', './src/upstream/emglken/src/tads.js'],
             ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
@@ -134,6 +135,9 @@ const buildinform7 = gulp.parallel(
     }),
 )
 
-const build = gulp.parallel(buildweb, buildinform7)
-
-export default build
+export default buildweb
+export {
+    buildifcomp as ifcomp,
+    buildinform7 as inform7,
+    buildweb as web,
+}

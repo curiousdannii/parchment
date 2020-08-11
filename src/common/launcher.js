@@ -41,7 +41,7 @@ async function launch()
     {
         return GlkOte.error('Unknown storyfile format')
     }
-    const engine = format.engines[1]
+    const engine = format.engines[0]
 
     try
     {

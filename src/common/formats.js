@@ -13,6 +13,22 @@ import Dialog from '../upstream/glkote/dialog.js'
 import Glk from '../upstream/glkote/glkapi.js'
 import GlkOte from '../upstream/glkote/glkote.js'
 
+async function generic_emglken_vm(options, requires)
+{
+    const [file_data, engine, wasmBinary] = requires
+
+    const vm_options = Object.assign({}, options, {
+        Dialog,
+        Glk: {},
+        GlkOte,
+        wasmBinary,
+    })
+
+    const vm = new engine.default()
+    vm.prepare(file_data, vm_options)
+    await vm.start()
+}
+
 const formats = [
     {
         id: 'glulx',
@@ -51,21 +67,19 @@ const formats = [
             {
                 id: 'glulxe',
                 load: ['./glulxe.js', './glulxe-core.wasm'],
-                start: async (options, requires) =>
-                {
-                    const [file_data, glulxe, wasmBinary] = requires
-        
-                    const vm_options = Object.assign({}, options, {
-                        Dialog,
-                        Glk: {},
-                        GlkOte,
-                        wasmBinary,
-                    })
+                start: generic_emglken_vm,
+            },
+        ],
+    },
 
-                    const vm = new glulxe.default()
-                    vm.prepare(file_data, vm_options)
-                    await vm.start()
-                },
+    {
+        id: 'tads',
+        extensions: /t3/,
+        engines: [
+            {
+                id: 'tads',
+                load: ['./tads.js', './tads-core.wasm'],
+                start: generic_emglken_vm,
             },
         ],
     },
