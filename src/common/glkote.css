@@ -114,7 +114,8 @@
      prompt). Without this, they'd be flush against the bottom of the
      window, which would be ugly. Do not modify this CSS class. */
   position: relative;
-  padding-bottom: 14px;
+  /* Commented out until https://github.com/erkyrath/glkote/issues/42 has a proper solution */
+  /*padding-bottom: 14px;*/
 }
 
 .MorePrompt {
