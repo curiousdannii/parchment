@@ -19,6 +19,7 @@ async function generic_emglken_vm(options, requires)
 
     const vm_options = Object.assign({}, options, {
         Dialog,
+        do_vm_autosave: 1,
         Glk: {},
         GlkOte,
         wasmBinary,
@@ -31,6 +32,18 @@ async function generic_emglken_vm(options, requires)
 
 const formats = [
     {
+        id: 'hugo',
+        extensions: /hex/,
+        engines: [
+            {
+                id: 'hugo',
+                load: ['./hugo.js', './hugo-core.wasm'],
+                start: generic_emglken_vm,
+            },
+        ],
+    },
+
+    {
         id: 'glulx',
         extensions: /gblorb|ulx/,
         engines: [
@@ -42,14 +55,17 @@ const formats = [
                     const [file_data, quixe] = requires
                     const data_array = Array.from(file_data)
 
+                    // Quixe still expects many things to be global variables
+                    window.Dialog = Dialog
                     window.GiDispa = quixe.GiDispa
                     window.GiLoad = quixe.GiLoad
                     window.Glk = Glk
                     window.GlkOte = GlkOte
-        
+
                     const vm_options = Object.assign({}, options, {
                         blorb_gamechunk_type: 'GLUL',
                         Dialog,
+                        do_vm_autosave: 1,
                         GiDispa: quixe.GiDispa,
                         GiLoad: quixe.GiLoad,
                         GlkOte,
@@ -59,7 +75,7 @@ const formats = [
                         spacing: 0,
                         vm: quixe.Quixe,
                     })
-        
+
                     quixe.GiLoad.load_run(vm_options, data_array, 'array')
                 },
             },
@@ -74,7 +90,7 @@ const formats = [
 
     {
         id: 'tads',
-        extensions: /t3/,
+        extensions: /gam|t3/,
         engines: [
             {
                 id: 'tads',
@@ -95,15 +111,16 @@ const formats = [
                 {
                     const [file_data, zvm] = requires
 
+                    const vm = new zvm.ZVM()
                     const vm_options = Object.assign({}, options, {
                         vm,
                         Dialog,
+                        do_vm_autosave: 1,
                         GiDispa: new zvm.ZVMDispatch(),
                         Glk,
                         GlkOte,
                     })
 
-                    const vm = new zvm.ZVM()
                     vm.prepare(file_data, vm_options)
                     Glk.init(vm_options)
                 },
