@@ -34,6 +34,7 @@ function js(opt)
 {
     const terser_opts = {
         module: opt.format === 'es',
+        toplevel: true,
     }
 
     return opt.files.map(file => {
@@ -46,6 +47,7 @@ function js(opt)
                     warn(warning)
                 },
                 output: {
+                    exports: 'auto',
                     format: opt.format,
                 },
                 plugins: [
@@ -71,7 +73,7 @@ function js(opt)
 const buildweb = gulp.parallel(
     copy({
         dest: 'dist/web/',
-        src: './src/upstream/emglken/build/*(glulxe|tads)-core.wasm',
+        src: './src/upstream/emglken/build/*-core.wasm',
         target: 'web',
     }),
     css({
@@ -83,8 +85,10 @@ const buildweb = gulp.parallel(
     ...js({
         dest: 'dist/web/',
         files: [
-            ['ie', './src/common/ie.js'],
+            ['git', './src/upstream/emglken/src/git.js'],
             ['glulxe', './src/upstream/emglken/src/glulxe.js'],
+            ['hugo', './src/upstream/emglken/src/hugo.js'],
+            ['ie', './src/common/ie.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
             ['tads', './src/upstream/emglken/src/tads.js'],
@@ -135,9 +139,29 @@ const buildinform7 = gulp.parallel(
     }),
 )
 
+const buildlectrote = gulp.parallel(
+    copy({
+        dest: 'dist/lectrote/',
+        src: './src/upstream/emglken/build/*-core.wasm',
+        target: 'lectrote',
+    }),
+    ...js({
+        dest: 'dist/lectrote/',
+        files: [
+            ['git', './src/upstream/emglken/src/git.js'],
+            ['glulxe', './src/upstream/emglken/src/glulxe.js'],
+            ['hugo', './src/upstream/emglken/src/hugo.js'],
+            ['tads', './src/upstream/emglken/src/tads.js'],
+        ],
+        format: 'cjs',
+        target: 'lectrote',
+    }),
+)
+
 export default buildweb
 export {
     buildifcomp as ifcomp,
     buildinform7 as inform7,
     buildweb as web,
+    buildlectrote as lectrote,
 }
