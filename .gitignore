@@ -1,5 +1,6 @@
 dist/ifcomp
 dist/inform7/Parchment
+dist/lectrote
 node_modules
 
 package-lock.json

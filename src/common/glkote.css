@@ -199,42 +199,42 @@
 
 /* The following are the standard Glk styles. */
 
-.Style_normal {
+span.Style_normal {
 }
 
-.Style_emphasized {
+span.Style_emphasized {
   font-style: italic;
 }
 
-.Style_preformatted {
+span.Style_preformatted {
   font-family: var(--glkote-mono-family);
 }
 
-.Style_header {
+span.Style_header {
   font-weight: bold;
 }
 
-.BufferWindow .Style_header {
+.BufferWindow span.Style_header {
   font-size: 17px;
 }
 
-.Style_subheader {
+span.Style_subheader {
   font-weight: bold;
 }
 
-.Style_alert {
+span.Style_alert {
   font-weight: bold;
 }
 
-.Style_note {
+span.Style_note {
   font-style: italic;
 }
 
-.Style_blockquote {
+span.Style_blockquote {
   background: #FFF0C0;
 }
 
-.Style_input {
+span.Style_input {
   font-weight: bold;
   color: #300000;
 }
