@@ -100,6 +100,11 @@ const buildweb = gulp.parallel(
 )
 
 const buildifcomp = gulp.parallel(
+    copy({
+        dest: 'dist/ifcomp/',
+        src: './src/upstream/emglken/build/tads-core.wasm',
+        target: 'ifcomp',
+    }),
     css({
         dest: 'dist/ifcomp/',
         output: 'web.css',
@@ -112,6 +117,7 @@ const buildifcomp = gulp.parallel(
             ['ie', './src/common/ie.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
+            ['tads', './src/upstream/emglken/src/tads.js'],
             ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
