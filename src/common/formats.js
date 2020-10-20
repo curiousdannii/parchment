@@ -33,7 +33,7 @@ async function generic_emglken_vm(options, requires)
 const formats = [
     {
         id: 'hugo',
-        extensions: /hex/,
+        extensions: /\.hex/,
         engines: [
             {
                 id: 'hugo',
@@ -45,7 +45,7 @@ const formats = [
 
     {
         id: 'glulx',
-        extensions: /gblorb|ulx/,
+        extensions: /\.(gblorb|ulx)/,
         engines: [
             {
                 id: 'quixe',
@@ -90,7 +90,7 @@ const formats = [
 
     {
         id: 'tads',
-        extensions: /gam|t3/,
+        extensions: /\.(gam|t3)/,
         engines: [
             {
                 id: 'tads',
@@ -102,7 +102,7 @@ const formats = [
 
     {
         id: 'zcode',
-        extensions: /zblorb|z3|z4|z5|z8/,
+        extensions: /\.(zblorb|z3|z4|z5|z8)/,
         engines: [
             {
                 id: 'zvm',
