@@ -44,8 +44,7 @@ gz
 ! to be) "story.zblorb.js".
 
 [INTERPRETERHEAD]
-    <link rel="stylesheet" href="interpreter/glkote.css" type="text/css">
-    <link rel="stylesheet" href="interpreter/dialog.css" type="text/css">
+    <link rel="stylesheet" href="interpreter/parchment.css" type="text/css">
     <script src="interpreter/jquery.min.js"></script>
     <script src="interpreter/main.js"></script>
     <script src="interpreter/ie.js" nomodule></script>
