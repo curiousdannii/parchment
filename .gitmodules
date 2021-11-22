@@ -7,6 +7,3 @@
 [submodule "src/upstream/quixe"]
 	path = src/upstream/quixe
 	url = git@github.com:curiousdannii/quixe.git
-[submodule "src/upstream/emglken"]
-	path = src/upstream/emglken
-	url = https://github.com/curiousdannii/emglken.git

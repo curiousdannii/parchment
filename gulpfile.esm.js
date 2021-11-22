@@ -53,9 +53,9 @@ function js(opt)
                 plugins: [
                     alias({
                         entries: [
-                            { find: 'crypto', replacement: '../../../common/dummy-node.js' },
-                            { find: 'fs', replacement: '../../../common/dummy-node.js' },
-                            { find: 'path', replacement: '../../../common/dummy-node.js' },
+                            { find: 'crypto', replacement: '../../../src/common/dummy-node.js' },
+                            { find: 'fs', replacement: '../../../src/common/dummy-node.js' },
+                            { find: 'path', replacement: '../../../src/common/dummy-node.js' },
                         ]
                     }),
                     commonjs(),
@@ -73,7 +73,7 @@ function js(opt)
 const buildweb = gulp.parallel(
     copy({
         dest: 'dist/web/',
-        src: './src/upstream/emglken/build/*-core.wasm',
+        src: './node_modules/emglken/build/*-core.wasm',
         target: 'web',
     }),
     css({
@@ -85,13 +85,13 @@ const buildweb = gulp.parallel(
     ...js({
         dest: 'dist/web/',
         files: [
-            ['git', './src/upstream/emglken/src/git.js'],
-            ['glulxe', './src/upstream/emglken/src/glulxe.js'],
-            ['hugo', './src/upstream/emglken/src/hugo.js'],
+            ['git', './node_modules/emglken/src/git.js'],
+            ['glulxe', './node_modules/emglken/src/glulxe.js'],
+            ['hugo', './node_modules/emglken/src/hugo.js'],
             ['ie', './src/common/ie.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
-            ['tads', './src/upstream/emglken/src/tads.js'],
+            ['tads', './node_modules/emglken/src/tads.js'],
             ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
