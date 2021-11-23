@@ -24,6 +24,7 @@
     "gulp-cli": "^2.3.0",
     "gulp-rename": "^2.0.0",
     "gulp-terser": "^1.2.1",
+    "http-server": "^14.0.0",
     "rollup": "^2.23.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "vinyl-buffer": "^1.0.1",
@@ -32,6 +33,7 @@
   "scripts": {
     "gulp": "gulp",
     "inform7": "tools/package-inform7.sh",
-    "link-local-emglken": "npm link ./src/upstream/emglken"
+    "link-local-emglken": "npm link ./src/upstream/emglken",
+    "serve": "http-server"
   }
 }

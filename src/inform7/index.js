@@ -107,8 +107,9 @@ function launch()
                 GlkOte: GlkOte,
                 image_info_map: 'StaticImageInfo',
                 io: Glk,
-                set_page_title: false,
+                set_page_title: 0,
                 spacing: 0,
+                use_query_story: 0,
                 vm: window.Quixe,
             })
 
