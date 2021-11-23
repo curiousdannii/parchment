@@ -2,10 +2,7 @@
   "name": "parchment",
   "version": "1.0.0",
   "description": "Parchment Interactive Fiction Player",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/curiousdannii/parchment.git"
-  },
+  "repository": "curiousdannii/parchment",
   "keywords": [
     "interactive-fiction"
   ],
@@ -15,10 +12,12 @@
     "url": "https://github.com/curiousdannii/parchment/issues"
   },
   "homepage": "https://github.com/curiousdannii/parchment#readme",
+  "dependencies": {
+    "emglken": "^0.3.3"
+  },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/stream": "git+https://github.com/andremacola/stream.git",
-    "emglken": "^0.3.3",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -32,6 +31,7 @@
   },
   "scripts": {
     "gulp": "gulp",
-    "inform7": "tools/package-inform7.sh"
+    "inform7": "tools/package-inform7.sh",
+    "link-local-emglken": "npm link ./src/upstream/emglken"
   }
 }

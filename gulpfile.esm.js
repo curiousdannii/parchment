@@ -102,7 +102,7 @@ const buildweb = gulp.parallel(
 const buildifcomp = gulp.parallel(
     copy({
         dest: 'dist/ifcomp/',
-        src: './src/upstream/emglken/build/tads-core.wasm',
+        src: './node_modules/emglken/build/tads-core.wasm',
         target: 'ifcomp',
     }),
     css({
@@ -117,7 +117,7 @@ const buildifcomp = gulp.parallel(
             ['ie', './src/common/ie.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
-            ['tads', './src/upstream/emglken/src/tads.js'],
+            ['tads', './node_modules/emglken/src/tads.js'],
             ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
@@ -148,16 +148,16 @@ const buildinform7 = gulp.parallel(
 const buildlectrote = gulp.parallel(
     copy({
         dest: 'dist/lectrote/',
-        src: './src/upstream/emglken/build/*-core.wasm',
+        src: './node_modules/emglken/build/*-core.wasm',
         target: 'lectrote',
     }),
     ...js({
         dest: 'dist/lectrote/',
         files: [
-            ['git', './src/upstream/emglken/src/git.js'],
-            ['glulxe', './src/upstream/emglken/src/glulxe.js'],
-            ['hugo', './src/upstream/emglken/src/hugo.js'],
-            ['tads', './src/upstream/emglken/src/tads.js'],
+            ['git', './node_modules/emglken/src/git.js'],
+            ['glulxe', './node_modules/emglken/src/glulxe.js'],
+            ['hugo', './node_modules/emglken/src/hugo.js'],
+            ['tads', './node_modules/emglken/src/tads.js'],
         ],
         format: 'cjs',
         target: 'lectrote',
