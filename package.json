@@ -18,6 +18,7 @@
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/stream": "git+https://github.com/andremacola/stream.git",
+    "emglken": "^0.3.3",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
