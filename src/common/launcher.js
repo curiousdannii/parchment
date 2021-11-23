@@ -17,6 +17,7 @@ const default_options = {
     auto_launch: 1,
     //default_story: PATH_TO_JSIFIED_STORY
     lib_path: 'dist/web/',
+    proxy_url: 'https://proxy.iplayif.com/proxy/',
 }
 
 class ParchmentLauncher
@@ -73,7 +74,7 @@ class ParchmentLauncher
             }
 
             const requires = await Promise.all([
-                typeof story === 'string' ? fetch_storyfile(story) : story,
+                typeof story === 'string' ? fetch_storyfile(this.options, story) : story,
                 ...engine.load.map(path => fetch_vm_resource(this.options, path))
             ])
 

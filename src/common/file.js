@@ -9,9 +9,13 @@ https://github.com/curiousdannii/parchment
 
 */
 
-async function fetch_storyfile(url)
+async function fetch_storyfile(options, url)
 {
     const response = await fetch(url)
+    .catch(e => {
+        return fetch(`${options.proxy_url}?url=${url}`)
+    })
+
     if (!response.ok)
     {
         throw new Error(`Could not fetch storyfile, got ${response.status}`)
