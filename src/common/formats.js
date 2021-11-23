@@ -3,7 +3,7 @@
 Format specifications
 =====================
 
-Copyright (c) 2020 Dannii Willis
+Copyright (c) 2021 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -71,8 +71,9 @@ const formats = [
                         GlkOte,
                         image_info_map: 'StaticImageInfo',
                         io: Glk,
-                        set_page_title: false,
+                        set_page_title: 0,
                         spacing: 0,
+                        use_query_story: 0,
                         vm: quixe.Quixe,
                     })
 
