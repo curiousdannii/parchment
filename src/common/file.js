@@ -12,6 +12,7 @@ https://github.com/curiousdannii/parchment
 async function fetch_storyfile(options, url)
 {
     let response = await fetch(url)
+    // We can't specifically detect CORS errors, so just try the proxy for all errors
     .catch(() => {
         return fetch(`${options.proxy_url}?url=${url}`)
     })

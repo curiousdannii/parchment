@@ -30,7 +30,12 @@ async function generic_emglken_vm(options, requires)
     await vm.start()
 }
 
-const formats = [
+export const formats = [
+    {
+        id: 'blorb',
+        extensions: /\.(blb|blorb)/,
+    },
+
     {
         id: 'hugo',
         extensions: /\.hex/,
@@ -130,4 +135,38 @@ const formats = [
     },
 ]
 
-export default formats
+// Search within a Blorb to find what format is inside
+// Must be passed a Uint8Array
+export function parse_blorb(story) {
+    const blorb_chunks = {
+        GLUL: 'glulx',
+        ZCOD: 'zcode',
+    }
+
+    function getFourCC(addr) {
+        return String.fromCharCode(story[addr], story[addr + 1], story[addr + 2], story[addr + 3])
+    }
+
+    const view = new DataView(story.buffer)
+
+    if (getFourCC(0) !== 'FORM' || getFourCC(8) !== 'IFRS') {
+        throw new Error('Not a valid Blorb file')
+    }
+
+    const length = view.getUint32(4) + 8
+
+    let i = 12
+    while (i < length) {
+        const chunk_length = view.getUint32(i + 4)
+        const type = blorb_chunks[getFourCC(i)]
+        if (type) {
+            return type
+        }
+        i += 8 + chunk_length
+        if (i % 2) {
+            i++
+        }
+    }
+
+    throw new Error('Unknown storyfile format in Blorb')
+}
