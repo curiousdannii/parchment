@@ -10,7 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import {fetch_storyfile, fetch_vm_resource} from './file.js'
-import formats from './formats.js'
+import {formats, parse_blorb} from './formats.js'
 import GlkOte from '../upstream/glkote/glkote.js'
 
 const default_options = {
@@ -26,10 +26,10 @@ class ParchmentLauncher
         this.options = Object.assign({}, default_options, parchment_options)
     }
 
-    find_engine(format, path) {
+    find_format(format, path) {
         for (const formatspec of formats) {
             if (formatspec.id === format || formatspec.extensions.test(path)) {
-                return formatspec.engines[0]
+                return formatspec
             }
         }
         throw new Error('Unknown storyfile format')
@@ -55,8 +55,8 @@ class ParchmentLauncher
             if (!storyfile_path) {
                 return
             }
-            const engine = this.find_engine(null, storyfile_path)
-            this.load(engine, storyfile_path)
+            const format = this.find_format(null, storyfile_path)
+            this.load(format, storyfile_path)
         }
         catch (err) {
             GlkOte.error(err)
@@ -67,11 +67,20 @@ class ParchmentLauncher
     // Overloaded load
     // engine can be a engine object or id
     // story can be a path or Uint8Array
-    async load(engine, story) {
+    async load(format, story) {
         try {
-            if (typeof engine === 'string') {
-                engine = this.find_engine(engine)
+            // If a blorb URL doesn't specify its type, we must download it first
+            if (format.id === 'blorb') {
+                if (typeof story === 'string') {
+                    story = await fetch_storyfile(this.options, story)
+                }
+                format = parse_blorb(story)
             }
+
+            if (typeof format === 'string') {
+                format = this.find_format(format)
+            }
+            const engine = format.engines[0]
 
             const requires = await Promise.all([
                 typeof story === 'string' ? fetch_storyfile(this.options, story) : story,
