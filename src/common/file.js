@@ -12,7 +12,7 @@ https://github.com/curiousdannii/parchment
 async function fetch_storyfile(options, url)
 {
     let response = await fetch(url)
-    .catch(e => {
+    .catch(() => {
         return fetch(`${options.proxy_url}?url=${url}`)
     })
 
@@ -24,7 +24,7 @@ async function fetch_storyfile(options, url)
     // Handle JSified stories
     if (url.endsWith('.js')) {
         const text = await response.text()
-        const matched = /processBase64Zcode\(['"]([a-zA-Z0-9+\/=]+)['"]\)/.exec(text)
+        const matched = /processBase64Zcode\(['"]([a-zA-Z0-9+/=]+)['"]\)/.exec(text)
         if (!matched) {
             throw new Error('Abnormal JSified story')
         }

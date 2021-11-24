@@ -69,8 +69,8 @@ class ParchmentLauncher
     // story can be a path or Uint8Array
     async load(engine, story) {
         try {
-            if (typeof format === 'string') {
-                format = this.find_engine(format)
+            if (typeof engine === 'string') {
+                engine = this.find_engine(engine)
             }
 
             const requires = await Promise.all([

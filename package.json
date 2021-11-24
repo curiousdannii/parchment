@@ -18,6 +18,7 @@
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/stream": "git+https://github.com/andremacola/stream.git",
+    "eslint": "^8.3.0",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -34,6 +35,7 @@
     "gulp": "gulp",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
+    "lint": "eslint src/common/ src/inform7/",
     "serve": "http-server"
   }
 }
