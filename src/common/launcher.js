@@ -55,6 +55,11 @@ class ParchmentLauncher
             if (!storyfile_path) {
                 return
             }
+
+            // We have a story path, so hide the about, and show the loading spinner
+            $('#about').remove()
+            $('#loadingpane').show()
+
             const format = this.find_format(null, storyfile_path)
             this.load(format, storyfile_path)
         }
