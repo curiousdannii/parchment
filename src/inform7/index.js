@@ -66,13 +66,13 @@ function launch()
         GlkOte.error(`Error loading engine: ${err.status}`)
     }).then(() => {
         return $.ajax({
-            dataType: "jsonp",
+            dataType: 'jsonp',
             jsonp: false,
-            jsonpCallback: "processBase64Zcode",
+            jsonpCallback: 'processBase64Zcode',
             url: storyfilepath,
         })
     }).catch(err => {
-            GlkOte.error(`Error loading storyfile: ${err.status}`)
+        GlkOte.error(`Error loading storyfile: ${err.status}`)
     }).then(data => {
         const base64_decoded = atob(data)
         const data_array = text_to_array(base64_decoded)
