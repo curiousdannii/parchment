@@ -63,6 +63,7 @@ function js(opt)
             })
                 .pipe(source(`${file[0]}.js`))
                 .pipe(buffer())
+                // comment out the following line to disable minification
                 .pipe(terser(terser_opts))
                 .pipe(gulp.dest(opt.dest))
         })
