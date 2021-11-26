@@ -7,6 +7,7 @@ import rename from 'gulp-rename'
 import rollup from '@rollup/stream'
 import source from 'vinyl-source-stream'
 import terser from 'gulp-terser'
+import {HttpServer} from 'http-server'
 
 function copy(opt)
 {
@@ -100,6 +101,22 @@ const buildweb = gulp.parallel(
     }),
 )
 
+function server(cb) {
+    new HttpServer({ cache: -1 }).listen(8080);
+    cb();
+}
+
+function watcher() {
+    gulp.watch([
+        './node_modules/emglken/**',
+        './src/**',
+    ], buildweb)
+}
+
+const serve = gulp.parallel([
+    server, watcher
+])
+
 const buildifcomp = gulp.parallel(
     copy({
         dest: 'dist/ifcomp/',
@@ -171,4 +188,5 @@ export {
     buildinform7 as inform7,
     buildweb as web,
     buildlectrote as lectrote,
+    serve,
 }

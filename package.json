@@ -37,6 +37,7 @@
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
     "prepare": "gulp",
-    "serve": "http-server"
+    "prestart": "gulp",
+    "start": "gulp serve"
   }
 }
