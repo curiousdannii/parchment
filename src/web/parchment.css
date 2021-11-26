@@ -30,3 +30,10 @@ body {
 #about {
   text-align: center;
 }
+
+#custom-file-upload {
+  display: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+}
