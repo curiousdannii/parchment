@@ -56,10 +56,6 @@ class ParchmentLauncher
                 return
             }
 
-            // We have a story path, so hide the about, and show the loading spinner
-            $('#about').remove()
-            $('#loadingpane').show()
-
             const format = this.find_format(null, storyfile_path)
             this.load(format, storyfile_path)
         }
@@ -74,6 +70,10 @@ class ParchmentLauncher
     // story can be a path or Uint8Array
     async load(format, story) {
         try {
+            // Hide the about page, and show the loading spinner instead
+            $('#about').remove()
+            $('#loadingpane').show()
+
             // If a blorb URL doesn't specify its type, we must download it first
             if (format.id === 'blorb') {
                 if (typeof story === 'string') {
