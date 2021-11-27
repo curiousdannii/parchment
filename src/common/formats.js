@@ -20,7 +20,7 @@ async function generic_emglken_vm(options, requires)
     const vm_options = Object.assign({}, options, {
         Dialog,
         do_vm_autosave: 1,
-        Glk: {},
+        //Glk: {},
         GlkOte,
         wasmBinary,
     })
@@ -89,6 +89,12 @@ export const formats = [
             {
                 id: 'glulxe',
                 load: ['./glulxe.js', './glulxe-core.wasm'],
+                start: generic_emglken_vm,
+            },
+
+            {
+                id: 'git',
+                load: ['./git.js', './git-core.wasm'],
                 start: generic_emglken_vm,
             },
         ],
