@@ -3,6 +3,8 @@ dist/inform7/Parchment
 dist/lectrote
 node_modules
 
+serviceworker.js
+
 package-lock.json
 
 /*.js

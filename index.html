@@ -7,6 +7,20 @@
     <script src="dist/web/jquery.min.js"></script>
     <script src="dist/web/ie.js" nomodule></script>
     <script src="dist/web/main.js" type="module"></script>
+    <script>
+        var useServiceWorker = (location.protocol === 'https:' && 'serviceWorker' in navigator);
+        if (useServiceWorker) {
+            navigator.serviceWorker.register('serviceworker.js').then(function (registration) {
+                console.log('ServiceWorker registration successful');
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    console.log('controllerchanged');
+                    location.reload();
+                })
+            }).catch(function (err) {
+                console.error('ServiceWorker registration failed: ', err);
+            });
+        }
+    </script>
     <link rel="stylesheet" href="dist/web/web.css">
 </head>
 <body>
