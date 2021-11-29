@@ -49,10 +49,33 @@ class ParchmentLauncher
         return null
     }
 
+    async read_uploaded_file(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = event => resolve(new Uint8Array(event.target.result))
+            reader.onerror = () => reject(reader.error)
+            reader.readAsArrayBuffer(file)
+        })
+    }
+
+    async load_uploaded_file(file) {
+        const format = this.find_format(null, file.name)
+        this.load(format, await this.read_uploaded_file(file))
+    }
+
     launch() {
         try {
             const storyfile_path = this.get_storyfile_path()
             if (!storyfile_path) {
+                $('#custom-file-upload').show().on('keydown', event => {
+                    if (event.keyCode === 32 /*Space*/ || event.keyCode === 13 /*Enter*/) {
+                        event.target.click()
+                    }
+                })
+                $('#file-upload').on('change', () => {
+                    const file = $('#file-upload')[0]?.files?.[0]
+                    if (file) this.load_uploaded_file(file)
+                })
                 return
             }
 
