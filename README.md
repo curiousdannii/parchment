@@ -26,3 +26,39 @@ Quixe   | [erkyrath/quixe](https://github.com/erkyrath/quixe) | [MIT](https://gi
 RemGlk  | [erkyrath/remglk](https://github.com/erkyrath/remglk) | [MIT](https://github.com/erkyrath/remglk/blob/master/LICENSE)
 TADS    | [tads-intfic/tads-runner](https://github.com/tads-intfic/tads-runner) | [GPL-2.0](https://github.com/tads-intfic/tads-runner/blob/master/COPYING)
 ZVM     | [curiousdannii/ifvms.js](https://github.com/curiousdannii/ifvms.js) | [MIT](https://github.com/curiousdannii/ifvms.js/blob/master/LICENSE)
+
+Building Instructions
+---------------------
+
+The upstream projects are included as git submodules. You'll have to start by initializing the submodules, like this:
+
+```
+git submodule update --init --recursive
+```
+
+Then you'll need to install the `npm` dependencies:
+
+```
+npm install
+```
+
+This will automatically build Parchment locally.
+
+Then, you'll need to open `index.html` on a web server. (It won't work when you run it on your filesystem as a `file:///` URL.) You can launch a simple web server like this:
+
+```
+npm start
+```
+
+Then you can view Parchment at `http://localhost:8080` to see your handiwork.
+
+Each time you change code in the `src` folder, the server will automatically rebuild the web code. Refresh to see your changes.
+
+You'll find it easier to debug and hack on the code if you disable minification, by commenting out the `.pipe(terser(terser_opts))` line in `gulpfile.esm.js`.
+
+You can also build your own `dist/inform/parchment-for-inform7.zip` like this:
+
+```
+npm install
+npm run inform7
+```

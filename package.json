@@ -36,6 +36,8 @@
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
-    "serve": "http-server"
+    "prepare": "gulp",
+    "prestart": "gulp",
+    "start": "gulp serve"
   }
 }
