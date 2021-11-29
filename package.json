@@ -13,7 +13,8 @@
   },
   "homepage": "https://github.com/curiousdannii/parchment#readme",
   "dependencies": {
-    "emglken": "^0.3.3"
+    "emglken": "^0.3.3",
+    "jquery": "^3.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.0",

@@ -75,7 +75,12 @@ function js(opt)
 const buildweb = gulp.parallel(
     copy({
         dest: 'dist/web/',
-        src: './node_modules/emglken/build/*-core.wasm',
+        src: [
+            './node_modules/emglken/build/*-core.wasm',
+            '!./node_modules/emglken/build/bocfel-core.wasm',
+            './node_modules/jquery/dist/jquery.min.js',
+            'src/upstream/glkote/waiting.gif',
+        ],
         target: 'web',
     }),
     css({

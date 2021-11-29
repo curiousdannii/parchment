@@ -1,0 +1,43 @@
+name: test-and-deploy
+
+on:
+  push:
+    branches:
+      - '*'
+      - '!gh-pages'
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+      - run: npm install --ignore-scripts
+      - run: npm run lint
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+      - run: npm install --ignore-scripts
+      - run: npm run link-local-emglken
+      - name: Build Emglken
+        run: cd src/upstream/emglken && npm run build
+      - run: npm run gulp
+      - run: npm run inform7
+      - run: cp tools/deploy.gitignore .gitignore
+      - name: Deploy to Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.7
+        with:
+          branch: gh-pages
+          folder: .

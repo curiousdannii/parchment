@@ -1,8 +1,5 @@
-dist/ifcomp
-dist/inform7/Parchment
-dist/lectrote
+dist
 node_modules
-
 package-lock.json
 
 /*.js
