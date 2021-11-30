@@ -24,6 +24,7 @@ Hugo    | [hugoif/hugo-unix](https://github.com/hugoif/hugo-unix) | [BSD-2-Claus
 jQuery  | [jquery/jquery](https://github.com/jquery/jquery) | [MIT](https://github.com/jquery/jquery/blob/main/LICENSE.txt)
 Quixe   | [erkyrath/quixe](https://github.com/erkyrath/quixe) | [MIT](https://github.com/erkyrath/quixe/blob/master/LICENSE)
 RemGlk  | [erkyrath/remglk](https://github.com/erkyrath/remglk) | [MIT](https://github.com/erkyrath/remglk/blob/master/LICENSE)
+Source Code Pro | [adobe-fonts/source-code-pro](https://github.com/adobe-fonts/source-code-pro) | [OFL](https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md)
 TADS    | [tads-intfic/tads-runner](https://github.com/tads-intfic/tads-runner) | [GPL-2.0](https://github.com/tads-intfic/tads-runner/blob/master/COPYING)
 ZVM     | [curiousdannii/ifvms.js](https://github.com/curiousdannii/ifvms.js) | [MIT](https://github.com/curiousdannii/ifvms.js/blob/master/LICENSE)
 
