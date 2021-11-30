@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Parchment</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    <script src="dist/web/jquery.min.js"></script>
+    <script src="dist/web/ie.js" nomodule></script>
+    <script src="dist/web/main.js" type="module"></script>
+    <link rel="stylesheet" href="dist/web/web.css">
+</head>
+<body>
+    <div id="gameport">
+        <div id="about">
+            <h1>Parchment</h1>
+            <p>is an interpreter for Interactive Fiction. <a href="https://github.com/curiousdannii/parchment">Find out more.</a></p>
+            <p>Find stories to play at the <a href="https://ifdb.org/">Interactive Fiction Database</a>.</p>
+            <label id="custom-file-upload" for="file-upload" tabindex="0" role="button">
+                Or, click here to play a story file on your device
+            </label>
+            <input id="file-upload" type="file" style="display: none"/>
+            <noscript><p>Parchment requires Javascript. Please enable it in your browser.</p></noscript>
+        </div>
+        <div id="windowport"></div>
+        <div id="loadingpane" style="display:none;">
+            <img src="dist/web/waiting.gif" alt="LOADING"><br>
+            <em>&nbsp;&nbsp;&nbsp;Loading...</em>
+        </div>
+        <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
+    </div>
+</body>
+</html>

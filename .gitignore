@@ -1,0 +1,9 @@
+.eslintrc.js
+.gitmodules
+dist/inform7/Parchment
+gulpfile.esm.js
+node_modules
+package-lock.json
+src
+tools/*.sh
+tools/deploy.gitignore
