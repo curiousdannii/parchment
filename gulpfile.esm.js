@@ -79,6 +79,7 @@ const buildweb = gulp.parallel(
             './node_modules/emglken/build/*-core.wasm',
             '!./node_modules/emglken/build/bocfel-core.wasm',
             './node_modules/jquery/dist/jquery.min.js',
+            'node_modules/source-code-pro/WOFF2/OTF/SourceCodePro-+(Bold|It|Light|Regular).otf.woff2',
             'src/upstream/glkote/waiting.gif',
         ],
         target: 'web',

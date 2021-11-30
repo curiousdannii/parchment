@@ -1,6 +1,6 @@
 {
   "name": "parchment",
-  "version": "1.0.0",
+  "version": "2021.11.0",
   "description": "Parchment Interactive Fiction Player",
   "repository": "curiousdannii/parchment",
   "keywords": [
@@ -14,7 +14,8 @@
   "homepage": "https://github.com/curiousdannii/parchment#readme",
   "dependencies": {
     "emglken": "^0.3.3",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "source-code-pro": "^2.38.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.0",

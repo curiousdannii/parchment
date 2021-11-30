@@ -7,7 +7,7 @@
  */
 
 :root {
-  --glkote-mono-family: "Source Code Pro", Monaco, Courier, monospace;
+  --glkote-mono-family: "Source Code Pro", monospace;
   --glkote-prop-family: "Lora", Georgia, serif;
   --glkote-buffer-bg: #fff;
   --glkote-buffer-fg: #222;
