@@ -8,6 +8,12 @@ Parchment for Inform 7
 
 [Inform 7](http://inform7.com/) includes Parchment, allowing you to produce [personal websites for your stories](http://inform7.com/book/WI_25_11.html). If you want to update the version of Parchment used by Inform 7, grab [parchment-for-inform7.zip](https://github.com/curiousdannii/parchment/raw/gh-pages/dist/inform7/parchment-for-inform7.zip) and unzip it into the Templates subfolder of your project's Materials folder.
 
+If you would like to make a website like what Inform 7 would produce, but for a pre-existing storyfile, we recommend [ifsitegen.py](https://intfiction.org/t/ifsitegen-py/50576). You can download parchment-for-inform7.zip and pass it with the `-i` option and it will use the new version instead of the old one bundled with Inform 7:
+
+```
+python3 ifsitegen.py -i parchment-for-inform7.zip Storyfile.ulx
+```
+
 Free Software
 -------------
 
