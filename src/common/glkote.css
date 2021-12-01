@@ -70,12 +70,20 @@
 
 .BufferWindow {
   color: var(--glkote-buffer-fg);
-  overflow: scroll;   /* vertical scrollbar is mandatory */
-  overflow-x: hidden; /* but horizontal scrollbar is forbidden */
   font-family: var(--glkote-prop-family);
   font-size: 15px;
   line-height: 1.4;
+  overflow-x: hidden; /* hide the horizontal scrollbar */
   padding: 6px 10px 6px 10px;
+  scrollbar-gutter: stable; /* preserve space for the vertical scrollbar */
+}
+
+/* Make the scrollbar transparent grey */
+.BufferWindow::-webkit-scrollbar {
+  width: 10px;
+}
+.BufferWindow::-webkit-scrollbar-thumb {
+  background: rgba(50%,50%,50%,20%);
 }
 
 .BufferWindow .reverse {
