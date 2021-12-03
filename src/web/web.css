@@ -2,5 +2,5 @@
 
 @import url('./fonts.css');
 @import url('./parchment.css');
-@import url('../common/glkote.css');
+@import url('../upstream/glkote/glkote.css');
 @import url('../upstream/glkote/dialog.css');
