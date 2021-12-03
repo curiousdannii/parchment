@@ -63,9 +63,10 @@
 .WindowFrame {
   /* This class provides the default background color of windows. You
      can change that, but don't touch the position or margin. */
-  position: absolute;
-  margin: 0px;
   background: var(--glkote-buffer-bg);
+  box-sizing: border-box;
+  margin: 0px;
+  position: absolute;
 }
 
 .BufferWindow {
@@ -76,6 +77,7 @@
   overflow-x: hidden; /* hide the horizontal scrollbar */
   padding: 6px 10px 6px 10px;
   scrollbar-gutter: stable; /* preserve space for the vertical scrollbar */
+  z-index: 1;
 }
 
 /* Make the scrollbar transparent grey */
@@ -102,6 +104,7 @@
   font-family: var(--glkote-mono-family); /* necessary! */
   font-size: 14px;
   padding: 6px 10px 6px 10px;
+  z-index: 2;
 }
 
 .GridWindow.reverse {
