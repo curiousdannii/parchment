@@ -1,3 +1,6 @@
+[submodule "src/upstream/asyncglk"]
+	path = src/upstream/asyncglk
+	url = https://github.com/curiousdannii/asyncglk.git
 [submodule "src/upstream/emglken"]
 	path = src/upstream/emglken
 	url = https://github.com/curiousdannii/emglken.git

@@ -1,6 +1,7 @@
 /* Import all CSS for web */
 
-@import url('./fonts.css');
 @import url('./parchment.css');
-@import url('../upstream/glkote/glkote.css');
+@import url('../upstream/asyncglk/src/glkote/web/glkote.css');
+@import url('./fonts.css');
 @import url('../upstream/glkote/dialog.css');
+@import url('../upstream/asyncglk/src/glkote/web/light.css');

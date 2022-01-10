@@ -11,11 +11,13 @@ https://github.com/curiousdannii/parchment
 
 import {fetch_storyfile, fetch_vm_resource} from './file.js'
 import {formats, parse_blorb} from './formats.js'
-import GlkOte from '../upstream/glkote/glkote.js'
+//import GlkOte from '../upstream/glkote/glkote.js'
+import GlkOte from '../upstream/asyncglk/dist/glkote/web/web.js'
 
 const default_options = {
     auto_launch: 1,
     //default_story: PATH_TO_JSIFIED_STORY
+    GlkOte: new GlkOte(),
     lib_path: 'dist/web/',
     proxy_url: 'https://proxy.iplayif.com/proxy/',
 }
@@ -69,7 +71,7 @@ class ParchmentLauncher
             this.load(format, storyfile_path)
         }
         catch (err) {
-            GlkOte.error(err)
+            this.options.GlkOte.error(err)
             throw err
         }
     }
@@ -104,7 +106,7 @@ class ParchmentLauncher
             await engine.start(this.options, requires)
         }
         catch (err) {
-            GlkOte.error(err)
+            this.options.GlkOte.error(err)
             throw err
         }
     }
@@ -115,7 +117,7 @@ class ParchmentLauncher
             this.load(format, await this.read_uploaded_file(file))
         }
         catch (err) {
-            GlkOte.error(err)
+            this.options.GlkOte.error(err)
             throw err
         }
     }
