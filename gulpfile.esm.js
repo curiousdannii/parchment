@@ -115,7 +115,8 @@ function server(cb) {
 function watcher() {
     gulp.watch([
         './node_modules/emglken/**',
-        './src/**',
+        './src/**/*.css',
+        './src/**/*.js',
     ], buildweb)
 }
 
