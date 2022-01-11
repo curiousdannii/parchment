@@ -20,7 +20,7 @@ jobs:
 
   deploy:
     needs: test
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' || 'refs/heads/asyncglk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,13 +31,27 @@ jobs:
           node-version: '17'
       - run: npm install --ignore-scripts
       - run: npm run link-local-emglken
+      - name: Build AsyncGlk
+        if: github.ref == 'refs/heads/asyncglk'
+        run: cd src/upstream/asyncglk && npm install && npx tsc
       - name: Build Emglken
         run: cd src/upstream/emglken && npm run build
       - run: npm run gulp
-      - run: npm run inform7
+      - name: Package Parchment for Inform 7
+        if: github.ref == 'refs/heads/master'
+        run: npm run inform7
       - run: cp tools/deploy.gitignore .gitignore
       - name: Deploy to Pages 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.7
+        if: github.ref == 'refs/heads/master'
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: .
+      - name: Deploy to testing site 🚀
+        if: github.ref == 'refs/heads/asyncglk'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: .
+          repository-name: ${{ secrets.PARCHMENT_TESTING_REPO }}
+          token: ${{ secrets.PARCHMENT_TESTING_TOKEN }}
