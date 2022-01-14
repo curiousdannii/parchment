@@ -1,6 +1,6 @@
 {
   "name": "parchment",
-  "version": "2021.11.0",
+  "version": "2022.01.0",
   "description": "Parchment Interactive Fiction Player",
   "repository": "curiousdannii/parchment",
   "keywords": [
@@ -12,17 +12,18 @@
     "url": "https://github.com/curiousdannii/parchment/issues"
   },
   "homepage": "https://github.com/curiousdannii/parchment#readme",
+  "type": "module",
   "dependencies": {
     "emglken": "^0.3.3",
     "jquery": "^3.6.0",
     "source-code-pro": "^2.38.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.0",
     "@rollup/plugin-alias": "^3.1.8",
+    "@rollup/plugin-commonjs": "^21.0.0",
+    "@rollup/plugin-node-resolve": "13.1.3",
     "@rollup/stream": "^2.0.0",
     "eslint": "^8.3.0",
-    "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
     "gulp-cli": "^2.3.0",

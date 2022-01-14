@@ -3,6 +3,7 @@ import buffer from 'vinyl-buffer'
 import cleanCSS from 'gulp-clean-css'
 import commonjs from '@rollup/plugin-commonjs'
 import gulp from 'gulp'
+import nodeResolve from '@rollup/plugin-node-resolve'
 import rename from 'gulp-rename'
 import rollup from '@rollup/stream'
 import source from 'vinyl-source-stream'
@@ -59,6 +60,7 @@ function js(opt)
                             { find: 'path', replacement: '../../../src/common/dummy-node.js' },
                         ]
                     }),
+                    nodeResolve(),
                     commonjs(),
                 ],
             })
@@ -72,12 +74,10 @@ function js(opt)
     })
 }
 
-const buildweb = gulp.parallel(
+const buildwebparchment = gulp.parallel(
     copy({
         dest: 'dist/web/',
         src: [
-            './node_modules/emglken/build/*-core.wasm',
-            '!./node_modules/emglken/build/bocfel-core.wasm',
             './node_modules/jquery/dist/jquery.min.js',
             'node_modules/source-code-pro/WOFF2/OTF/SourceCodePro-+(Bold|It|Light|Regular).otf.woff2',
             'src/upstream/glkote/waiting.gif',
@@ -93,13 +93,9 @@ const buildweb = gulp.parallel(
     ...js({
         dest: 'dist/web/',
         files: [
-            ['git', './node_modules/emglken/src/git.js'],
-            ['glulxe', './node_modules/emglken/src/glulxe.js'],
-            ['hugo', './node_modules/emglken/src/hugo.js'],
             ['ie', './src/common/ie.js'],
             ['main', './src/common/launcher.js'],
             ['quixe', './src/common/quixe.js'],
-            ['tads', './node_modules/emglken/src/tads.js'],
             ['zvm', './src/common/zvm.js'],
         ],
         format: 'es',
@@ -107,21 +103,45 @@ const buildweb = gulp.parallel(
     }),
 )
 
+const buildwebemglken = gulp.parallel(
+    copy({
+        dest: 'dist/web/',
+        src: [
+            './node_modules/emglken/build/*-core.wasm',
+            '!./node_modules/emglken/build/bocfel-core.wasm',
+        ],
+        target: 'web',
+    }),
+    ...js({
+        dest: 'dist/web/',
+        files: [
+            ['git', './node_modules/emglken/src/git.js'],
+            ['glulxe', './node_modules/emglken/src/glulxe.js'],
+            ['hugo', './node_modules/emglken/src/hugo.js'],
+            ['tads', './node_modules/emglken/src/tads.js'],
+        ],
+        format: 'es',
+        target: 'web',
+    }),
+)
+
+const buildweb = gulp.parallel(buildwebparchment, buildwebemglken)
+
 function server(cb) {
     new HttpServer({ cache: -1 }).listen(8080);
     cb();
 }
 
-function watcher() {
+function watchparchment() {
     gulp.watch([
-        './node_modules/emglken/**',
         './src/**/*.css',
         './src/**/*.js',
-    ], buildweb)
+        '!./src/upstream/emglken/**/*.js',
+    ], buildwebparchment)
 }
 
 const serve = gulp.parallel([
-    server, watcher
+    server, watchparchment
 ])
 
 const buildifcomp = gulp.parallel(
