@@ -29,12 +29,22 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '17'
+      - name: Get Emglken commit ref
+        id: emglken-ref
+        run: echo "::set-output name=ref::$(git submodule status src/upstream/emglken | cut -c 2-13)"
+      - name: Cache the built Emglken
+        id: cache-emglken
+        uses: actions/cache@v2
+        with:
+          path: src/upstream/emglken/build
+          key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - run: npm install --ignore-scripts
       - run: npm run link-local-emglken
       - name: Build AsyncGlk
         if: github.ref == 'refs/heads/asyncglk'
         run: cd src/upstream/asyncglk && npm install && npx tsc
       - name: Build Emglken
+        if: steps.cache-emglken.outputs.cache-hit != 'true'
         run: cd src/upstream/emglken && npm run build
       - run: npm run gulp
       - name: Package Parchment for Inform 7
