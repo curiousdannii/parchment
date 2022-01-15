@@ -1,7 +1,9 @@
+.eslintrc.cjs
 .eslintrc.js
 .gitmodules
 dist/inform7/Parchment*
 gulpfile.esm.js
+gulpfile.js
 node_modules
 package-lock.json
 src
