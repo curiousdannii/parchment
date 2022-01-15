@@ -15,15 +15,17 @@ import GlkOte from '../upstream/glkote/glkote.js'
 
 const default_options = {
     auto_launch: 1,
-    //default_story: PATH_TO_JSIFIED_STORY
+    //default_story: [PATH_TO_JSIFIED_STORY]
+    do_vm_autosave: 1,
     lib_path: 'dist/web/',
     proxy_url: 'https://proxy.iplayif.com/proxy/',
+    //story: PATH_TO_STORY
 }
 
 class ParchmentLauncher
 {
     constructor(parchment_options) {
-        this.options = Object.assign({}, default_options, parchment_options)
+        this.options = Object.assign({}, default_options, parchment_options, this.query_options())
     }
 
     find_format(format, path) {
@@ -36,17 +38,7 @@ class ParchmentLauncher
     }
 
     get_storyfile_path() {
-        const query = new URLSearchParams(document.location.search.substring(1))
-        const story = query.get('story')
-        if (story) {
-            return story
-        }
-
-        if (this.options.default_story) {
-            return this.options.default_story[0]
-        }
-
-        return null
+        return this.options.story || this.options.default_story[0] || null
     }
 
     launch() {
@@ -127,6 +119,19 @@ class ParchmentLauncher
             reader.onerror = () => reject(reader.error)
             reader.readAsArrayBuffer(file)
         })
+    }
+
+    query_options() {
+        // Some options can be specified in the URL query
+        const query = new URLSearchParams(document.location.search)
+        const options = {}
+        const query_options = ['do_vm_autosave', 'story']
+        for (const option of query_options) {
+            if (query.has(option)) {
+                options[option] = query.get(option)
+            }
+        }
+        return options
     }
 }
 

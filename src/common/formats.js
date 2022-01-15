@@ -19,7 +19,6 @@ async function generic_emglken_vm(options, requires)
 
     const vm_options = Object.assign({}, options, {
         Dialog,
-        do_vm_autosave: 1,
         font_load_delay: 1,
         //Glk: {},
         GlkOte,
@@ -71,7 +70,6 @@ export const formats = [
                     const vm_options = Object.assign({}, options, {
                         blorb_gamechunk_type: 'GLUL',
                         Dialog,
-                        do_vm_autosave: 1,
                         font_load_delay: 1,
                         GiDispa: quixe.GiDispa,
                         GiLoad: quixe.GiLoad,
@@ -129,7 +127,6 @@ export const formats = [
                     const vm_options = Object.assign({}, options, {
                         vm,
                         Dialog,
-                        do_vm_autosave: 1,
                         font_load_delay: 1,
                         GiDispa: new zvm.ZVMDispatch(),
                         Glk,
