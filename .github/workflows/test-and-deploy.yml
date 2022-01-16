@@ -62,6 +62,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
+          clean: false
           folder: .
           repository-name: ${{ secrets.PARCHMENT_TESTING_REPO }}
           token: ${{ secrets.PARCHMENT_TESTING_TOKEN }}

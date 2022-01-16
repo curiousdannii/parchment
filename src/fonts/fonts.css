@@ -1,0 +1,92 @@
+/* Custom fonts for Parchment
+ * Paths are relative to the final CSS location in dist/, not in src/
+ */
+
+/* Iosevka https://typeof.net/Iosevka/ */
+@font-face {
+    font-family: 'Iosevka';
+    font-style: normal;
+    font-weight: 400;
+    src: url(../fonts/iosevka/iosevka-extended.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka';
+    font-style: italic;
+    font-weight: 400;
+    src: url(../fonts/iosevka/iosevka-extendeditalic.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka';
+    font-style: normal;
+    font-weight: 100;
+    src: url(../fonts/iosevka/iosevka-extendedthin.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka';
+    font-style: italic;
+    font-weight: 100;
+    src: url(../fonts/iosevka/iosevka-extendedthinitalic.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka';
+    font-style: normal;
+    font-weight: 700;
+    src: url(../fonts/iosevka/iosevka-extendedbold.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka';
+    font-style: italic;
+    font-weight: 700;
+    src: url(../fonts/iosevka/iosevka-extendedbolditalic.woff2) format('woff2');
+}
+
+/* Iosevka Narrow */
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: normal;
+    font-weight: 400;
+    src: url(../fonts/iosevka/iosevka-regular.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: italic;
+    font-weight: 400;
+    src: url(../fonts/iosevka/iosevka-italic.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: normal;
+    font-weight: 100;
+    src: url(../fonts/iosevka/iosevka-thin.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: italic;
+    font-weight: 100;
+    src: url(../fonts/iosevka/iosevka-thinitalic.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: normal;
+    font-weight: 700;
+    src: url(../fonts/iosevka/iosevka-bold.woff2) format('woff2');
+}
+@font-face {
+    font-family: 'Iosevka Narrow';
+    font-style: italic;
+    font-weight: 700;
+    src: url(../fonts/iosevka/iosevka-bolditalic.woff2) format('woff2');
+}
+
+:root {
+    --glkote-grid-mono-family: "Iosevka", monospace;
+    --glkote-mono-family: "Iosevka", monospace;
+    --glkote-prop-family: Georgia, serif;
+}
+
+@media screen and (max-width: 767px) {
+    :root {
+        --glkote-grid-mono-family: "Iosevka Narrow", monospace;
+        --glkote-grid-size: 13px;
+    }
+}

@@ -74,12 +74,22 @@ function js(opt)
     })
 }
 
+const buildfonts = gulp.parallel(
+    copy({
+        dest: 'dist/fonts/iosevka/',
+        src: [
+            'src/fonts/iosevka/*.woff2',
+        ],
+        target: 'fonts-iosevka',
+    }),
+)
+
 const buildwebparchment = gulp.parallel(
     copy({
         dest: 'dist/web/',
         src: [
             './node_modules/jquery/dist/jquery.min.js',
-            'node_modules/source-code-pro/WOFF2/OTF/SourceCodePro-+(Bold|It|Light|Regular).otf.woff2',
+            //'node_modules/source-code-pro/WOFF2/OTF/SourceCodePro-+(Bold|It|Light|Regular).otf.woff2',
             'src/upstream/glkote/waiting.gif',
         ],
         target: 'web',
@@ -110,7 +120,7 @@ const buildwebemglken = gulp.parallel(
             './node_modules/emglken/build/*-core.wasm',
             '!./node_modules/emglken/build/bocfel-core.wasm',
         ],
-        target: 'web',
+        target: 'webemglken',
     }),
     ...js({
         dest: 'dist/web/',
@@ -121,11 +131,11 @@ const buildwebemglken = gulp.parallel(
             ['tads', './node_modules/emglken/src/tads.js'],
         ],
         format: 'es',
-        target: 'web',
+        target: 'webwebemglken',
     }),
 )
 
-const buildweb = gulp.parallel(buildwebparchment, buildwebemglken)
+const buildweb = gulp.parallel(buildfonts, buildwebparchment, buildwebemglken)
 
 function server(cb) {
     new HttpServer({ cache: -1 }).listen(8080);
@@ -215,5 +225,6 @@ export {
     buildinform7 as inform7,
     buildweb as web,
     buildlectrote as lectrote,
+    buildfonts as fonts,
     serve,
 }
