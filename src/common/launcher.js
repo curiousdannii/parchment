@@ -40,7 +40,7 @@ class ParchmentLauncher
     }
 
     get_storyfile_path() {
-        return this.options.story || this.options.default_story[0] || null
+        return this.options.story || this.options.default_story?.[0] || null
     }
 
     launch() {
