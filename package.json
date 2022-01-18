@@ -38,6 +38,7 @@
     "gulp": "gulp",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
+    "link-local-asyncglk": "npm link ./src/upstream/asyncglk",
     "lint": "eslint src/common/ src/inform7/",
     "prepare": "gulp",
     "prestart": "gulp",
