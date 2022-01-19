@@ -1,11 +1,11 @@
-.eslintrc.cjs
-.eslintrc.js
+.eslintrc.*js
 .gitmodules
+dist/**/package.json
 dist/inform7/Parchment*
-gulpfile.esm.js
 gulpfile.js
 node_modules
 package-lock.json
 src
 tools/*.sh
+tools/browser-compat
 tools/deploy.gitignore

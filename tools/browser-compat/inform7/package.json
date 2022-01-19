@@ -1,0 +1,7 @@
+{
+    "name": "parchment-for-inform7",
+    "browserslist": [
+        "defaults",
+        "not IE <= 12"
+    ]
+}

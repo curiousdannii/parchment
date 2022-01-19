@@ -24,6 +24,7 @@
     "@rollup/plugin-node-resolve": "13.1.3",
     "@rollup/stream": "^2.0.0",
     "eslint": "^8.3.0",
+    "eslint-plugin-compat": "^4.0.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
     "gulp-cli": "^2.3.0",
@@ -35,6 +36,7 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "scripts": {
+    "check-compat": "tools/check-compat.sh",
     "gulp": "gulp",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
@@ -42,5 +44,11 @@
     "prepare": "gulp",
     "prestart": "gulp",
     "start": "gulp serve"
-  }
+  },
+  "browserslist": [
+    "> 0.2% and supports es6-module",
+    "last 2 versions and supports es6-module",
+    "Firefox ESR",
+    "not dead"
+  ]
 }
