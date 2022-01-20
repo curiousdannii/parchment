@@ -21,6 +21,7 @@ const default_options = {
     GlkOte: new GlkOte(),
     lib_path: 'dist/web/',
     proxy_url: 'https://proxy.iplayif.com/proxy/',
+    //single_file: 0
     //story: PATH_TO_STORY
 }
 

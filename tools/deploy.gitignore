@@ -6,6 +6,4 @@ gulpfile.js
 node_modules
 package-lock.json
 src
-tools/*.sh
-tools/browser-compat
-tools/deploy.gitignore
+tools

@@ -38,6 +38,8 @@ jobs:
       - run: npm run gulp
       - name: Package Parchment for Inform 7
         run: ./tools/package-inform7.sh
+      - name: Build single file Parchment
+        run: ./tools/make-single-file.js
       - name: Check browser compatibility
         run: ./tools/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore

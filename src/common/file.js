@@ -40,6 +40,23 @@ async function fetch_storyfile(options, url)
 
 async function fetch_vm_resource(options, path)
 {
+    // Handle embedded resources in single file mode
+    if (options.single_file) {
+        const data = document.getElementById(path).text
+        if (path.endsWith('.js')) {
+            return import(`data:text/javascript,${encodeURIComponent(data)}`)
+        }
+        if (!path.endsWith('.wasm')) {
+            throw new Error(`Can't load ${path} in single file mode`)
+        }
+        const response = await fetch(`data:application/wasm;base64,${data}`)
+        if (!response.ok)
+        {
+            throw new Error(`Could not fetch ${path}, got ${response.status}`)
+        }
+        return response.arrayBuffer()
+    }
+
     if (path.endsWith('.js'))
     {
         return import(path)
