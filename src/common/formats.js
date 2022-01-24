@@ -3,7 +3,7 @@
 Format specifications
 =====================
 
-Copyright (c) 2021 Dannii Willis
+Copyright (c) 2022 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -20,8 +20,6 @@ async function generic_emglken_vm(options, requires)
     const vm_options = Object.assign({}, options, {
         Dialog,
         font_load_delay: 1,
-        //Glk: {},
-        //GlkOte,
         wasmBinary,
     })
 
@@ -73,7 +71,6 @@ export const formats = [
                         font_load_delay: 1,
                         GiDispa: quixe.GiDispa,
                         GiLoad: quixe.GiLoad,
-                        //GlkOte,
                         image_info_map: 'StaticImageInfo',
                         io: Glk,
                         set_page_title: 0,
@@ -130,7 +127,6 @@ export const formats = [
                         font_load_delay: 1,
                         GiDispa: new zvm.ZVMDispatch(),
                         Glk,
-                        //GlkOte,
                     })
 
                     vm.prepare(file_data, vm_options)
@@ -142,37 +138,15 @@ export const formats = [
 ]
 
 // Search within a Blorb to find what format is inside
-// Must be passed a Uint8Array
-export function parse_blorb(story) {
+// Must be passed a Blorb instance
+export function identify_blorb_storyfile_format(blorb) {
     const blorb_chunks = {
         GLUL: 'glulx',
         ZCOD: 'zcode',
     }
-
-    function getFourCC(addr) {
-        return String.fromCharCode(story[addr], story[addr + 1], story[addr + 2], story[addr + 3])
+    const chunktype = blorb.get_chunk('exec', 0)?.blorbtype
+    if (blorb_chunks[chunktype]) {
+        return blorb_chunks[chunktype]
     }
-
-    const view = new DataView(story.buffer)
-
-    if (getFourCC(0) !== 'FORM' || getFourCC(8) !== 'IFRS') {
-        throw new Error('Not a valid Blorb file')
-    }
-
-    const length = view.getUint32(4) + 8
-
-    let i = 12
-    while (i < length) {
-        const chunk_length = view.getUint32(i + 4)
-        const type = blorb_chunks[getFourCC(i)]
-        if (type) {
-            return type
-        }
-        i += 8 + chunk_length
-        if (i % 2) {
-            i++
-        }
-    }
-
     throw new Error('Unknown storyfile format in Blorb')
 }

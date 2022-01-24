@@ -3,15 +3,16 @@
 Parchment Launcher
 ==================
 
-Copyright (c) 2021 Dannii Willis
+Copyright (c) 2022 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import {fetch_storyfile, fetch_vm_resource} from './file.js'
-import {formats, parse_blorb} from './formats.js'
-//import GlkOte from '../upstream/glkote/glkote.js'
+import Blorb from '../upstream/asyncglk/dist/blorb/blorb.js'
+import {FileView} from '../upstream/asyncglk/dist/blorb/iff.js'
+import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
+import {formats, identify_blorb_storyfile_format} from './formats.js'
 import GlkOte from '../upstream/asyncglk/dist/glkote/web/web.js'
 
 const default_options = {
@@ -78,12 +79,14 @@ class ParchmentLauncher
             $('#about').remove()
             $('#loadingpane').show()
 
-            // If a blorb URL doesn't specify its type, we must download it first
+            // If a blorb file extension is generic, we must download it first to identify its format
+            let blorb
             if (format.id === 'blorb') {
                 if (typeof story === 'string') {
                     story = await fetch_storyfile(this.options, story)
                 }
-                format = parse_blorb(story)
+                blorb = new Blorb(story)
+                format = identify_blorb_storyfile_format(blorb)
             }
 
             if (typeof format === 'string') {
@@ -95,8 +98,16 @@ class ParchmentLauncher
                 typeof story === 'string' ? fetch_storyfile(this.options, story) : story,
                 ...engine.load.map(path => fetch_vm_resource(this.options, path))
             ])
+            story = requires[0]
 
-            await engine.start(this.options, requires)
+            // If the story is a Blorb, then parse it and pass in the options
+            const options = Object.assign({}, this.options)
+            const view = new FileView(story)
+            if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
+                options.Blorb = blorb || new Blorb(story)
+            }
+
+            await engine.start(options, requires)
         }
         catch (err) {
             this.options.GlkOte.error(err)
@@ -107,21 +118,12 @@ class ParchmentLauncher
     async load_uploaded_file(file) {
         try {
             const format = this.find_format(null, file.name)
-            this.load(format, await this.read_uploaded_file(file))
+            this.load(format, await read_uploaded_file(file))
         }
         catch (err) {
             this.options.GlkOte.error(err)
             throw err
         }
-    }
-
-    read_uploaded_file(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onload = event => resolve(new Uint8Array(event.target.result))
-            reader.onerror = () => reject(reader.error)
-            reader.readAsArrayBuffer(file)
-        })
     }
 
     query_options() {

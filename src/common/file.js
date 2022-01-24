@@ -3,13 +3,14 @@
 File loader
 ===========
 
-Copyright (c) 2021 Dannii Willis
+Copyright (c) 2022 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-async function fetch_storyfile(options, url)
+// Fetch a storyfile, using the proxy if necessary, and handling JSified stories
+export async function fetch_storyfile(options, url)
 {
     let response = await fetch(url, {redirect: 'follow'})
     // We can't specifically detect CORS errors, so just try the proxy for all errors
@@ -38,7 +39,7 @@ async function fetch_storyfile(options, url)
     return new Uint8Array(buffer)
 }
 
-async function fetch_vm_resource(options, path)
+export async function fetch_vm_resource(options, path)
 {
     // Handle embedded resources in single file mode
     if (options.single_file) {
@@ -71,4 +72,12 @@ async function fetch_vm_resource(options, path)
     return response.arrayBuffer()
 }
 
-export {fetch_storyfile, fetch_vm_resource}
+// Read an uploaded file and return it as a Uint8Array
+export function read_uploaded_file(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onerror = () => reject(reader.error)
+        reader.onload = event => resolve(new Uint8Array(event.target.result))
+        reader.readAsArrayBuffer(file)
+    })
+}
