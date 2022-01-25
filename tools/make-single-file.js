@@ -24,13 +24,17 @@ const webpath = path.join(rootpath, 'dist/web')
 // Get all the files
 const filenames = await fs.readdir(webpath)
 
+async function file_to_base64(path) {
+    return (await fs.readFile(path)).toString('base64')
+}
+
 // Turn the filenames into embeddable resources
 const files = await Promise.all(filenames.map(async filename => {
     // Skip Git and Glulxe while they can't even be used
     if (/(git|glulx)/.test(filename)) {
         return
     }
-    const data = await fs.readFile(path.join(webpath, filename), {encoding: filename.endsWith('.wasm') ? null : 'utf8'})
+    let data = await fs.readFile(path.join(webpath, filename), {encoding: filename.endsWith('.wasm') ? null : 'utf8'})
     if (filename === 'ie.js') {
         return `<script nomodule>${data}</script>`
     }
@@ -41,6 +45,15 @@ const files = await Promise.all(filenames.map(async filename => {
         return `<script type="module">${data}</script>`
     }
     if (filename.endsWith('.css')) {
+        // Only include a single font, the browser can fake bold and italics
+        const fontfile = await file_to_base64(path.join(webpath, '../fonts/iosevka/iosevka-extended.woff2'))
+        data = data.replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\('woff2'\)}/g, (_, font, style, weight) => {
+            if (font === 'Iosevka' && style === 'normal' && weight === '400') {
+                return `@font-face{font-family:Iosevka;font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${fontfile}) format('woff2')}`
+            }
+            return ''
+        })
+            .replace(/Iosevka Narrow/g, 'Iosevka')
         return `<style>${data}</style>`
     }
     if (filename.endsWith('.js')) {
@@ -57,7 +70,7 @@ let indexhtml = await fs.readFile(path.join(rootpath, 'index.html'), {encoding: 
 indexhtml = indexhtml
     .replace(/<script.+?\/script>/g, '')
     .replace(/<link rel="stylesheet".+?>/g, '')
-    .replace(/<img src="dist\/web\/waiting.gif"/, `<img src="data:image/gif;base64,${(await fs.readFile(path.join(webpath, 'waiting.gif'))).toString('base64')}"`)
+    .replace(/<img src="dist\/web\/waiting.gif"/, `<img src="data:image/gif;base64,${await file_to_base64(path.join(webpath, 'waiting.gif'))}"`)
     .replace(/^\s+$/gm, '')
 
 const parts = indexhtml.split(/\s*<\/head>/)
