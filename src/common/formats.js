@@ -11,7 +11,6 @@ https://github.com/curiousdannii/parchment
 
 import Dialog from '../upstream/glkote/dialog.js'
 import Glk from '../upstream/glkote/glkapi.js'
-//import GlkOte from '../upstream/glkote/glkote.js'
 
 async function generic_emglken_vm(options, requires)
 {
@@ -19,7 +18,6 @@ async function generic_emglken_vm(options, requires)
 
     const vm_options = Object.assign({}, options, {
         Dialog,
-        font_load_delay: 1,
         wasmBinary,
     })
 
@@ -56,20 +54,12 @@ export const formats = [
                 start: (options, requires) =>
                 {
                     const [file_data, quixe] = requires
-                    const data_array = Array.from(file_data)
-
-                    // Quixe still expects many things to be global variables
-                    window.Dialog = Dialog
-                    window.GiDispa = quixe.GiDispa
-                    window.GiLoad = quixe.GiLoad
-                    window.Glk = Glk
-                    window.GlkOte = options.GlkOte
+                    const data_array = file_data
 
                     const vm_options = Object.assign({}, options, {
                         blorb_gamechunk_type: 'GLUL',
                         Dialog,
-                        font_load_delay: 1,
-                        GiDispa: quixe.GiDispa,
+                        GiDispa: new quixe.GiDispa(),
                         GiLoad: quixe.GiLoad,
                         image_info_map: 'StaticImageInfo',
                         io: Glk,
@@ -124,7 +114,6 @@ export const formats = [
                     const vm_options = Object.assign({}, options, {
                         vm,
                         Dialog,
-                        font_load_delay: 1,
                         GiDispa: new zvm.ZVMDispatch(),
                         Glk,
                     })

@@ -89,7 +89,6 @@ const buildwebparchment = gulp.parallel(
         dest: 'dist/web/',
         src: [
             './node_modules/jquery/dist/jquery.min.js',
-            //'node_modules/source-code-pro/WOFF2/OTF/SourceCodePro-+(Bold|It|Light|Regular).otf.woff2',
             'src/upstream/glkote/waiting.gif',
         ],
         target: 'web',
@@ -131,7 +130,7 @@ const buildwebemglken = gulp.parallel(
             ['tads', './node_modules/emglken/src/tads.js'],
         ],
         format: 'es',
-        target: 'webwebemglken',
+        target: 'webemglken',
     }),
 )
 
