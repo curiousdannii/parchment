@@ -9,50 +9,28 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import Dialog from '../upstream/glkote/dialog.js'
+import Blorb from '../upstream/asyncglk/dist/blorb/blorb.js'
+import get_default_options from '../common/options.js'
 import Glk from '../upstream/glkote/glkapi.js'
-import GlkOte from '../upstream/glkote/glkote.js'
 
-// Text to byte array and vice versa
-function text_to_array(text)
-{
-    const array = []
-    let i = 0, l
-    for (l = text.length % 8; i < l; ++i)
-    {
-        array.push(text.charCodeAt(i) & 0xff)
-    }
-    for (l = text.length; i < l;)
-    {
-        array.push(text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff,
-            text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff, text.charCodeAt(i++) & 0xff)
-    }
-    return array
-}
+async function launch() {
+    const options = Object.assign({}, get_default_options(), window.parchment_options)
 
-function launch()
-{
-    const options = window.parchment_options
-
-    if (!options || !options.default_story)
-    {
-        return GlkOte.error('No storyfile specified')
+    if (!options.default_story) {
+        return options.GlkOte.error('No storyfile specified')
     }
 
     // Discriminate
     const storyfilepath = options.default_story[0]
     let format
-    if (/\.(zblorb|z3|z4|z5|z8)(\.js)?$/.test(storyfilepath))
-    {
+    if (/\.(zblorb|z3|z4|z5|z8)(\.js)?$/.test(storyfilepath)) {
         format = 'zcode'
     }
-    else if (/\.(gblorb|ulx)(\.js)?$/.test(storyfilepath))
-    {
+    else if (/\.(gblorb|ulx)(\.js)?$/.test(storyfilepath)) {
         format = 'glulx'
     }
-    else
-    {
-        return GlkOte.error('Unknown storyfile format')
+    else {
+        return options.GlkOte.error('Unknown storyfile format')
     }
 
     // When running from a file: URL we must use <script> tags and nothing else
@@ -61,50 +39,50 @@ function launch()
         crossDomain: true,
     })
 
-    $.getScript(options.lib_path + (format === 'zcode' ? 'zvm.js' : 'quixe.js'))
-    .catch(err => {
-        GlkOte.error(`Error loading engine: ${err.status}`)
-    }).then(() => {
-        return $.ajax({
+    try {
+        await $.getScript(options.lib_path + (format === 'zcode' ? 'zvm.js' : 'quixe.js'))
+    }
+    catch (err) {
+        return options.GlkOte.error(`Error loading engine: ${err.status}`)
+    }
+
+    let base64data
+    try {
+        base64data = await $.ajax({
             dataType: 'jsonp',
             jsonp: false,
             jsonpCallback: 'processBase64Zcode',
             url: storyfilepath,
         })
-    }).catch(err => {
-        GlkOte.error(`Error loading storyfile: ${err.status}`)
-    }).then(data => {
-        const base64_decoded = atob(data)
-        const data_array = text_to_array(base64_decoded)
-        
-        if (format === 'zcode')
-        {
-            const vm = new window.ZVM()
-            const data_u8array = Uint8Array.from(data_array)
+    }
+    catch (err) {
+        return options.GlkOte.error(`Error loading storyfile: ${err.status}`)
+    }
 
+    try {
+        // Parse the base64 using a trick from https://stackoverflow.com/a/54123275/2854284
+        const response = await fetch(`data:application/octet-binary;base64,${base64data}`)
+        const buffer = await response.arrayBuffer()
+        const data_array = new Uint8Array(buffer)
+        
+        if (format === 'zcode') {
+            const vm = new window.ZVM()
             const vm_options = Object.assign({}, options, {
-                vm: vm,
-                Dialog: Dialog,
                 GiDispa: new window.ZVMDispatch(),
-                Glk: Glk,
-                GlkOte: GlkOte,
+                Glk,
+                vm,
             })
 
-            vm.prepare(data_u8array, vm_options)
+            vm.prepare(data_array, vm_options)
             Glk.init(vm_options)
         }
 
-        if (format === 'glulx')
-        {
-            window.Glk = Glk
-            window.GlkOte = GlkOte
-
+        if (format === 'glulx') {
             const vm_options = Object.assign({}, options, {
+                Blorb: new Blorb(),
                 blorb_gamechunk_type: 'GLUL',
-                Dialog: Dialog,
-                GiDispa: window.GiDispa,
+                GiDispa: new window.GiDispa(),
                 GiLoad: window.GiLoad,
-                GlkOte: GlkOte,
                 image_info_map: 'StaticImageInfo',
                 io: Glk,
                 set_page_title: 0,
@@ -115,9 +93,10 @@ function launch()
 
             window.GiLoad.load_run(vm_options, data_array, 'array')
         }
-    }).catch(err => {
-        GlkOte.error(err)
-    })
+    }
+    catch (err) {
+        options.GlkOte.error(err)
+    }
 }
 
 $(launch)

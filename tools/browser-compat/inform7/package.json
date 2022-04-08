@@ -2,6 +2,7 @@
     "name": "parchment-for-inform7",
     "browserslist": [
         "defaults",
-        "not IE <= 12"
+        "not IE <= 12",
+        "not op_mini all"
     ]
 }

@@ -10,26 +10,15 @@ https://github.com/curiousdannii/parchment
 */
 
 import Blorb from '../upstream/asyncglk/dist/blorb/blorb.js'
+import get_default_options from './options.js'
 import {FileView} from '../upstream/asyncglk/dist/blorb/iff.js'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
 import {formats, identify_blorb_storyfile_format} from './formats.js'
-import GlkOte from '../upstream/asyncglk/dist/glkote/web/web.js'
-
-const default_options = {
-    auto_launch: 1,
-    //default_story: [PATH_TO_JSIFIED_STORY]
-    do_vm_autosave: 1,
-    GlkOte: new GlkOte(),
-    lib_path: 'dist/web/',
-    proxy_url: 'https://proxy.iplayif.com/proxy/',
-    //single_file: 0
-    //story: PATH_TO_STORY
-}
 
 class ParchmentLauncher
 {
     constructor(parchment_options) {
-        this.options = Object.assign({}, default_options, parchment_options, this.query_options())
+        this.options = Object.assign({}, get_default_options(), parchment_options, this.query_options())
     }
 
     find_format(format, path) {

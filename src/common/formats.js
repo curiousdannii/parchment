@@ -9,7 +9,6 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import Dialog from '../upstream/glkote/dialog.js'
 import Glk from '../upstream/glkote/glkapi.js'
 
 async function generic_emglken_vm(options, requires)
@@ -17,7 +16,6 @@ async function generic_emglken_vm(options, requires)
     const [file_data, engine, wasmBinary] = requires
 
     const vm_options = Object.assign({}, options, {
-        Dialog,
         wasmBinary,
     })
 
@@ -58,7 +56,6 @@ export const formats = [
 
                     const vm_options = Object.assign({}, options, {
                         blorb_gamechunk_type: 'GLUL',
-                        Dialog,
                         GiDispa: new quixe.GiDispa(),
                         GiLoad: quixe.GiLoad,
                         image_info_map: 'StaticImageInfo',
@@ -113,7 +110,6 @@ export const formats = [
                     const vm = new zvm.ZVM()
                     const vm_options = Object.assign({}, options, {
                         vm,
-                        Dialog,
                         GiDispa: new zvm.ZVMDispatch(),
                         Glk,
                     })

@@ -1,4 +1,6 @@
-/* Import all CSS for the Inform 7 template */
+/* Import all the CSS for the Inform 7 template
+   Note this means no gameport wrapper styles, and no fonts */
 
-@import url('../upstream/glkote/glkote.css');
+@import url('../upstream/asyncglk/src/glkote/web/glkote.css');
 @import url('../upstream/glkote/dialog.css');
+@import url('../upstream/asyncglk/src/glkote/web/light.css');
