@@ -53,6 +53,8 @@ function js(opt)
                     format: opt.format,
                 },
                 plugins: [
+                    // The alias plugin is needed only for when you use emglken from npm
+                    // When an emglken update is published to npm, it can be removed
                     alias({
                         entries: [
                             { find: 'crypto', replacement: '../../../src/common/dummy-node.js' },
