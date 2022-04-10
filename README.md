@@ -14,6 +14,11 @@ If you would like to make a website like what Inform 7 would produce, but for a 
 python3 ifsitegen.py -i parchment-for-inform7.zip Storyfile.ulx
 ```
 
+Single File Build
+-----------------
+
+Parchment is also available as a single file, suitable for downloading and using offline. [Download it here](https://github.com/curiousdannii/parchment/raw/gh-pages/dist/single-file/parchment-single-file.zip).
+
 Free Software
 -------------
 
