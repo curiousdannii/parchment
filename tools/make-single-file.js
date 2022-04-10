@@ -13,6 +13,7 @@ https://github.com/curiousdannii/parchment
 import child_process from 'child_process'
 import crypto from 'crypto'
 import fs from 'fs/promises'
+import fs_sync from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
 import util from 'util'
@@ -98,12 +99,18 @@ const outdir = path.join(webpath, '../single-file')
 await fs.mkdir(outdir, {recursive: true})
 const outpath = path.join(outdir, 'parchment.html')
 
+// Download the existing published file if necessary
+if (!fs_sync.existsSync(outpath)) {
+    console.log('Downloading old dist/single-file/parchment-single-file.zip')
+    const zippath = path.join(outdir, 'parchment-single-file.zip')
+    const branch = (await execFile('git', ['rev-parse', '--abbrev-ref', 'HEAD'])).stdout.trim()
+    await execFile('curl', ['-L', '-o', zippath, `https://github.com/curiousdannii/parchment${branch === 'testing' ? '-testing' : ''}/raw/gh-pages/dist/single-file/parchment-single-file.zip`])
+    await execFile('unzip', [zippath, '-d', outdir])
+}
+
 // Check if the file has changed
 const oldhash = crypto.createHash('sha1').setEncoding('hex')
-try {
-    oldhash.write(await fs.readFile(outpath))
-}
-catch (_) {}
+oldhash.write(await fs.readFile(outpath))
 oldhash.end()
 const newhash = crypto.createHash('sha1').setEncoding('hex')
 newhash.write(indexhtml)

@@ -14,7 +14,12 @@ cd dist/inform7
 # Download the zip so we can check file hashes
 if [ ! -f parchment-for-inform7.zip ]; then
     echo "Downloading old parchment-for-inform7.zip"
-    curl -s -L https://github.com/curiousdannii/parchment/raw/gh-pages/dist/inform7/parchment-for-inform7.zip -o parchment-for-inform7.zip
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$BRANCH" = "testing" ]; then
+        curl -s -L https://github.com/curiousdannii/parchment-testing/raw/gh-pages/dist/inform7/parchment-for-inform7.zip -o parchment-for-inform7.zip
+    else
+        curl -s -L https://github.com/curiousdannii/parchment/raw/gh-pages/dist/inform7/parchment-for-inform7.zip -o parchment-for-inform7.zip
+    fi
 fi
 
 # Unzip the old zip
