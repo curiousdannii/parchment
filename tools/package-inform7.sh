@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")/.."
 
-./build.js
+./build.js inform7
 
 sed "s/DATE/$(date '+%Y.%-m')/" src/inform7/manifest.txt > 'dist/inform7/Parchment/(manifest).txt'
 cp node_modules/jquery/dist/jquery.min.js dist/inform7/Parchment

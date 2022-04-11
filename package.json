@@ -22,7 +22,8 @@
     "esbuild": "^0.14.34",
     "eslint": "^8.3.0",
     "eslint-plugin-compat": "^4.0.0",
-    "http-server": "^14.0.0"
+    "http-server": "^14.0.0",
+    "minimist": "^1.2.6"
   },
   "scripts": {
     "build": "./build.js",

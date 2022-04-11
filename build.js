@@ -14,60 +14,61 @@ import esbuild, { serve } from 'esbuild'
 import fs from 'fs/promises'
 import path from 'path'
 import {HttpServer} from 'http-server'
+import minimist from 'minimist'
 
-const servemode = process.argv.includes('--serve')
+const argv = minimist(process.argv.slice(2))
+const servemode = argv.serve
 
 async function readdir(path) {
     return (await fs.readdir(path)).map(file => `${path}/${file}`)
 }
 
-const projects = [
-    // Fonts
-    {
-        copy: await readdir('src/fonts/iosevka'),
-        dest: 'dist/fonts/iosevka',
-    },
-    // Inform 7
-    {
+const projects = []
+
+if (argv._.includes('inform7')) {
+    projects.push({
         copy: [
             'node_modules/jquery/dist/jquery.min.js',
             'src/upstream/glkote/waiting.gif',
             'src/upstream/quixe/media/resourcemap.js',
         ],
-        dest: 'dist/inform7/Parchment',
-        entryPoints: [
-            'src/common/ie.js',
-            ['src/inform7/index.js', 'main.js'],
-            ['src/inform7/inform7.css', 'parchment.css'],
-            'src/inform7/quixe.js',
-            'src/inform7/zvm.js',
-        ],
-        options: {
-            format: 'iife',
+        entryPoints: {
+            ie: 'src/common/ie.js',
+            main: 'src/inform7/index.js',
+            parchment: 'src/inform7/inform7.css',
+            quixe: 'src/inform7/quixe.js',
+            zvm: 'src/inform7/zvm.js',
         },
-    },
-    // Web
-    {
+        format: 'iife',
+        outdir: 'dist/inform7/Parchment',
+    })
+}
+
+if (argv._.includes('web') || argv._.length === 0) {
+    projects.push({
+        copy: await readdir('src/fonts/iosevka'),
+        outdir: 'dist/fonts/iosevka',
+    }, {
         copy: [
             ...(await readdir('node_modules/emglken/build'))
                 .filter(file => file.endsWith('.wasm') && !file.endsWith('bocfel-core.wasm')),
             'node_modules/jquery/dist/jquery.min.js',
             'src/upstream/glkote/waiting.gif',
         ],
-        dest: 'dist/web',
-        entryPoints: [
-            'node_modules/emglken/src/git.js',
-            'node_modules/emglken/src/glulxe.js',
-            'node_modules/emglken/src/hugo.js',
-            'node_modules/emglken/src/tads.js',
-            'src/common/ie.js',
-            ['src/common/launcher.js', 'main.js'],
-            'src/common/quixe.js',
-            'src/common/zvm.js',
-            'src/web/web.css',
-        ],
-    },
-]
+        entryPoints: {
+            git: 'node_modules/emglken/src/git.js',
+            glulxe: 'node_modules/emglken/src/glulxe.js',
+            hugo: 'node_modules/emglken/src/hugo.js',
+            ie: 'src/common/ie.js',
+            main: 'src/common/launcher.js',
+            quixe: 'src/common/quixe.js',
+            tads: 'node_modules/emglken/src/tads.js',
+            web: 'src/web/web.css',
+            zvm: 'src/common/zvm.js',
+        },
+        outdir: 'dist/web',
+    })
+}
 
 const common_options = {
     bundle: true,
@@ -78,30 +79,18 @@ const common_options = {
 }
 
 for (const project of projects) {
-    await fs.mkdir(project.dest, {recursive: true})
+    await fs.mkdir(project.outdir, {recursive: true})
 
     if (project.copy) {
         for (const file of project.copy) {
-            await fs.copyFile(file, `${project.dest}/${path.basename(file)}`)
+            await fs.copyFile(file, `${project.outdir}/${path.basename(file)}`)
         }
         delete project.copy
     }
 
     if (project.entryPoints) {
-        // Build each entry point by itself
-        for (const entrypoint_name of project.entryPoints) {
-            const entrypoint = Array.isArray(entrypoint_name)
-                ? {
-                    entryPoints: [entrypoint_name[0]],
-                    outfile: `${project.dest}/${entrypoint_name[1]}`,
-                }
-                : {
-                    entryPoints: [entrypoint_name],
-                    outdir: project.dest,
-                }
-            const options = Object.assign({}, common_options, project.options, entrypoint)
-            await esbuild.build(options)
-        }
+        const options = Object.assign({}, common_options, project)
+        await esbuild.build(options)
     }
 }
 
