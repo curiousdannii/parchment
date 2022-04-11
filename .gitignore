@@ -1,5 +1,6 @@
 .eslintrc.*js
 .gitmodules
+build.js
 dist/**/package.json
 dist/inform7/Parchment*
 gulpfile.js
