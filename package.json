@@ -40,5 +40,9 @@
     "last 2 versions and supports es6-module",
     "Firefox ESR",
     "not dead"
-  ]
+  ],
+  "browser": {
+    "fs": false,
+    "path": false
+  }
 }
