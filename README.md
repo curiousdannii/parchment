@@ -67,8 +67,6 @@ Then you can view Parchment at `http://localhost:8080` to see your handiwork.
 
 Each time you change code in the `src` folder, the server will automatically rebuild the web code. Refresh to see your changes.
 
-You'll find it easier to debug and hack on the code if you disable minification, by commenting out the `.pipe(terser(terser_opts))` line in `gulpfile.esm.js`.
-
 You can also build your own `dist/inform/parchment-for-inform7.zip` like this:
 
 ```
