@@ -29,8 +29,6 @@ jobs:
           path: src/upstream/emglken/build
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - run: npm run link-local-emglken
-      - name: Build AsyncGlk
-        run: cd src/upstream/asyncglk && npm install --ignore-scripts && npx tsc
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
         run: cd src/upstream/emglken && npm run build

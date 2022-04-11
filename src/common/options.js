@@ -10,7 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import Dialog from '../upstream/glkote/dialog.js'
-import GlkOte from '../upstream/asyncglk/dist/glkote/web/web.js'
+import GlkOte from '../upstream/asyncglk/src/glkote/web/web.ts'
 
 export default function get_default_options() {
     return {

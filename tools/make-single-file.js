@@ -54,7 +54,7 @@ const files = await Promise.all(filenames.map(async filename => {
     if (filename.endsWith('.css')) {
         // Only include a single font, the browser can fake bold and italics
         const fontfile = await file_to_base64(path.join(webpath, '../fonts/iosevka/iosevka-extended.woff2'))
-        data = data.replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\('woff2'\)}/g, (_, font, style, weight) => {
+        data = data.replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\(['"]woff2['"]\)}/g, (_, font, style, weight) => {
             if (font === 'Iosevka' && style === 'normal' && weight === '400') {
                 return `@font-face{font-family:Iosevka;font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${fontfile}) format('woff2')}`
             }

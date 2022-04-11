@@ -9,9 +9,9 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import Blorb from '../upstream/asyncglk/dist/blorb/blorb.js'
+import Blorb from '../upstream/asyncglk/src/blorb/blorb.ts'
 import get_default_options from './options.js'
-import {FileView} from '../upstream/asyncglk/dist/blorb/iff.js'
+import {FileView} from '../upstream/asyncglk/src/blorb/iff.ts'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
 import {formats, identify_blorb_storyfile_format} from './formats.js'
 

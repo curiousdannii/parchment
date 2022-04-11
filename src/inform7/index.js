@@ -9,7 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import Blorb from '../upstream/asyncglk/dist/blorb/blorb.js'
+import Blorb from '../upstream/asyncglk/src/blorb/blorb.ts'
 import get_default_options from '../common/options.js'
 import Glk from '../upstream/glkote/glkapi.js'
 

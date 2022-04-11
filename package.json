@@ -15,7 +15,8 @@
   "type": "module",
   "dependencies": {
     "emglken": "^0.3.3",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "esbuild": "^0.14.34",
