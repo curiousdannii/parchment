@@ -18,31 +18,20 @@
     "jquery": "^3.6.0"
   },
   "devDependencies": {
-    "@rollup/plugin-alias": "^3.1.8",
-    "@rollup/plugin-commonjs": "^21.0.0",
-    "@rollup/plugin-node-resolve": "13.1.3",
-    "@rollup/stream": "^2.0.0",
+    "esbuild": "^0.14.34",
     "eslint": "^8.3.0",
     "eslint-plugin-compat": "^4.0.0",
-    "gulp": "^4.0.2",
-    "gulp-clean-css": "^4.3.0",
-    "gulp-cli": "^2.3.0",
-    "gulp-rename": "^2.0.0",
-    "gulp-terser": "^2.1.0",
-    "http-server": "^14.0.0",
-    "rollup": "^2.60.0",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
+    "http-server": "^14.0.0"
   },
   "scripts": {
+    "build": "./build.js",
     "check-compat": "tools/check-compat.sh",
-    "gulp": "gulp",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
-    "prepare": "gulp",
-    "prestart": "gulp",
-    "start": "gulp serve"
+    "prepare": "./build.js",
+    "prestart": "./build.js",
+    "start": "./build.js --serve"
   },
   "browserslist": [
     "> 0.2% and supports es6-module",

@@ -34,7 +34,7 @@ jobs:
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
         run: cd src/upstream/emglken && npm run build
-      - run: npm run gulp
+      - run: npm run build
       - name: Package Parchment for Inform 7
         run: ./tools/package-inform7.sh
       - name: Build single file Parchment
