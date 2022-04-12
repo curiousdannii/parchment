@@ -40,7 +40,8 @@ const files = await Promise.all(filenames.map(async filename => {
     }
     let data = await fs.readFile(path.join(webpath, filename), {encoding: filename.endsWith('.wasm') ? null : 'utf8'})
     if (!filename.endsWith('.wasm')) {
-        data = data.trim()
+        data = data.replace(/(\/\/|\/\*)# sourceMappingURL.+/, '')
+            .trim()
     }
     if (filename === 'ie.js') {
         return `<script nomodule>${data}</script>`

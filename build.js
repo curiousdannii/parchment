@@ -17,16 +17,21 @@ import {HttpServer} from 'http-server'
 import minimist from 'minimist'
 
 const argv = minimist(process.argv.slice(2))
+const projects = argv._
+if (projects.length === 0) {
+    projects.push('web')
+}
+console.log(`Building project${projects.length > 1 ? 's' : ''}: ${projects.join(', ')}`)
 const servemode = argv.serve
 
 async function readdir(path) {
     return (await fs.readdir(path)).map(file => `${path}/${file}`)
 }
 
-const projects = []
+const projects_to_build = []
 
-if (argv._.includes('inform7')) {
-    projects.push({
+if (projects.includes('inform7')) {
+    projects_to_build.push({
         copy: [
             'node_modules/jquery/dist/jquery.min.js',
             'src/upstream/glkote/waiting.gif',
@@ -44,8 +49,8 @@ if (argv._.includes('inform7')) {
     })
 }
 
-if (argv._.includes('web') || argv._.length === 0) {
-    projects.push({
+if (projects.includes('web')) {
+    projects_to_build.push({
         copy: await readdir('src/fonts/iosevka'),
         outdir: 'dist/fonts/iosevka',
     }, {
@@ -67,6 +72,7 @@ if (argv._.includes('web') || argv._.length === 0) {
             zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
+        sourcemap: true,
     })
 }
 
@@ -78,7 +84,7 @@ const common_options = {
     watch: servemode,
 }
 
-for (const project of projects) {
+for (const project of projects_to_build) {
     await fs.mkdir(project.outdir, {recursive: true})
 
     if (project.copy) {
