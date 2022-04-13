@@ -32,7 +32,6 @@
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
     "prepare": "./build.js",
-    "prestart": "./build.js",
     "start": "./build.js --serve"
   },
   "browserslist": [
