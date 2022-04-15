@@ -44,7 +44,7 @@ export const formats = [
 
     {
         id: 'glulx',
-        extensions: /\.(gblorb|ulx)/,
+        extensions: /\.(gblorb|glb|ulx)/,
         engines: [
             {
                 id: 'quixe',
@@ -98,7 +98,7 @@ export const formats = [
 
     {
         id: 'zcode',
-        extensions: /\.(zblorb|z3|z4|z5|z8)/,
+        extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/,
         engines: [
             {
                 id: 'zvm',
