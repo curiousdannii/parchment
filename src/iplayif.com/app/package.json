@@ -1,0 +1,21 @@
+{
+  "name": "iplayif",
+  "version": "0.1.0",
+  "description": "iplayif.com proxy and metadata server",
+  "author": "Dannii Willis <curiousdannii@gmail.com>",
+  "license": "MIT",
+  "repository": "curiousdannii/iplayif.com",
+  "type": "module",
+  "dependencies": {
+    "koa": "^2.13.4",
+    "lodash-es": "^4.17.21",
+    "node-fetch": "^3.2.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.13.0"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "start": "node src/main.js"
+  }
+}

@@ -1,0 +1,23 @@
+services:
+  app:
+    build: ./app
+    environment:
+      DATA_DIR: /home/data
+    logging:
+      driver: local
+    restart: always
+    volumes:
+      - ./data:/home/data
+
+  nginx:
+    build: ./nginx
+    environment:
+      DATA_DIR: /home/data
+    logging:
+      driver: local
+    ports:
+      - "80:80"
+      #- "443:443"
+    restart: always
+    volumes:
+      - ./data:/home/data
