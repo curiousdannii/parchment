@@ -48,13 +48,18 @@ export default class ProxyApp extends BaseApp {
             ctx.throw(400, 'Requested file too large')
         }
 
-        const data = buffer.toString(query.encode === 'base64' ? 'base64' : 'latin1')
-        if (query.callback) {
-            ctx.type = 'text/javascript'
-            ctx.body = `${query.callback}("${data}")`
+        if (query.encode === 'base64') {
+            const data = buffer.toString(query.encode === 'base64' ? 'base64' : 'latin1')
+            if (query.callback) {
+                ctx.type = 'text/javascript'
+                ctx.body = `${query.callback}("${data}")`
+            }
+            else {
+                ctx.body = data
+            }
         }
         else {
-            ctx.body = data
+            ctx.body = buffer
         }
 
         // Set and check ETag
