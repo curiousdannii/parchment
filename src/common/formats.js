@@ -20,7 +20,7 @@ async function generic_emglken_vm(options, requires)
     })
 
     const vm = new engine.default()
-    vm.prepare(file_data, vm_options)
+    vm.init(file_data, vm_options)
     await vm.start()
 }
 

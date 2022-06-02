@@ -5,6 +5,7 @@ dist/**/package.json
 dist/inform7/Parchment*
 gulpfile.js
 node_modules
+package.json
 package-lock.json
 src
 tools
