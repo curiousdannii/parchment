@@ -56,11 +56,12 @@ if (projects.includes('web')) {
     }, {
         copy: [
             ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') && !file.endsWith('bocfel-core.wasm')),
+                .filter(file => file.endsWith('.wasm') || file.endsWith('.wasm.map')),
             'node_modules/jquery/dist/jquery.min.js',
             'src/upstream/glkote/waiting.gif',
         ],
         entryPoints: {
+            bocfel: 'node_modules/emglken/src/bocfel.js',
             git: 'node_modules/emglken/src/git.js',
             glulxe: 'node_modules/emglken/src/glulxe.js',
             hugo: 'node_modules/emglken/src/hugo.js',

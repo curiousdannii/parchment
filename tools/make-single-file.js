@@ -34,8 +34,8 @@ async function file_to_base64(path) {
 
 // Turn the filenames into embeddable resources
 const files = await Promise.all(filenames.map(async filename => {
-    // Skip Git and Glulxe while they can't even be used
-    if (/(git|glulx)/.test(filename)) {
+    // Skip unused interpreters
+    if (/(bocfel|git|glulx)/.test(filename)) {
         return
     }
     let data = await fs.readFile(path.join(webpath, filename), {encoding: filename.endsWith('.wasm') ? null : 'utf8'})

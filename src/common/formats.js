@@ -118,6 +118,12 @@ export const formats = [
                     Glk.init(vm_options)
                 },
             },
+
+            {
+                id: 'bocfel',
+                load: ['./bocfel.js', './bocfel-core.wasm'],
+                start: generic_emglken_vm,
+            },
         ],
     },
 ]
