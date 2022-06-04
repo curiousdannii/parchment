@@ -9,14 +9,34 @@ https://github.com/curiousdannii/parchment
 
 */
 
+// Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers
+const DIRECT_DOMAINS = [
+    'unbox.ifarchive.org',
+]
+
 // Fetch a storyfile, using the proxy if necessary, and handling JSified stories
 export async function fetch_storyfile(options, url)
 {
-    let response = await fetch(url, {redirect: 'follow'})
-    // We can't specifically detect CORS errors, so just try the proxy for all errors
-    .catch(() => {
-        return fetch(`${options.proxy_url}?url=${url}`)
-    })
+    const proxy_url = `${options.proxy_url}?url=${url}`
+    const story_domain = (new URL(url)).hostname
+    let response
+
+    // Only directly access files from the list of reliable domains
+    for (const domain of DIRECT_DOMAINS) {
+        if (story_domain.endsWith(domain)) {
+            response = await fetch(url)
+            // We can't specifically detect CORS errors, so just try the proxy for all errors
+            .catch(() => {
+                return fetch(proxy_url)
+            })
+            break
+        }
+    }
+
+    // Otherwise use the proxy
+    if (!response) {
+        response = await fetch(proxy_url)
+    }
 
     if (!response.ok)
     {
