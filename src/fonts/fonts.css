@@ -79,13 +79,13 @@
 }
 
 :root {
-    --glkote-grid-mono-family: "Iosevka", monospace;
     --glkote-mono-family: "Iosevka", monospace;
-    --glkote-prop-family: Georgia, serif;
 }
 
+/* For mobiles use Iosevka Narrow and make it slightly smaller */
 @media screen and (max-width: 767px) {
     :root {
+        --glkote-grid-line-height: 17px;
         --glkote-grid-mono-family: "Iosevka Narrow", monospace;
         --glkote-grid-size: 13px;
     }
