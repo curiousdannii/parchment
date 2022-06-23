@@ -9,6 +9,8 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import Cookies from 'js-cookie'
+
 import Blorb from '../upstream/asyncglk/src/blorb/blorb.ts'
 import get_default_options from './options.js'
 import {FileView} from '../upstream/asyncglk/src/blorb/iff.ts'
@@ -36,6 +38,15 @@ class ParchmentLauncher
 
     launch() {
         try {
+            // Apply the dark theme if set
+            const theme = this.options.theme
+                || Cookies.get(this.options.theme_cookie)
+                // Or if the browser tells us to prefer dark
+                || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : '')
+            if (theme) {
+                document.documentElement.setAttribute('data-theme', theme)
+            }
+
             const storyfile_path = this.get_storyfile_path()
             if (!storyfile_path) {
                 // Set up all the ways we can load a story

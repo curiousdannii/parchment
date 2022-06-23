@@ -23,5 +23,7 @@ export default function get_default_options() {
         proxy_url: 'https://proxy.iplayif.com/proxy/',
         //single_file: 0
         //story: PATH_TO_STORY
+        //theme: can be set to 'dark'
+        theme_cookie: 'parchment_theme',
     }
 }

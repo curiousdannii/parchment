@@ -10,13 +10,14 @@ https://github.com/curiousdannii/parchment
 */
 
 body {
+  background: var(--glkote-page-bg);
+  color: var(--glkote-buffer-fg);
   height: 100%;
   margin: 0px;
 }
 
 /* Essential styles for GlkOte */
 #gameport {
-  background: var(--glkote-page-bg);
   bottom: 0px;
   left: 0px;
   margin: 0 auto;
