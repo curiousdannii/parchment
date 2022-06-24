@@ -9,39 +9,54 @@ https://github.com/curiousdannii/parchment
 
 */
 
-// Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers
-const DIRECT_DOMAINS = [
-    'unbox.ifarchive.org',
-]
-
 // Fetch a storyfile, using the proxy if necessary, and handling JSified stories
 export async function fetch_storyfile(options, url)
 {
+    // Handle a relative URL
+    url = new URL(url, document.URL)
+    const story_domain = url.hostname
+    const same_domain = story_domain === document.location.hostname
+    url = '' + url
     const proxy_url = `${options.proxy_url}?url=${url}`
-    const story_domain = (new URL(url)).hostname
     let response
 
-    // Only directly access files from the list of reliable domains
-    for (const domain of DIRECT_DOMAINS) {
-        if (story_domain.endsWith(domain)) {
+    // Only directly access files same origin files or those from the list of reliable domains
+    let direct_access = same_domain
+    if (!direct_access) {
+        for (const domain of options.direct_domains) {
+            if (story_domain.endsWith(domain)) {
+                direct_access = true
+                break
+            }
+        }
+    }
+
+    if (direct_access) {
+        try {
             response = await fetch(url)
-            // We can't specifically detect CORS errors, so just try the proxy for all errors
-            .catch(() => {
-                return fetch(proxy_url)
-            })
-            break
+        }
+        // We can't specifically detect CORS errors but that's probably what happened
+        catch (_) {
+            throw new Error('Failed to fetch storyfile (possible CORS error)')
         }
     }
 
     // Otherwise use the proxy
-    if (!response) {
-        response = await fetch(proxy_url)
+    else {
+        if (options.use_proxy) {
+            response = await fetch(proxy_url)
+        }
+        else {
+            throw new Error('Storyfile not in list of direct domains and proxy disabled')
+        }
     }
 
     if (!response.ok)
     {
         throw new Error(`Could not fetch storyfile, got ${response.status}`)
     }
+
+    // It would be nice to check here if the file was compressed, but we can only read the Content-Encoding header for same domain files
 
     // Handle JSified stories
     if (url.endsWith('.js')) {

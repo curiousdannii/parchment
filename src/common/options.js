@@ -17,6 +17,10 @@ export default function get_default_options() {
         auto_launch: 1,
         //default_story: [PATH_TO_JSIFIED_STORY]
         Dialog,
+        /** Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers */
+        direct_domains: [
+            'unbox.ifarchive.org',
+        ],
         do_vm_autosave: 1,
         GlkOte: new GlkOte(),
         lib_path: 'dist/web/',
@@ -25,5 +29,7 @@ export default function get_default_options() {
         //story: PATH_TO_STORY
         //theme: can be set to 'dark'
         theme_cookie: 'parchment_theme',
+        /** Disable the file proxy, which may mean that some files can't be loaded */
+        use_proxy: 1,
     }
 }
