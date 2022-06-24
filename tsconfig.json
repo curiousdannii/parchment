@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "module": "ES2020",
+        "moduleResolution": "Node",
+        "rootDir": "src",
+        "target": "es2020"
+    },
+    "include": [
+        "src/common/*.ts",
+        "src/types.d.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

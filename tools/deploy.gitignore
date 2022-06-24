@@ -9,3 +9,4 @@ package.json
 package-lock.json
 src
 tools
+tsconfig.json

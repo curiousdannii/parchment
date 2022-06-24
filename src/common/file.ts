@@ -9,16 +9,16 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import {ParchmentOptions} from './options.js'
+
 // Fetch a storyfile, using the proxy if necessary, and handling JSified stories
-export async function fetch_storyfile(options, url)
-{
+export async function fetch_storyfile(options: ParchmentOptions, url: string) {
     // Handle a relative URL
-    url = new URL(url, document.URL)
-    const story_domain = url.hostname
+    const story_url = new URL(url, document.URL)
+    const story_domain = story_url.hostname
     const same_domain = story_domain === document.location.hostname
-    url = '' + url
-    const proxy_url = `${options.proxy_url}?url=${url}`
-    let response
+    const proxy_url = `${options.proxy_url}?url=${story_url}`
+    let response: Response
 
     // Only directly access files same origin files or those from the list of reliable domains
     let direct_access = same_domain
@@ -33,7 +33,7 @@ export async function fetch_storyfile(options, url)
 
     if (direct_access) {
         try {
-            response = await fetch(url)
+            response = await fetch('' + story_url)
         }
         // We can't specifically detect CORS errors but that's probably what happened
         catch (_) {
@@ -51,8 +51,7 @@ export async function fetch_storyfile(options, url)
         }
     }
 
-    if (!response.ok)
-    {
+    if (!response.ok) {
         throw new Error(`Could not fetch storyfile, got ${response.status}`)
     }
 
@@ -74,11 +73,10 @@ export async function fetch_storyfile(options, url)
     return new Uint8Array(buffer)
 }
 
-export async function fetch_vm_resource(options, path)
-{
+export async function fetch_vm_resource(options: ParchmentOptions, path: string) {
     // Handle embedded resources in single file mode
     if (options.single_file) {
-        const data = document.getElementById(path).text
+        const data = (document.getElementById(path) as HTMLScriptElement).text
         if (path.endsWith('.js')) {
             return import(`data:text/javascript,${encodeURIComponent(data)}`)
         }
@@ -86,33 +84,30 @@ export async function fetch_vm_resource(options, path)
             throw new Error(`Can't load ${path} in single file mode`)
         }
         const response = await fetch(`data:application/wasm;base64,${data}`)
-        if (!response.ok)
-        {
+        if (!response.ok) {
             throw new Error(`Could not fetch ${path}, got ${response.status}`)
         }
         return response.arrayBuffer()
     }
 
-    if (path.endsWith('.js'))
-    {
+    if (path.endsWith('.js')) {
         return import(path)
     }
 
     // Something else, like a .wasm
     const response = await fetch(options.lib_path + path)
-    if (!response.ok)
-    {
+    if (!response.ok) {
         throw new Error(`Could not fetch ${path}, got ${response.status}`)
     }
     return response.arrayBuffer()
 }
 
 // Read an uploaded file and return it as a Uint8Array
-export function read_uploaded_file(file) {
+export function read_uploaded_file(file: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()
         reader.onerror = () => reject(reader.error)
-        reader.onload = event => resolve(new Uint8Array(event.target.result))
+        reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer))
         reader.readAsArrayBuffer(file)
     })
 }

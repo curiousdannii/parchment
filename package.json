@@ -20,11 +20,16 @@
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
+    "@types/jquery": "^3.5.11",
+    "@types/lodash-es": "^4.17.5",
+    "@typescript-eslint/eslint-plugin": "^5.10.1",
+    "@typescript-eslint/parser": "^5.10.1",
     "esbuild": "^0.14.34",
     "eslint": "^8.3.0",
     "eslint-plugin-compat": "^4.0.0",
     "http-server": "^14.0.0",
-    "minimist": "^1.2.6"
+    "minimist": "^1.2.6",
+    "typescript": "^4.7.4"
   },
   "scripts": {
     "build": "./build.js",
@@ -33,7 +38,8 @@
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
     "prepare": "./build.js",
-    "start": "./build.js --serve"
+    "start": "./build.js --serve",
+    "tsc-check": "tsc --noEmit"
   },
   "browserslist": [
     "> 0.2% and supports es6-module",

@@ -19,6 +19,7 @@ jobs:
           node-version: '17'
       - run: npm install --ignore-scripts
       - run: npm run lint
+      - run: npm run tsc-check
       - name: Get Emglken commit ref
         id: emglken-ref
         run: echo "::set-output name=ref::$(git submodule status src/upstream/emglken | cut -c 2-13)"
