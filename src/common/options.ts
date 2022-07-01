@@ -9,11 +9,10 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import {Dialog, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import Dialog from '../upstream/glkote/dialog.js'
-import {GlkOte, GlkOteOptions} from '../upstream/asyncglk/src/glkote/common/glkote.js'
-import WebGlkOte from '../upstream/asyncglk/src/glkote/web/web.js'
+import WebDialog from '../upstream/glkote/dialog.js'
 
 type ParchmentTruthy = boolean | number
 
@@ -44,7 +43,7 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     // Modules to pass to other modules
 
     /** Dialog instance to use */
-    Dialog: any,
+    Dialog: Dialog,
     /** GlkOte instance to use */
     GlkOte: GlkOte,
 
@@ -57,7 +56,7 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
 export default function get_default_options(): ParchmentOptions {
     return {
         auto_launch: 1,
-        Dialog,
+        Dialog: WebDialog,
         direct_domains: [
             'unbox.ifarchive.org',
         ],
