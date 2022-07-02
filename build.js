@@ -30,6 +30,29 @@ async function readdir(path) {
 
 const projects_to_build = []
 
+if (projects.includes('ifcomp')) {
+    projects_to_build.push({
+        copy: await readdir('src/fonts/iosevka'),
+        outdir: 'dist/ifcomp/fonts/iosevka',
+    }, {
+        copy: [
+            'node_modules/emglken/build/tads-core.wasm',
+            'node_modules/jquery/dist/jquery.min.js',
+            'src/upstream/glkote/waiting.gif',
+        ],
+        entryPoints: {
+            ie: 'src/common/ie.js',
+            main: 'src/common/launcher.js',
+            quixe: 'src/common/quixe.js',
+            tads: 'node_modules/emglken/src/tads.js',
+            web: 'src/web/web.css',
+            zvm: 'src/common/zvm.js',
+        },
+        outdir: 'dist/ifcomp/interpreter',
+        sourcemap: true,
+    })
+}
+
 if (projects.includes('inform7')) {
     projects_to_build.push({
         copy: [
@@ -46,6 +69,23 @@ if (projects.includes('inform7')) {
         },
         format: 'iife',
         outdir: 'dist/inform7/Parchment',
+    })
+}
+
+if (projects.includes('lectrote')) {
+    projects_to_build.push({
+        copy: [
+            ...(await readdir('node_modules/emglken/build'))
+                .filter(file => file.endsWith('.wasm') && file !== 'bocfel-core.wasm'),
+        ],
+        entryPoints: {
+            git: 'node_modules/emglken/src/git.js',
+            glulxe: 'node_modules/emglken/src/glulxe.js',
+            hugo: 'node_modules/emglken/src/hugo.js',
+            tads: 'node_modules/emglken/src/tads.js',
+        },
+        format: 'cjs',
+        outdir: 'dist/lectrote',
     })
 }
 
