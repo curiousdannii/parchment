@@ -10,12 +10,10 @@ https://github.com/curiousdannii/iplayif.com
 */
 
 import crypto from 'crypto'
-import fetch from 'node-fetch'
 
 import {BaseApp} from './app.js'
+import {SUPPORTED_TYPES} from './common.js'
 import * as templates from './templates.js'
-
-const SUPPORTED_TYPES = /\.(blb|blorb|gam|gblorb|glb|hex|t3|ulx|zblorb|zlb|z[3458])$/i
 
 export default class ProxyApp extends BaseApp {
     async proxy(ctx) {

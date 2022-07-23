@@ -13,6 +13,9 @@ Here are all the options you can set in data/options.json
     "test": true,
   },
   "domain": "localhost",
+  "front_page": {
+    "index_update_time": 10,
+  },
   "https": false,
   "nginx": {
     "reload_time": 360
@@ -32,6 +35,8 @@ Here are all the options you can set in data/options.json
   - rewew_time: (int minutes) period to rewew certificate
   - test: (bool) obtain a test certificate from the Let's Encrypt staging server
 - domain: (str) the main domain of the app
+- front_page: front page options
+  - index_update_time: (int minutes) how frequently to check if the front page HTML has changed
 - https: (bool) whether to enable HTTPS
 - nginx: nginx options
   - reload_time: (int minutes) period to reload nginx (to check for certificate changes)

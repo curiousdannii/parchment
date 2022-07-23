@@ -31,6 +31,8 @@ LISTEN="listen 80;
 
 # Handle HTTPS
 if [ -n "$DOMAIN" ]; then
+    DOMAIN_SERVERS="server_name ${DOMAIN} ${SECONDARY_DOMAIN};"
+
     # See if we're ready for HTTPS
     CERTNAME="${DOMAIN}${WWW_DOMAIN}${SECONDARY_DOMAIN}"
     CERT_DIR=$DATA_DIR/certbot/live/$CERTNAME
@@ -70,9 +72,13 @@ fi
 cat >> $CONF_FILE <<EOF
 server {
     $LISTEN
-    server_name ${DOMAIN} ${SECONDARY_DOMAIN};
+    $DOMAIN_SERVERS
     $SSL
     $GZIP
+
+    location = / {
+        proxy_pass http://app:8080;
+    }
 
     location /proxy {
         proxy_pass http://app:8080;

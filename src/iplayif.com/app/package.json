@@ -8,11 +8,10 @@
   "type": "module",
   "dependencies": {
     "koa": "^2.13.4",
-    "lodash-es": "^4.17.21",
-    "node-fetch": "^3.2.3"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
-    "eslint": "^8.13.0"
+    "eslint": "^8.20.0"
   },
   "scripts": {
     "lint": "eslint src",

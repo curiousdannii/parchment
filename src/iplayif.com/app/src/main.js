@@ -13,10 +13,14 @@ import fs from 'fs/promises'
 import {merge} from 'lodash-es'
 import path from 'path'
 
-import IplayifApp from './proxy.js'
+import IplayifApp from './front-page.js'
 
 const default_options = {
     cache_control_age: 604800, // 1 week
+    cdn_domain: 'cdn.iplayif.com',
+    front_page: {
+        index_update_time: 10,
+    },
     proxy: {
         max_size: 100000000, // 100 MB
     },

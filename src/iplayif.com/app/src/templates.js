@@ -63,7 +63,7 @@ export function error(msg) {
 export function proxyhome() {
     return `
         <div>
-            <p>This is a simple proxy for use with Interfactive Fiction web interpreters.
+            <p>This is a simple proxy for use with Interactive Fiction web interpreters.
             <h2>How to use</h2>
             <p>Examples:
             <ul>

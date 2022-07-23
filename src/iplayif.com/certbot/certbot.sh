@@ -6,6 +6,7 @@ OPTIONS_FILE=$DATA_DIR/options.json
 # Check that credentials.ini and options.json both exist
 if [ ! -f "$CREDENTIALS_FILE" ] || [ ! -f "$OPTIONS_FILE" ]; then
     echo HTTPS not enabled
+    sleep infinity
     exit
 fi
 
@@ -19,6 +20,7 @@ WWW=$(jq -r '.www? // false' $OPTIONS_FILE)
 
 if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ] || [ "$HTTPS" = "false" ]; then
     echo HTTPS not enabled
+    sleep infinity
     exit
 fi
 

@@ -15,6 +15,7 @@ services:
       DATA_DIR: /home/data
     logging:
       driver: local
+    restart: always
     volumes:
       - ./data:/home/data
       - ./data/certbot:/etc/letsencrypt

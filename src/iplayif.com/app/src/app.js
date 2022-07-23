@@ -66,6 +66,10 @@ export class BaseApp {
         // Cache this please
         ctx.set('Cache-Control', `max-age=${this.options['cache_control_age']}`)
 
+        if (request_path === '/') {
+            return this.front_page(ctx)
+        }
+
         if (request_path.startsWith('/proxy')) {
             return this.proxy(ctx)
         }
