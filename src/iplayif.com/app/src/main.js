@@ -21,6 +21,10 @@ const default_options = {
     front_page: {
         index_update_time: 10,
     },
+    metadata: {
+        max_age: 24, // 24 hours
+        max_size: 200000000, // 200 MB
+    },
     proxy: {
         max_size: 100000000, // 100 MB
     },

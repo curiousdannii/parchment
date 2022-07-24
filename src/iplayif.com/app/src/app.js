@@ -11,6 +11,7 @@ https://github.com/curiousdannii/iplayif.com
 
 import Koa from 'koa'
 
+import {Metadata} from './metadata.js'
 import * as templates from './templates.js'
 
 export class BaseApp {
@@ -18,6 +19,7 @@ export class BaseApp {
         this.options = options
 
         this.app = new Koa()
+        this.metadata = new Metadata(options)
 
         // Add the layers
 
