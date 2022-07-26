@@ -65,7 +65,7 @@ export default class FrontPageApp extends ProxyApp {
                 open_graph.push(`<meta property="og:description" content="${escape(truncate(data.description, {
                     length: 1000,
                     separator: /[,.]? +/,
-                }))}"`)
+                }))}"/>`)
             }
             if (data.cover) {
                 open_graph.push(`<meta property="og:image" content="${protcol_domain}/metadata/cover/?url=${escape(story_url)}&maxh=630"/>`)
