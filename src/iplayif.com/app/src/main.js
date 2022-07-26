@@ -13,14 +13,16 @@ import fs from 'fs/promises'
 import {merge} from 'lodash-es'
 import path from 'path'
 
-import IplayifApp from './front-page.js'
+import {MetaDataApp as IplayifApp} from './metadata.js'
 
 const default_options = {
     cache_control_age: 604800, // 1 week
     cdn_domain: 'cdn.iplayif.com',
+    domain: '127.0.0.1',
     front_page: {
         index_update_time: 10,
     },
+    https: false,
     metadata: {
         max_age: 24, // 24 hours
         max_size: 200000000, // 200 MB

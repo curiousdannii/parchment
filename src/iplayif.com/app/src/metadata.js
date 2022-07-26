@@ -10,6 +10,7 @@ https://github.com/curiousdannii/iplayif.com
 */
 
 import child_process from 'child_process'
+import crypto from 'crypto'
 import fs from 'fs/promises'
 import fs_sync from 'fs'
 import os from 'os'
@@ -17,20 +18,26 @@ import path from 'path'
 import {pipeline} from 'stream/promises'
 import util from 'util'
 
+import {unescape} from 'lodash-es'
 import LRU from 'lru-cache'
+import sharp from 'sharp'
+
+import {SUPPORTED_TYPES} from './common.js'
+import FrontPageApp from './front-page.js'
 
 const execFile = util.promisify(child_process.execFile)
 
 class File {
-    constructor(title, author, cover, description) {
+    constructor(title) {
         this.title = title
-        this.author = author
-        this.cover = cover
-        this.description = description
+        this.author = null
+        this.cover = null
+        this.cover_type = null
+        this.description = null
     }
 }
 
-export class Metadata {
+export class MetadataCache {
     constructor(options) {
         this.lru = new LRU({
             fetchMethod: (url) => this.fetch(url),
@@ -45,7 +52,7 @@ export class Metadata {
 
     async fetch(url) {
         const file_name = /([^/=]+)$/.exec(url)[1]
-        const result = new File(file_name, null, null, null)
+        const result = new File(file_name)
 
         // Absorb all errors here
         try {
@@ -72,8 +79,18 @@ export class Metadata {
                     result.title = author_data[0].replace(/^[\s"]+|[\s"]+$/g, '')
                 }
 
+                // Extract a cover
+                if (!identify_data[2].includes('no cover')) {
+                    const extract_cover_results = await execFile('babel', ['-cover', file_path])
+                    if (!extract_cover_results.stderr.length) {
+                        const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)[1]
+                        result.cover = await fs.readFile(cover_path)
+                        await fs.rm(cover_path)
+                    }
+                }
+
                 // Check the IFDB for details
-                if (!result.author) {
+                if (!result.author || !result.cover) {
                     const ifid = /IFID: ([-\w]+)/i.exec(identify_data[1])[1]
                     const ifdb_response = await fetch(`https://ifdb.org/viewgame?ifiction&ifid=${ifid}`)
                     if (ifdb_response.ok) {
@@ -84,7 +101,20 @@ export class Metadata {
                         if (result.title === file_name) {
                             result.title = /<title>(.+)<\/title>/.exec(ifdb_xml)[1]
                         }
+                        if (!result.cover) {
+                            const cover_url = /<coverart><url>(.+)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
+                            if (cover_url) {
+                                const cover_response = await fetch(unescape(cover_url))
+                                if (cover_response.ok) {
+                                    result.cover = Buffer.from(await cover_response.arrayBuffer())
+                                }
+                            }
+                        }
                     }
+                }
+
+                if (result.cover) {
+                    result.cover_type = (await sharp(result.cover).metadata())?.format
                 }
             }
 
@@ -98,5 +128,50 @@ export class Metadata {
 
     get(url) {
         return this.lru.fetch(url)
+    }
+}
+
+export class MetaDataApp extends FrontPageApp {
+    async metadata_cover(ctx) {
+        ctx.component_name = 'Parchment Metadata server'
+        const query = ctx.query
+        const url = query.url
+
+        if (!url) {
+            ctx.throw(400, 'No requested URL')
+        }
+
+        if (!SUPPORTED_TYPES.test(url)) {
+            ctx.throw(400, 'Unsupported file type')
+        }
+
+        const data = await this.metadata.get(url)
+        if (!data.cover) {
+            ctx.throw(400, 'Cover image not found')
+        }
+
+        ctx.type = data.cover_type
+
+        const max_height = parseInt(query.maxh, 10)
+
+        if (!max_height) {
+            ctx.body = data.cover
+        }
+        else {
+            ctx.body = await sharp(data.cover)
+                .resize({
+                    fit: 'inside',
+                    height: max_height,
+                    withoutEnlargement: true,
+                })
+                .toBuffer()
+        }
+
+        // Set and check ETag
+        ctx.response.etag = crypto.createHash('md5').update(ctx.body).digest('hex')
+        if (ctx.fresh) {
+            ctx.status = 304
+            return
+        }
     }
 }

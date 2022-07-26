@@ -11,7 +11,7 @@ https://github.com/curiousdannii/iplayif.com
 
 import Koa from 'koa'
 
-import {Metadata} from './metadata.js'
+import {MetadataCache} from './metadata.js'
 import * as templates from './templates.js'
 
 export class BaseApp {
@@ -19,7 +19,7 @@ export class BaseApp {
         this.options = options
 
         this.app = new Koa()
-        this.metadata = new Metadata(options)
+        this.metadata = new MetadataCache(options)
 
         // Add the layers
 
@@ -74,6 +74,10 @@ export class BaseApp {
 
         if (request_path.startsWith('/proxy')) {
             return this.proxy(ctx)
+        }
+
+        if (request_path.startsWith('/metadata/cover')) {
+            return this.metadata_cover(ctx)
         }
 
         // Unexpected path

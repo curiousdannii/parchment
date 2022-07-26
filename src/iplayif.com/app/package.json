@@ -9,7 +9,8 @@
   "dependencies": {
     "koa": "^2.13.4",
     "lodash-es": "^4.17.21",
-    "lru-cache": "^7.13.1"
+    "lru-cache": "^7.13.1",
+    "sharp": "^0.30.7"
   },
   "devDependencies": {
     "eslint": "^8.20.0"

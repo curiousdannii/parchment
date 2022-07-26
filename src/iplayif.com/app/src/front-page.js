@@ -42,6 +42,7 @@ export default class FrontPageApp extends ProxyApp {
             return
         }
 
+        const protcol_domain = `http${this.options.https ? 's' : ''}://${this.options.domain}`
 
         const data = await this.metadata.get(story_url)
         //console.log(data)
@@ -49,6 +50,11 @@ export default class FrontPageApp extends ProxyApp {
         // Embed the metadata into the page title
         let body = this.index_html
             .replace('<title>Parchment</title>', `<title>${escape(data.title)} - Parchment</title>`)
+
+        // Use the story cover
+        if (data.cover) {
+            body = body.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${protcol_domain}/metadata/cover/?url=${escape(story_url)}&maxh=250"`)
+        }
 
         // And simplify the HTML a little
         body = body.replace(/<div id="about">.+<\/noscript>\s+<\/div>/s, `<noscript>
