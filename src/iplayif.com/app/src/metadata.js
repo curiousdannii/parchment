@@ -18,7 +18,7 @@ import path from 'path'
 import {pipeline} from 'stream/promises'
 import util from 'util'
 
-import {unescape} from 'lodash-es'
+import he from 'he'
 import LRU from 'lru-cache'
 import sharp from 'sharp'
 
@@ -89,8 +89,14 @@ export class MetadataCache {
                     }
                 }
 
+                // See if there's a description
+                const description_results = await execFile('babel', ['-meta', file_path])
+                if (!description_results.stderr.length) {
+                    result.description = extract_description(description_results.stdout)
+                }
+
                 // Check the IFDB for details
-                if (!result.author || !result.cover) {
+                if (!result.author || !result.cover || !result.description) {
                     const ifid = /IFID: ([-\w]+)/i.exec(identify_data[1])[1]
                     const ifdb_response = await fetch(`https://ifdb.org/viewgame?ifiction&ifid=${ifid}`)
                     if (ifdb_response.ok) {
@@ -104,11 +110,14 @@ export class MetadataCache {
                         if (!result.cover) {
                             const cover_url = /<coverart><url>(.+)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
                             if (cover_url) {
-                                const cover_response = await fetch(unescape(cover_url))
+                                const cover_response = await fetch(he.decode(cover_url))
                                 if (cover_response.ok) {
                                     result.cover = Buffer.from(await cover_response.arrayBuffer())
                                 }
                             }
+                        }
+                        if (!result.description) {
+                            result.description = extract_description(ifdb_xml)
                         }
                     }
                 }
@@ -173,5 +182,12 @@ export class MetaDataApp extends FrontPageApp {
             ctx.status = 304
             return
         }
+    }
+}
+
+function extract_description(ifction) {
+    const description = /<description>(.+)<\/description>/.exec(ifction)
+    if (description) {
+        return he.decode(description[1]).replace(/<br\s*\/>/g, '\n')
     }
 }

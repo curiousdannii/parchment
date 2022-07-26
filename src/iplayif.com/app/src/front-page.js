@@ -9,7 +9,7 @@ https://github.com/curiousdannii/iplayif.com
 
 */
 
-import {escape} from 'lodash-es'
+import {escape, truncate} from 'lodash-es'
 
 import {SUPPORTED_TYPES} from './common.js'
 import ProxyApp from './proxy.js'
@@ -50,6 +50,31 @@ export default class FrontPageApp extends ProxyApp {
         // Embed the metadata into the page title
         let body = this.index_html
             .replace('<title>Parchment</title>', `<title>${escape(data.title)} - Parchment</title>`)
+
+        // Open Graph meta data
+        const open_graph = []
+        if (data.title && data.author) {
+            open_graph.push(
+                `<meta property="og:site_name" content="Parchment"/>`,
+                `<meta property="og:title" content="${escape(data.title)} by ${escape(data.author)}"/>`,
+                `<meta property="og:type" content="website"/>`,
+                `<meta property="og:url" content="${protcol_domain}/?story=${escape(story_url)}"/>`,
+
+            )
+            if (data.description) {
+                open_graph.push(`<meta property="og:description" content="${escape(truncate(data.description, {
+                    length: 1000,
+                    separator: /[,.]? +/,
+                }))}"`)
+            }
+            if (data.cover) {
+                open_graph.push(`<meta property="og:image" content="${protcol_domain}/metadata/cover/?url=${escape(story_url)}&maxh=630"/>`)
+            }
+        }
+        if (open_graph.length) {
+            body = body.replace(/<\/head>/, `    ${open_graph.join('\n    ')}
+</head>`)
+        }
 
         // Use the story cover
         if (data.cover) {

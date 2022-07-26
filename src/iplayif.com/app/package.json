@@ -7,6 +7,7 @@
   "repository": "curiousdannii/iplayif.com",
   "type": "module",
   "dependencies": {
+    "he": "^1.2.0",
     "koa": "^2.13.4",
     "lodash-es": "^4.17.21",
     "lru-cache": "^7.13.1",
