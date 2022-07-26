@@ -42,7 +42,7 @@ export default class FrontPageApp extends ProxyApp {
             return
         }
 
-        const protcol_domain = `http${this.options.https ? 's' : ''}://${this.options.domain}`
+        const protocol_domain = `http${this.options.https ? 's' : ''}://${this.options.domain}`
 
         const data = await this.metadata.get(story_url)
         //console.log(data)
@@ -58,7 +58,7 @@ export default class FrontPageApp extends ProxyApp {
                 `<meta property="og:site_name" content="Parchment"/>`,
                 `<meta property="og:title" content="${escape(data.title)} by ${escape(data.author)}"/>`,
                 `<meta property="og:type" content="website"/>`,
-                `<meta property="og:url" content="${protcol_domain}/?story=${escape(story_url)}"/>`,
+                `<meta property="og:url" content="${protocol_domain}/?story=${encodeURIComponent(story_url)}"/>`,
 
             )
             if (data.description) {
@@ -68,7 +68,7 @@ export default class FrontPageApp extends ProxyApp {
                 }))}"/>`)
             }
             if (data.cover) {
-                open_graph.push(`<meta property="og:image" content="${protcol_domain}/metadata/cover/?url=${escape(story_url)}&maxh=630"/>`)
+                open_graph.push(`<meta property="og:image" content="${protocol_domain}/metadata/cover/?url=${encodeURIComponent(story_url)}&maxh=630"/>`)
             }
         }
         if (open_graph.length) {
@@ -78,7 +78,7 @@ export default class FrontPageApp extends ProxyApp {
 
         // Use the story cover
         if (data.cover) {
-            body = body.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${protcol_domain}/metadata/cover/?url=${escape(story_url)}&maxh=250"`)
+            body = body.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${protocol_domain}/metadata/cover/?url=${encodeURIComponent(story_url)}&maxh=250"`)
         }
 
         // And simplify the HTML a little
