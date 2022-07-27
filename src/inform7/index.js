@@ -23,10 +23,10 @@ async function launch() {
     // Discriminate
     const storyfilepath = options.default_story[0]
     let format
-    if (/\.(zblorb|z3|z4|z5|z8)(\.js)?$/.test(storyfilepath)) {
+    if (/\.(zblorb|zlb|z3|z4|z5|z8)(\.js)?$/.test(storyfilepath)) {
         format = 'zcode'
     }
-    else if (/\.(gblorb|ulx)(\.js)?$/.test(storyfilepath)) {
+    else if (/\.(gblorb|glb|ulx)(\.js)?$/.test(storyfilepath)) {
         format = 'glulx'
     }
     else {
