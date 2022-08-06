@@ -3,7 +3,7 @@
 Parchment Launcher for Inform 7
 ===============================
 
-Copyright (c) 2020 Dannii Willis
+Copyright (c) 2022 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -19,6 +19,9 @@ async function launch() {
     if (!options.default_story) {
         return options.GlkOte.error('No storyfile specified')
     }
+
+    // Update the Dialog storage version
+    this.options.Dialog.init()
 
     // Discriminate
     const storyfilepath = options.default_story[0]

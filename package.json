@@ -14,7 +14,8 @@
   "homepage": "https://github.com/curiousdannii/parchment#readme",
   "type": "module",
   "dependencies": {
-    "emglken": "^0.4.0",
+    "base32768": "^3.0.1",
+    "emglken": "^0.5.0",
     "jquery": "^3.6.0",
     "js-cookie": "^3.0.1",
     "lodash-es": "^4.17.21"

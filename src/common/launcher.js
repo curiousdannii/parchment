@@ -38,6 +38,9 @@ class ParchmentLauncher
 
     launch() {
         try {
+            // Update the Dialog storage version
+            this.options.Dialog.init()
+
             // Apply the dark theme if set
             const theme = this.options.theme
                 || Cookies.get(this.options.theme_cookie)
