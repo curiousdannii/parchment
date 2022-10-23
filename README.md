@@ -43,13 +43,15 @@ ZVM     | [curiousdannii/ifvms.js](https://github.com/curiousdannii/ifvms.js) | 
 Building Instructions
 ---------------------
 
-The upstream projects are included as git submodules. You'll have to start by initializing the submodules, like this:
+Parchment is only designed for building in Linux and may not work in other OSes. You'll need to install Git and Node version >= 16.
+
+The upstream projects are included as git submodules. Start by initializing the submodules:
 
 ```
 git submodule update --init --recursive
 ```
 
-Then you'll need to install the `npm` dependencies:
+Then install the `npm` dependencies:
 
 ```
 npm install
