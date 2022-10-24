@@ -21,7 +21,7 @@ async function launch() {
     }
 
     // Update the Dialog storage version
-    this.options.Dialog.init()
+    options.Dialog.init()
 
     // Discriminate
     const storyfilepath = options.default_story[0]
