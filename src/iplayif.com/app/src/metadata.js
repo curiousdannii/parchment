@@ -102,13 +102,13 @@ export class MetadataCache {
                     if (ifdb_response.ok) {
                         const ifdb_xml = await ifdb_response.text()
                         if (!result.author) {
-                            result.author = /<author>(.+)<\/author>/.exec(ifdb_xml)[1]
+                            result.author = he.decode(/<author>(.+?)<\/author>/.exec(ifdb_xml)[1])
                         }
                         if (result.title === file_name) {
-                            result.title = /<title>(.+)<\/title>/.exec(ifdb_xml)[1]
+                            result.title = he.decode(/<title>(.+?)<\/title>/.exec(ifdb_xml)[1])
                         }
                         if (!result.cover) {
-                            const cover_url = /<coverart><url>(.+)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
+                            const cover_url = /<coverart><url>(.+?)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
                             if (cover_url) {
                                 const cover_response = await fetch(he.decode(cover_url))
                                 if (cover_response.ok) {
@@ -186,7 +186,7 @@ export class MetaDataApp extends FrontPageApp {
 }
 
 function extract_description(ifction) {
-    const description = /<description>(.+)<\/description>/.exec(ifction)
+    const description = /<description>(.+?)<\/description>/.exec(ifction)
     if (description) {
         return he.decode(description[1]).replace(/<br\s*\/>/g, '\n')
     }
