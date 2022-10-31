@@ -11,33 +11,37 @@ jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: '17'
-      - run: npm install --ignore-scripts
-      - run: npm run lint
-      - run: npm run tsc-check
+          node-version: 18
+      - name: Install dependencies
+        run: |
+          npm install --ignore-scripts
+          npm run link-local-emglken
+      - name: Static tests
+        run: |
+          npm run lint
+          npm run tsc-check
       - name: Get Emglken commit ref
         id: emglken-ref
-        run: echo "::set-output name=ref::$(git submodule status src/upstream/emglken | cut -c 2-13)"
+        run: echo "ref=$(git submodule status src/upstream/emglken | cut -c 2-13)" >> $GITHUB_OUTPUT
       - name: Cache the built Emglken
         id: cache-emglken
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: src/upstream/emglken/build
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
-      - run: npm run link-local-emglken
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
-        run: cd src/upstream/emglken && npm run build
-      - run: npm run build
-      - name: Package Parchment for Inform 7
-        run: ./tools/package-inform7.sh
-      - name: Build single file Parchment
-        run: ./tools/make-single-file.js
+        run: ./src/upstream/emglken/src/build.sh
+      - name: Build Parchment distributions
+        run: |
+          ./build.js
+          ./tools/package-inform7.sh
+          ./tools/make-single-file.js
       - name: Check browser compatibility
         run: ./tools/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore
