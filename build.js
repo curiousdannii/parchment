@@ -125,6 +125,8 @@ const common_options = {
     watch: servemode,
 }
 
+let have_given_emglken_warning
+
 for (const project of projects_to_build) {
     await fs.mkdir(project.outdir, {recursive: true})
 
@@ -136,6 +138,14 @@ for (const project of projects_to_build) {
     }
 
     if (project.entryPoints) {
+        // Warn if not using upstream Emglken
+        if (!have_given_emglken_warning && Object.values(project.entryPoints).filter(file => file.startsWith('node_modules/emglken')).length > 0) {
+            have_given_emglken_warning = 1
+            if (!(await fs.lstat('node_modules/emglken')).isSymbolicLink()) {
+                console.warn('⚠ Warning: Using npm rather than upstream version of Emglken')
+            }
+        }
+
         const options = Object.assign({}, common_options, project)
         await esbuild.build(options)
     }
