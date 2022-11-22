@@ -18,9 +18,16 @@ import path from 'path'
 import {fileURLToPath} from 'url'
 import util from 'util'
 
+import minimist from 'minimist'
+
 const execFile = util.promisify(child_process.execFile)
 
-const datemode = process.argv.includes('--date')
+// Handle command line arguments
+const argv = minimist(process.argv.slice(2))
+const datemode = argv.date
+const exclude = argv.exclude || 'bocfel|git|glulx'
+const excluded = new RegExp(`(${exclude})`)
+const nofont = argv.nofont
 
 const rootpath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const webpath = path.join(rootpath, 'dist/web')
@@ -35,7 +42,7 @@ async function file_to_base64(path) {
 // Turn the filenames into embeddable resources
 const files = await Promise.all(filenames.map(async filename => {
     // Skip unused interpreters
-    if (/(bocfel|git|glulx)/.test(filename)) {
+    if (excluded.test(filename)) {
         return
     }
     let data = await fs.readFile(path.join(webpath, filename), {encoding: filename.endsWith('.wasm') ? null : 'utf8'})
@@ -56,12 +63,15 @@ const files = await Promise.all(filenames.map(async filename => {
         // Only include a single font, the browser can fake bold and italics
         const fontfile = await file_to_base64(path.join(webpath, '../fonts/iosevka/iosevka-extended.woff2'))
         data = data.replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\(['"]woff2['"]\)}/g, (_, font, style, weight) => {
-            if (font === 'Iosevka' && style === 'normal' && weight === '400') {
+            if (font === 'Iosevka' && style === 'normal' && weight === '400' && !nofont) {
                 return `@font-face{font-family:Iosevka;font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${fontfile}) format('woff2')}`
             }
             return ''
         })
             .replace(/Iosevka Narrow/g, 'Iosevka')
+        if (nofont) {
+            data = data.replace(/--glkote(-grid)?-mono-family: "Iosevka", monospace;?/g, '')
+        }
         return `<style>${data}</style>`
     }
     if (filename.endsWith('.js')) {
