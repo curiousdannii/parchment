@@ -20,6 +20,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm install --ignore-scripts
+          # Manually run Puppeteer's post install script
+          node ./node_modules/puppeteer/install.js
           npm run link-local-emglken
       - name: Static tests
         run: |
@@ -32,7 +34,9 @@ jobs:
         id: cache-emglken
         uses: actions/cache@v3
         with:
-          path: src/upstream/emglken/build
+          path: |
+            src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.wasm
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
@@ -42,8 +46,10 @@ jobs:
           ./build.js
           ./tools/package-inform7.sh
           ./tools/make-single-file.js
+      - name: Test storyfiles
+        run: ./tests/runtests.sh
       - name: Check browser compatibility
-        run: ./tools/check-compat.sh
+        run: ./tests/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore
       - name: Deploy to Pages 🚀
         if: github.ref == 'refs/heads/master'

@@ -30,16 +30,18 @@
     "eslint-plugin-compat": "^4.0.0",
     "http-server": "^14.0.0",
     "minimist": "^1.2.6",
+    "regtest-html": "^0.1.1",
     "typescript": "^4.7.4"
   },
   "scripts": {
     "build": "./build.js",
-    "check-compat": "tools/check-compat.sh",
+    "check-compat": "tests/check-compat.sh",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
     "lint": "eslint src/common/ src/inform7/",
     "prepare": "./build.js",
     "start": "./build.js --serve",
+    "test": "./tests/runtests.sh",
     "tsc-check": "tsc --noEmit"
   },
   "browserslist": [

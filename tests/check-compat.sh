@@ -4,7 +4,7 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-cp -r tools/browser-compat/. dist/
+cp -r tests/browser-compat/. dist/
 
 cd dist
 npx eslint web
