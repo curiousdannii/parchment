@@ -1,18 +1,25 @@
-#!/bin/sh
+#!/bin/bash
 
 cd "$(dirname "$0")/.."
 
-REGTEST=./node_modules/.bin/regtest
+FAILURES=0
+
+# run_test emglken_testfile [timeout]
+run_test() {
+    ./node_modules/.bin/regtest -t ${2:-10} -i index.html src/upstream/emglken/tests/$1 || ((FAILURES++))
+}
 
 echo 'Glulx'
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/glulxercise.ulx.regtest
+run_test glulxercise.ulx.regtest
 echo 'Hugo'
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/coretest.hex.regtest
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/colossal.hex.regtest
+run_test coretest.hex.regtest
+run_test colossal.hex.regtest
 echo 'TADS 2'
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/ditch.gam.regtest
+run_test ditch.gam.regtest
 echo 'TADS 3'
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/ditch3.t3.regtest
+run_test ditch3.t3.regtest
 echo 'Z-Code'
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/praxix.z5.regtest
-$REGTEST -t 10 -i index.html src/upstream/emglken/tests/advent.z5.regtest
+run_test praxix.z5.regtest
+run_test advent.z5.regtest
+
+exit $FAILURES
