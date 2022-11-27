@@ -12,7 +12,7 @@ https://github.com/curiousdannii/parchment
 import Cookies from 'js-cookie'
 
 import Blorb from '../upstream/asyncglk/src/blorb/blorb.ts'
-import get_default_options from './options.js'
+import {get_default_options, get_query_options} from './options.js'
 import {FileView} from '../upstream/asyncglk/src/blorb/iff.ts'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
 import {formats, identify_blorb_storyfile_format} from './formats.js'
@@ -20,7 +20,7 @@ import {formats, identify_blorb_storyfile_format} from './formats.js'
 class ParchmentLauncher
 {
     constructor(parchment_options) {
-        this.options = Object.assign({}, get_default_options(), parchment_options, this.query_options())
+        this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(['do_vm_autosave', 'story']))
     }
 
     find_format(format, path) {
@@ -169,19 +169,6 @@ class ParchmentLauncher
         // TODO: We could use the history API, but we need to then handle going back
         //history.pushState(null, '', new_url)
         //this.load(url)
-    }
-
-    query_options() {
-        // Some options can be specified in the URL query
-        const query = new URLSearchParams(document.location.search)
-        const options = {}
-        const query_options = ['do_vm_autosave', 'story']
-        for (const option of query_options) {
-            if (query.has(option)) {
-                options[option] = query.get(option)
-            }
-        }
-        return options
     }
 }
 

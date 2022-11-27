@@ -10,11 +10,11 @@ https://github.com/curiousdannii/parchment
 */
 
 import Blorb from '../upstream/asyncglk/src/blorb/blorb.ts'
-import get_default_options from '../common/options.js'
+import {get_default_options, get_query_options} from '../common/options.js'
 import Glk from '../upstream/glkote/glkapi.js'
 
 async function launch() {
-    const options = Object.assign({}, get_default_options(), window.parchment_options)
+    const options = Object.assign({}, get_default_options(), window.parchment_options, get_query_options(['do_vm_autosave']))
 
     if (!options.default_story) {
         return options.GlkOte.error('No storyfile specified')

@@ -1,6 +1,8 @@
 dist
 node_modules
 package-lock.json
+tests/ifsitegen.py
+tests/Release
 
 /*.js
 /*.ulx

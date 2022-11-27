@@ -53,7 +53,7 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     do_vm_autosave?: ParchmentTruthy,
 }
 
-export default function get_default_options(): ParchmentOptions {
+export function get_default_options(): ParchmentOptions {
     return {
         auto_launch: 1,
         Dialog: WebDialog,
@@ -68,4 +68,16 @@ export default function get_default_options(): ParchmentOptions {
         theme_cookie: 'parchment_theme',
         use_proxy: 1,
     }
+}
+
+/** Get options specified in the URL query */
+export function get_query_options(possible_query_options: Array<keyof ParchmentOptions>): Partial<ParchmentOptions> {
+    const query = new URLSearchParams(document.location.search)
+    const options: Partial<ParchmentOptions> = {}
+    for (const option of possible_query_options) {
+        if (query.has(option)) {
+            options[option] = query.get(option)
+        }
+    }
+    return options
 }
