@@ -63,7 +63,7 @@ export function get_default_options(): ParchmentOptions {
         do_vm_autosave: 1,
         GlkOte: new WebGlkOte(),
         lib_path: 'dist/web/',
-        proxy_url: 'https://proxy.iplayif.com/proxy/',
+        proxy_url: 'https://iplayif.com/proxy/',
         set_body_to_page_bg: 1,
         theme_cookie: 'parchment_theme',
         use_proxy: 1,
