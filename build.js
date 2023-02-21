@@ -4,13 +4,13 @@
 Parchment build script
 ======================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2023 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import esbuild, { serve } from 'esbuild'
+import esbuild from 'esbuild'
 import fs from 'fs/promises'
 import path from 'path'
 import {HttpServer} from 'http-server'
@@ -82,6 +82,7 @@ if (projects.includes('lectrote')) {
             git: 'node_modules/emglken/src/git.js',
             glulxe: 'node_modules/emglken/src/glulxe.js',
             hugo: 'node_modules/emglken/src/hugo.js',
+            scare: 'node_modules/emglken/src/scare.js',
             tads: 'node_modules/emglken/src/tads.js',
         },
         format: 'cjs',
@@ -108,6 +109,7 @@ if (projects.includes('web')) {
             ie: 'src/common/ie.js',
             main: 'src/common/launcher.js',
             quixe: 'src/common/quixe.js',
+            scare: 'node_modules/emglken/src/scare.js',
             tads: 'node_modules/emglken/src/tads.js',
             web: 'src/web/web.css',
             zvm: 'src/common/zvm.js',

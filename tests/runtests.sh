@@ -11,6 +11,9 @@ run_test() {
     $REGTEST -t ${2:-10} -i index.html src/upstream/emglken/tests/$1 || ((FAILURES++))
 }
 
+echo 'Adrift 4'
+# RegTest-HTML will need some updates to do the whole Hamper test
+$REGTEST -t ${2:-10} -i index.html src/upstream/emglken/tests/Hamper.taf.regtest prologue || ((FAILURES++))
 echo 'Glulx'
 run_test glulxercise.ulx.regtest
 echo 'Hugo'
@@ -26,7 +29,7 @@ run_test advent.z5.regtest
 
 # Try to build an Inform 7 site
 if [ ! -f tests/ifsitegen.py ]; then
-    curl -L https://github.com/erkyrath/glk-dev/raw/master/ifsitegen.py -o tests/ifsitegen.py
+    wget -q https://github.com/erkyrath/glk-dev/raw/master/ifsitegen.py -O tests/ifsitegen.py
 fi
 
 echo -e '\nTesting an Inform playable website'

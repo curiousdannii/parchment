@@ -3,13 +3,16 @@
 Format specifications
 =====================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2023 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
 import Glk from '../upstream/glkote/glkapi.js'
+
+//import {AsyncGlk} from '../upstream/asyncglk/src/index-browser.js'
+//const Glk = new AsyncGlk()
 
 async function generic_emglken_vm(options, requires)
 {
@@ -28,6 +31,18 @@ export const formats = [
     {
         id: 'blorb',
         extensions: /\.(blb|blorb)/i,
+    },
+
+    {
+        id: 'adrift4',
+        extensions: /\.taf/i,
+        engines: [
+            {
+                id: 'scare',
+                load: ['./scare.js', './scare-core.wasm'],
+                start: generic_emglken_vm,
+            },
+        ],
     },
 
     {
