@@ -37,8 +37,8 @@
   ],
   "screenshots": [
     {
-      "src": "/",
-      "sizes": "2880x1800",
+      "src": "/src/web/icons/parchment-screenshot.png",
+      "sizes": "1920x984",
       "type": "image/png",
       "description": "A screenshot of the home page"
     }
