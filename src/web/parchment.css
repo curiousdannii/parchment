@@ -60,3 +60,11 @@ since that would mean that it's already installed*/
     display: none;
   }
 }
+
+/* Firefox Desktop does not support PWA install
+   So we hide the install button */
+@-moz-document url-prefix() {
+  #pwainstallbutton {
+    display: none;
+  }
+}
