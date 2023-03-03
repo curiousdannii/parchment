@@ -7,7 +7,7 @@
     <script src="dist/web/jquery.min.js"></script>
     <script src="dist/web/ie.js" nomodule></script>
     <script src="dist/web/main.js" type="module"></script>
-<script>navigator.serviceWorker.register("service-worker.js")</script> 
+<script>navigator.serviceWorker.register("service-worker.js")</script>
 <link rel="manifest" href="manifest.json" />    <link rel="stylesheet" href="dist/web/web.css">
 </head>
 <body>
@@ -25,6 +25,9 @@
                 <p>Or, click here to play a story file on your device</p>
             </label>
             <input id="file-upload" type="file" style="display: none"/>
+            <button id="pwainstallbutton" type="button">
+                Install
+            </button>
             <noscript><p>Parchment requires Javascript. Please enable it in your browser.</p></noscript>
         </div>
         <div id="windowport"></div>
@@ -35,4 +38,36 @@
         <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
     </div>
 </body>
+
+<!-- This allows us to display an on-screen Install button in addition to the automatic browser prompt 
+     Feel free to move this script elsewhere -->
+<script>
+    // Initialize deferredPrompt for use later to show browser install prompt.
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = e;
+});
+
+const pwainstallbutton = document.getElementById('pwainstallbutton');
+
+pwainstallbutton.addEventListener('click', async () => {
+  const promptEvent = deferredPrompt;
+  if (!promptEvent) {
+    // The deferred prompt isn't available.
+    console.log("no event available")
+    return;
+  }
+  // Show the install prompt.
+  promptEvent.prompt();
+  // Log the result
+  const result = await promptEvent.userChoice;
+
+  window.deferredPrompt = null;
+});
+</script>
+
 </html>

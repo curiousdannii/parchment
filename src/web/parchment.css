@@ -52,3 +52,11 @@ body {
   position: absolute;
   width: 100%;
 }
+
+/* Hides the install button if loaded as a standalone app 
+since that would mean that it's already installed*/
+@media all and (display-mode: standalone) {
+  #pwainstallbutton {
+    display: none;
+  }
+}
