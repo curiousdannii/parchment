@@ -17,7 +17,7 @@ python3 ifsitegen.py -i parchment-for-inform7.zip Storyfile.ulx
 Single File Build
 -----------------
 
-Parchment is also available as a single file, suitable for downloading and using offline. [Download it here](https://github.com/curiousdannii/parchment/raw/gh-pages/dist/single-file/parchment-single-file.zip).
+Parchment is also available as a single file, suitable for downloading and using offline. [Download from the releases page](https://github.com/curiousdannii/parchment/releases).
 
 Free Software
 -------------

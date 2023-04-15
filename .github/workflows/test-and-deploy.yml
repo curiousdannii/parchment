@@ -45,7 +45,6 @@ jobs:
         run: |
           ./build.js
           ./tools/package-inform7.sh
-          ./tools/make-single-file.js
       - name: Test storyfiles
         run: ./tests/runtests.sh
       - name: Check browser compatibility
