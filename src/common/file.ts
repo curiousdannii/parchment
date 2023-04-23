@@ -95,7 +95,15 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string)
     }
 
     // Something else, like a .wasm
-    const response = await fetch(options.lib_path + path)
+    // Handle when lib_path is a proper URL (such as import.meta.url), as well as the old style path fragment
+    let url
+    try {
+        url = new URL(path, options.lib_path)
+    }
+    catch (_) {
+        url = options.lib_path + path
+    }
+    const response = await fetch(url)
     if (!response.ok) {
         throw new Error(`Could not fetch ${path}, got ${response.status}`)
     }

@@ -13,7 +13,7 @@ run_test() {
 
 echo 'Adrift 4'
 # RegTest-HTML will need some updates to do the whole Hamper test
-$REGTEST -t ${2:-10} -i index.html src/upstream/emglken/tests/Hamper.taf.regtest prologue || ((FAILURES++))
+run_test Hamper.taf.regtest
 echo 'Glulx'
 run_test glulxercise.ulx.regtest
 echo 'Hugo'
@@ -39,6 +39,6 @@ python ./tests/ifsitegen.py \
     -r tests/Release \
     src/upstream/emglken/tests/advent.z5
 
-$REGTEST -t 10 --pdf -i tests/Release/index.html src/upstream/emglken/tests/advent.z5.regtest || ((FAILURES++))
+$REGTEST -t 10 --pdf -i "file://$(pwd)/tests/Release/index.html" src/upstream/emglken/tests/advent.z5.regtest || ((FAILURES++))
 
 exit $FAILURES

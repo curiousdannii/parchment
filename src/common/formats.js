@@ -45,6 +45,29 @@ export const formats = [
         ],
     },
 
+    /*{
+        id: 'adrift5',
+        extensions: /\.(blb|blorb)/i,
+        engines: [
+            {
+                id: 'frankendrift',
+                load: ['./frankendrift.js'],
+                start: (options, requires) => {
+                    const [file_data, FrankenDrift] = requires
+
+                    const vm = new FrankenDrift.FrankenDrift()
+                    const vm_options = Object.assign({}, options, {
+                        vm,
+                        Glk,
+                    })
+
+                    vm.init(file_data, vm_options)
+                    Glk.init(vm_options)
+                },
+            },
+        ],
+    },*/
+
     {
         id: 'hugo',
         extensions: /\.hex/i,
