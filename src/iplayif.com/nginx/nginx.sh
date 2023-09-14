@@ -3,15 +3,17 @@
 CONF_FILE=/etc/nginx/conf.d/default.conf
 OPTIONS_FILE=$DATA_DIR/options.json
 
-# Get values from options.json
-if [ -f "$OPTIONS_FILE" ]; then
-    DOMAIN=$(jq -r '.domain? // ""' $OPTIONS_FILE)
-    CDNDOMAIN=$(jq -r '.cdn_domain? // "cdn.iplayif.com"' $OPTIONS_FILE)
-    HTTPS=$(jq -r '.https? // false' $OPTIONS_FILE)
-    RELOAD_TIME=$(jq -r '.nginx?.reload_time? // 360' $OPTIONS_FILE)
-    SECONDARY_DOMAIN=$(jq -r '.secondary_domain? // ""' $OPTIONS_FILE)
-    WWW=$(jq -r '.www? // false' $OPTIONS_FILE)
+if [ ! -f "$OPTIONS_FILE" ]; then
+    echo "{}" > "$OPTIONS_FILE"
 fi
+
+# Get values from options.json
+DOMAIN=$(jq -r '.domain? // ""' $OPTIONS_FILE)
+CDNDOMAIN=$(jq -r '.cdn_domain? // "cdn.iplayif.com"' $OPTIONS_FILE)
+HTTPS=$(jq -r '.https? // false' $OPTIONS_FILE)
+RELOAD_TIME=$(jq -r '.nginx?.reload_time? // 360' $OPTIONS_FILE)
+SECONDARY_DOMAIN=$(jq -r '.secondary_domain? // ""' $OPTIONS_FILE)
+WWW=$(jq -r '.www? // false' $OPTIONS_FILE)
 
 if [ "$WWW" = "true" ]; then
     WWW_DOMAIN="www.$DOMAIN"
