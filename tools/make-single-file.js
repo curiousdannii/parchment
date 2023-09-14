@@ -17,6 +17,7 @@ import {fileURLToPath} from 'url'
 import util from 'util'
 
 import {generate} from '../src/tools/single-file.js'
+import Blorb from '../src/upstream/asyncglk/dist/blorb/blorb.js'
 
 const execFile = util.promisify(child_process.execFile)
 
@@ -93,7 +94,22 @@ if (story_file_path) {
         throw new Error(`Unknown storyfile format ${story_file_path}`)
     }
     if (format === 'blorb') {
-        throw new Error(`Bug! TODO implement blorb support ${story_file_path}`)
+        // fake jQuery, just enough to get the Blorb constructor to run
+        globalThis.$ = () => ({
+            html: () => ({
+                find: () => ({
+                    children: () => []
+                })
+            })
+        })
+        const blorb = new Blorb(options.story_file)
+        const blorb_chunks = {
+            GLUL: 'glulx',
+            ZCOD: 'zcode',
+        }
+        const chunktype = blorb.get_chunk('exec', 0)?.blorbtype
+        format = blorb_chunks[chunktype]
+        if (!format) throw new Error('Unknown storyfile format in Blorb')
     }
     options.terps = [formats[format].engine]
     options.format = format
