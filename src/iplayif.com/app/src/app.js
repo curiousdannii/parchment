@@ -80,6 +80,10 @@ export class BaseApp {
             return this.metadata_cover(ctx)
         }
 
+        if (request_path.startsWith('/converter')) {
+            return this.converter(ctx)
+        }
+
         // Unexpected path
         ctx.throw(400, 'Unexpected path')
     }
