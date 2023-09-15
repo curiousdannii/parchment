@@ -10,7 +10,8 @@ const parchment_formats = {
     'blorbed zcode': 'zcode',
     'glulx': 'glulx',
     'blorbed glulx': 'glulx',
-    'tads': 'tads',
+    'tads2': 'tads',
+    'tads3': 'tads',
     'hugo': 'hugo',
     'adrift': 'adrift4',
 }
@@ -148,6 +149,10 @@ export default class ConverterApp extends MetaDataApp {
         const [babel_format] = lines[2].split(',')
 
         const parchment_format = parchment_formats[babel_format]
+
+        if (!parchment_format) {
+            ctx.throw(400, 'Unsupported file type')
+        }
 
         const terp_files = format_terp_files[parchment_format]
 
