@@ -154,6 +154,13 @@ export default class ConverterApp extends MetaDataApp {
             ctx.throw(400, 'Unsupported file type')
         }
 
+        if (parchment_format === 'adrift4') {
+            const adrift_version = Number(ifid.split('-')[1])
+            if (adrift_version > 400) {
+                ctx.throw(400, 'This is an Adrift 5 game file. This converter only supports Adrift 4 and earlier.')
+            }
+        }
+
         const terp_files = format_terp_files[parchment_format]
 
         const urls = [
