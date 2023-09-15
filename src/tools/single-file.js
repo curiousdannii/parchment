@@ -28,7 +28,14 @@ async function Uint8Array_to_base64(data) {
 export async function generate(options, files) {
     const inclusions = []
     if (options.single_file) {
-        inclusions.push('<script>parchment_options = {single_file: 1}</script>')
+        const parchment_options = {single_file: 1};
+        if (options.format) {
+            parchment_options.format = options.format;
+        }
+        if (options.story_file) {
+            parchment_options.story = `data:application/octet-stream;base64,` + await Uint8Array_to_base64(options.story_file)
+        }
+        inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
     }
 
     // Process the files

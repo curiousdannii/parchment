@@ -73,7 +73,7 @@ class ParchmentLauncher
                 return
             }
 
-            this.load(storyfile_path)
+            this.load(storyfile_path, this.options.format)
         }
         catch (err) {
             this.options.GlkOte.error(err)

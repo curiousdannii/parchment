@@ -25,6 +25,8 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     default_story?: [string],
     /** Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers */
     direct_domains: string[],
+    /** Format ID, matching formats.js */
+    format?: string,
     /** Path to resources */
     lib_path: string,
     /** URL of Proxy */
