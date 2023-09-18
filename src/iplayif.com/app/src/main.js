@@ -13,7 +13,7 @@ import fs from 'fs/promises'
 import {merge} from 'lodash-es'
 import path from 'path'
 
-import {MetaDataApp as IplayifApp} from './metadata.js'
+import IplayifApp from './converter.js'
 
 const default_options = {
     cache_control_age: 604800, // 1 week

@@ -90,6 +90,10 @@ server {
         proxy_pass http://app:8080;
     }
 
+    location /converter {
+        proxy_pass http://app:8080;
+    }
+
     location / {
         proxy_pass https://$CDNDOMAIN;
     }

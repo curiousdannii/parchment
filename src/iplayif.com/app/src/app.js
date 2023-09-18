@@ -13,6 +13,7 @@ import Koa from 'koa'
 
 import {MetadataCache} from './metadata.js'
 import * as templates from './templates.js'
+import {koaBody} from 'koa-body'
 
 export class BaseApp {
     constructor(options) {
@@ -50,6 +51,8 @@ export class BaseApp {
             }
         })
 
+        this.app.use(koaBody({ multipart: true }))
+
         // And the main handler
         this.app.use(this.handler.bind(this))
     }
@@ -78,6 +81,10 @@ export class BaseApp {
 
         if (request_path.startsWith('/metadata/cover')) {
             return this.metadata_cover(ctx)
+        }
+
+        if (request_path.startsWith('/converter')) {
+            return this.converter(ctx)
         }
 
         // Unexpected path

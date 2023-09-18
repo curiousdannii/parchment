@@ -9,6 +9,7 @@
   "dependencies": {
     "he": "^1.2.0",
     "koa": "^2.13.4",
+    "koa-body": "^6.0.1",
     "lodash-es": "^4.17.21",
     "lru-cache": "^7.13.1",
     "sharp": "^0.30.7"
