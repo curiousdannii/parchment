@@ -3,6 +3,7 @@ node_modules
 package-lock.json
 tests/ifsitegen.py
 tests/Release
+tools/make-single-file.js
 
 /*.js
 /*.ulx

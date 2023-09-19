@@ -2,15 +2,16 @@
     "compilerOptions": {
         "esModuleInterop": true,
         "isolatedModules": true,
-        "module": "ES2020",
+        "module": "ES2022",
         "moduleResolution": "Node",
-        "rootDir": "src",
+        "rootDir": ".",
         "strict": true,
-        "target": "es2020"
+        "target": "ES2022"
     },
     "include": [
         "src/common/*.ts",
-        "src/types.d.ts"
+        "src/tools/*.ts",
+        "src/types.d.ts",
     ],
     "exclude": [
         "node_modules"

@@ -3,7 +3,7 @@
 File loader
 ===========
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2023 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -65,8 +65,8 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string) {
             throw new Error('Abnormal JSified story')
         }
 
-        // Parse the base64 using a trick from https://stackoverflow.com/a/54123275/2854284
-        response = await fetch(`data:application/octet-binary;base64,${matched[1]}`)
+        const buffer = await parse_base64(matched[1])
+        return new Uint8Array(buffer)
     }
 
     const buffer = await response.arrayBuffer()
@@ -83,11 +83,7 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string)
         if (!path.endsWith('.wasm')) {
             throw new Error(`Can't load ${path} in single file mode`)
         }
-        const response = await fetch(`data:application/wasm;base64,${data}`)
-        if (!response.ok) {
-            throw new Error(`Could not fetch ${path}, got ${response.status}`)
-        }
-        return response.arrayBuffer()
+        return parse_base64(data, 'wasm')
     }
 
     if (path.endsWith('.js')) {
@@ -106,6 +102,16 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string)
     const response = await fetch(url)
     if (!response.ok) {
         throw new Error(`Could not fetch ${path}, got ${response.status}`)
+    }
+    return response.arrayBuffer()
+}
+
+// Parse Base 64 into an ArrayBuffer
+export async function parse_base64(data: string, data_type = 'octet-binary'): Promise<ArrayBuffer> {
+    // Parse base64 using a trick from https://stackoverflow.com/a/54123275/2854284
+    const response = await fetch(`data:application/${data_type};base64,${data}`)
+    if (!response.ok) {
+        throw new Error(`Could not parse base64: ${response.status}`)
     }
     return response.arrayBuffer()
 }

@@ -9,12 +9,28 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import {Blorb} from '../upstream/asyncglk/src/index-common.js'
+
+import {ParchmentOptions} from './options.js'
+
 import Glk from '../upstream/glkote/glkapi.js'
 
 //import {AsyncGlk} from '../upstream/asyncglk/src/index-browser.js'
 //const Glk = new AsyncGlk()
 
-async function generic_emglken_vm(options, requires)
+export interface Engine {
+    id: string
+    load: string[]
+    start: (options: ParchmentOptions, requires: any) => void
+}
+
+export interface Format {
+    engines?: Engine[]
+    extensions: RegExp
+    id: string
+}
+
+async function generic_emglken_vm(options: ParchmentOptions, requires: [Uint8Array, any, ArrayBuffer])
 {
     const [file_data, engine, wasmBinary] = requires
 
@@ -27,7 +43,7 @@ async function generic_emglken_vm(options, requires)
     await vm.start()
 }
 
-export const formats = [
+export const formats: Format[] = [
     {
         id: 'blorb',
         extensions: /\.(blb|blorb)/i,
@@ -168,13 +184,13 @@ export const formats = [
 
 // Search within a Blorb to find what format is inside
 // Must be passed a Blorb instance
-export function identify_blorb_storyfile_format(blorb) {
-    const blorb_chunks = {
+export function identify_blorb_storyfile_format(blorb: Blorb) {
+    const blorb_chunks: Record<string, string> = {
         GLUL: 'glulx',
         ZCOD: 'zcode',
     }
     const chunktype = blorb.get_chunk('exec', 0)?.blorbtype
-    if (blorb_chunks[chunktype]) {
+    if (chunktype && blorb_chunks[chunktype]) {
         return blorb_chunks[chunktype]
     }
     throw new Error('Unknown storyfile format in Blorb')

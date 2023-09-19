@@ -10,6 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import {Blorb} from '../upstream/asyncglk/src/index-browser.ts'
+import {parse_base64} from '../common/file.js'
 import {get_default_options, get_query_options} from '../common/options.js'
 import Glk from '../upstream/glkote/glkapi.js'
 
@@ -63,9 +64,7 @@ async function launch() {
     }
 
     try {
-        // Parse the base64 using a trick from https://stackoverflow.com/a/54123275/2854284
-        const response = await fetch(`data:application/octet-binary;base64,${base64data}`)
-        const buffer = await response.arrayBuffer()
+        const buffer = await parse_base64(base64data)
         const data_array = new Uint8Array(buffer)
         
         if (format === 'zcode') {

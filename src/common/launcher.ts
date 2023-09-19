@@ -3,7 +3,7 @@
 Parchment Launcher
 ==================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2023 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -11,20 +11,28 @@ https://github.com/curiousdannii/parchment
 
 import Cookies from 'js-cookie'
 
-import {Blorb, FileView} from '../upstream/asyncglk/src/index-browser.ts'
-import {get_default_options, get_query_options} from './options.js'
+import {Blorb, FileView} from '../upstream/asyncglk/src/index-common.js'
+import {get_default_options, get_query_options, ParchmentOptions} from './options.js'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
-import {formats, identify_blorb_storyfile_format} from './formats.js'
+import {Format, formats, identify_blorb_storyfile_format} from './formats.js'
+
+interface ParchmentWindow extends Window {
+    parchment: ParchmentLauncher
+    parchment_options?: ParchmentOptions
+}
+declare let window: ParchmentWindow
 
 class ParchmentLauncher
 {
-    constructor(parchment_options) {
+    options: ParchmentOptions
+
+    constructor(parchment_options?: ParchmentOptions) {
         this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(['do_vm_autosave', 'story']))
     }
 
-    find_format(format, path) {
+    find_format(format: string | null, path?: string) {
         for (const formatspec of formats) {
-            if (formatspec.id === format || formatspec.extensions.test(path)) {
+            if (formatspec.id === format || (path && formatspec.extensions.test(path))) {
                 return formatspec
             }
         }
@@ -58,7 +66,7 @@ class ParchmentLauncher
                     }
                 })
                 $('#file-upload').on('change', () => {
-                    const file = $('#file-upload')[0]?.files?.[0]
+                    const file = ($('#file-upload')[0] as HTMLInputElement)?.files?.[0]
                     if (file) {
                         this.load_uploaded_file(file)
                     }
@@ -84,7 +92,7 @@ class ParchmentLauncher
     // Overloaded load
     // story can be a path or Uint8Array
     // format can be an engine object, id string, or null, in which case it will be identified from the story
-    async load(story, format) {
+    async load(story: string | Uint8Array, format?: Format | string) {
         try {
             // Hide the about page, and show the loading spinner instead
             $('#about').remove()
@@ -102,7 +110,7 @@ class ParchmentLauncher
 
             // If a blorb file extension is generic, we must download it first to identify its format
             let blorb
-            if (format.id === 'blorb') {
+            if (typeof format !== 'string' && format.id === 'blorb') {
                 if (typeof story === 'string') {
                     story = await fetch_storyfile(this.options, story)
                 }
@@ -113,7 +121,7 @@ class ParchmentLauncher
             if (typeof format === 'string') {
                 format = this.find_format(format)
             }
-            const engine = format.engines[0]
+            const engine = format.engines![0]
 
             const requires = await Promise.all([
                 typeof story === 'string' ? fetch_storyfile(this.options, story) : story,
@@ -136,7 +144,7 @@ class ParchmentLauncher
         }
     }
 
-    async load_uploaded_file(file) {
+    async load_uploaded_file(file: File) {
         try {
             this.load(await read_uploaded_file(file), this.find_format(null, file.name))
         }
@@ -147,7 +155,7 @@ class ParchmentLauncher
     }
 
     load_url() {
-        const url = $('#play-url-input').val()
+        const url = $('#play-url-input').val() as string
         if (!url) {
             return
         }
@@ -161,9 +169,9 @@ class ParchmentLauncher
         }
 
         // Change the page URL
-        const new_url = new URL(window.location)
+        const new_url = new URL(window.location + '')
         new_url.searchParams.set('story', url)
-        window.location = new_url
+        window.location = new_url + ''
 
         // TODO: We could use the history API, but we need to then handle going back
         //history.pushState(null, '', new_url)

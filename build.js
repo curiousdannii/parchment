@@ -13,15 +13,15 @@ https://github.com/curiousdannii/parchment
 import esbuild from 'esbuild'
 import fs from 'fs/promises'
 import path from 'path'
-import {HttpServer} from 'http-server'
 import minimist from 'minimist'
 
 const argv = minimist(process.argv.slice(2))
 const projects = argv._
 if (projects.length === 0) {
-    projects.push('web')
+    projects.push('tools', 'web')
 }
 console.log(`Building project${projects.length > 1 ? 's' : ''}: ${projects.join(', ')}`)
+const analyse = argv.analyse
 const servemode = argv.serve
 
 async function readdir(path) {
@@ -42,7 +42,7 @@ if (projects.includes('ifcomp')) {
         ],
         entryPoints: {
             ie: 'src/common/ie.js',
-            main: 'src/common/launcher.js',
+            main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
             tads: 'node_modules/emglken/src/tads.js',
             web: 'src/web/web.css',
@@ -68,6 +68,7 @@ if (projects.includes('inform7')) {
             zvm: 'src/inform7/zvm.js',
         },
         format: 'iife',
+        logOverride: {'empty-import-meta': 'silent'},
         outdir: 'dist/inform7/Parchment',
     })
 }
@@ -90,6 +91,18 @@ if (projects.includes('lectrote')) {
     })
 }
 
+if (projects.includes('tools')) {
+    projects_to_build.push({
+        entryPoints: {
+            'make-single-file': 'src/tools/make-single-file.ts',
+        },
+        minify: false,
+        outdir: 'tools',
+        platform: 'node',
+        treeShaking: true,
+    })
+}
+
 if (projects.includes('web')) {
     projects_to_build.push({
         copy: await readdir('src/fonts/iosevka'),
@@ -107,7 +120,7 @@ if (projects.includes('web')) {
             glulxe: 'node_modules/emglken/src/glulxe.js',
             hugo: 'node_modules/emglken/src/hugo.js',
             ie: 'src/common/ie.js',
-            main: 'src/common/launcher.js',
+            main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
             scare: 'node_modules/emglken/src/scare.js',
             tads: 'node_modules/emglken/src/tads.js',
@@ -124,7 +137,7 @@ const common_options = {
     external: ['*.woff2'],
     format: 'esm',
     minify: true,
-    watch: servemode,
+    metafile: analyse,
 }
 
 let have_given_emglken_warning
@@ -149,10 +162,19 @@ for (const project of projects_to_build) {
         }
 
         const options = Object.assign({}, common_options, project)
-        await esbuild.build(options)
+        if (servemode) {
+            const context = await esbuild.context(options)
+            await context.watch()
+            await context.serve({
+                port: 8080,
+                servedir: '.',
+            })
+        }
+        else {
+            const result = await esbuild.build(options)
+            if (analyse) {
+                console.log(await esbuild.analyzeMetafile(result.metafile))
+            }
+        }
     }
-}
-
-if (servemode) {
-    new HttpServer({ cache: -1 }).listen(8080)
 }

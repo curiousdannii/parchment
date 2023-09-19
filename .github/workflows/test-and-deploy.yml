@@ -16,7 +16,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: Install dependencies
         run: |
           npm install --ignore-scripts
@@ -44,6 +44,7 @@ jobs:
       - name: Build Parchment distributions
         run: |
           ./build.js
+          ./tools/make-single-file.js
           ./tools/package-inform7.sh
       - name: Test storyfiles
         run: ./tests/runtests.sh

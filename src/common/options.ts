@@ -9,9 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {Dialog, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+import {ClassicSyncDialog, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
 import WebDialog from '../upstream/glkote/dialog.js'
 
 type ParchmentTruthy = boolean | number
@@ -45,7 +43,7 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     // Modules to pass to other modules
 
     /** Dialog instance to use */
-    Dialog: Dialog,
+    Dialog: ClassicSyncDialog,
     /** GlkOte instance to use */
     GlkOte: GlkOte,
 
