@@ -8,25 +8,12 @@ on:
   pull_request:
 
 jobs:
-  test-and-deploy:
+  build-emglken:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: |
-          npm install --ignore-scripts
-          # Manually run Puppeteer's post install script
-          node ./node_modules/puppeteer/install.js
-          npm run link-local-emglken
-      - name: Static tests
-        run: |
-          npm run lint
-          npm run tsc-check
       - name: Get Emglken commit ref
         id: emglken-ref
         run: echo "ref=$(git submodule status src/upstream/emglken | cut -c 2-13)" >> $GITHUB_OUTPUT
@@ -41,6 +28,37 @@ jobs:
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
         run: ./src/upstream/emglken/src/build.sh
+    outputs:
+      ref: ${{ steps.emglken-ref.outputs.ref }}
+
+  test-and-deploy:
+    needs: build-emglken
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          npm install --ignore-scripts
+          # Manually run Puppeteer's post install script
+          node ./node_modules/puppeteer/install.js
+          npm run link-local-emglken
+      - name: Static tests
+        run: |
+          npm run lint
+          npm run tsc-check
+      - name: Restore Emglken from the cache
+        id: cache-emglken
+        uses: actions/cache@v3
+        with:
+          path: |
+            src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.wasm
+          key: emglken-${{ needs.build-emglken.outputs.ref }}
       - name: Build Parchment distributions
         run: |
           ./build.js
