@@ -75,16 +75,16 @@ export class BaseApp {
             return this.front_page(ctx)
         }
 
+        if (request_path.startsWith('/api/sitegen')) {
+            return this.converter(ctx)
+        }
+
         if (request_path.startsWith('/proxy')) {
             return this.proxy(ctx)
         }
 
         if (request_path.startsWith('/metadata/cover')) {
             return this.metadata_cover(ctx)
-        }
-
-        if (request_path.startsWith('/converter')) {
-            return this.converter(ctx)
         }
 
         // Unexpected path

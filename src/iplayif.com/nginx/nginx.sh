@@ -82,15 +82,15 @@ server {
         proxy_pass http://app:8080;
     }
 
+    location /api {
+        proxy_pass http://app:8080;
+    }
+
     location /metadata {
         proxy_pass http://app:8080;
     }
 
     location /proxy {
-        proxy_pass http://app:8080;
-    }
-
-    location /converter {
         proxy_pass http://app:8080;
     }
 
