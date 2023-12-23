@@ -100,6 +100,15 @@ if (projects.includes('tools')) {
         outdir: 'tools',
         platform: 'node',
         treeShaking: true,
+    }, {
+        copy: [
+            'src/tools/file-exporter.html',
+        ],
+        entryPoints: {
+            'file-exporter': 'src/tools/file-exporter.ts',
+        },
+        outdir: 'dist/tools',
+        sourcemap: true,
     })
 }
 
