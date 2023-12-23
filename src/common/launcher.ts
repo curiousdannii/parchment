@@ -11,10 +11,10 @@ https://github.com/curiousdannii/parchment
 
 import Cookies from 'js-cookie'
 
-import {Blorb, FileView} from '../upstream/asyncglk/src/index-common.js'
+import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
 import {get_default_options, get_query_options, ParchmentOptions} from './options.js'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
-import {Format, formats, identify_blorb_storyfile_format} from './formats.js'
+import {find_format, Format, identify_blorb_storyfile_format} from './formats.js'
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher
@@ -27,16 +27,11 @@ class ParchmentLauncher
     options: ParchmentOptions
 
     constructor(parchment_options?: ParchmentOptions) {
-        this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(['do_vm_autosave', 'story']))
-    }
-
-    find_format(format: string | null, path?: string) {
-        for (const formatspec of formats) {
-            if (formatspec.id === format || (path && formatspec.extensions.test(path))) {
-                return formatspec
-            }
+        this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(['do_vm_autosave', 'story', 'use_asyncglk']))
+        // Use AsyncGlk if requested
+        if (this.options.use_asyncglk) {
+            this.options.Glk = new AsyncGlk()
         }
-        throw new Error('Unknown storyfile format')
     }
 
     get_storyfile_path() {
@@ -101,7 +96,7 @@ class ParchmentLauncher
             // Identify the format
             if (!format) {
                 if (typeof story === 'string') {
-                    format = this.find_format(null, story)
+                    format = find_format(null, story)
                 }
                 else {
                     throw new Error('Cannot identify storyfile format without path')
@@ -119,7 +114,7 @@ class ParchmentLauncher
             }
 
             if (typeof format === 'string') {
-                format = this.find_format(format)
+                format = find_format(format)
             }
             const engine = format.engines![0]
 
@@ -146,7 +141,7 @@ class ParchmentLauncher
 
     async load_uploaded_file(file: File) {
         try {
-            this.load(await read_uploaded_file(file), this.find_format(null, file.name))
+            this.load(await read_uploaded_file(file), find_format(null, file.name))
         }
         catch (err) {
             this.options.GlkOte.error(err)

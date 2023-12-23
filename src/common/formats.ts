@@ -13,11 +13,6 @@ import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
 import {ParchmentOptions} from './options.js'
 
-import Glk from '../upstream/glkote/glkapi.js'
-
-//import {AsyncGlk} from '../upstream/asyncglk/src/index-browser.js'
-//const Glk = new AsyncGlk()
-
 export interface Engine {
     id: string
     load: string[]
@@ -113,7 +108,7 @@ export const formats: Format[] = [
                         GiDispa: new quixe.GiDispa(),
                         GiLoad: quixe.GiLoad,
                         image_info_map: 'StaticImageInfo',
-                        io: Glk,
+                        io: options.Glk,
                         set_page_title: 0,
                         spacing: 0,
                         use_query_story: 0,
@@ -165,11 +160,10 @@ export const formats: Format[] = [
                     const vm_options = Object.assign({}, options, {
                         vm,
                         GiDispa: new zvm.ZVMDispatch(),
-                        Glk,
                     })
 
                     vm.prepare(file_data, vm_options)
-                    Glk.init(vm_options)
+                    vm_options.Glk.init(vm_options)
                 },
             },
 
@@ -182,8 +176,18 @@ export const formats: Format[] = [
     },
 ]
 
-// Search within a Blorb to find what format is inside
-// Must be passed a Blorb instance
+/** Match a format by format ID or file extension */
+export function find_format(format: string | null, path?: string) {
+    for (const formatspec of formats) {
+        if (formatspec.id === format || (path && formatspec.extensions.test(path))) {
+            return formatspec
+        }
+    }
+    throw new Error('Unknown storyfile format')
+}
+
+/** Search within a Blorb to find what format is inside
+ * Must be passed a Blorb instance */
 export function identify_blorb_storyfile_format(blorb: Blorb) {
     const blorb_chunks: Record<string, string> = {
         GLUL: 'glulx',

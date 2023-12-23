@@ -9,8 +9,9 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {ClassicSyncDialog, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
+import {ClassicSyncDialog, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
 import WebDialog from '../upstream/glkote/dialog.js'
+import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
 type ParchmentTruthy = boolean | number
 
@@ -37,6 +38,8 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     theme?: string,
     /** Name of theme cookie to check */
     theme_cookie: string,
+    /** Whether to test the AsyncGlk GlkApi library */
+    use_asyncglk?: ParchmentTruthy,
     /** Disable the file proxy, which may mean that some files can't be loaded */
     use_proxy?: ParchmentTruthy,
 
@@ -44,6 +47,8 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
 
     /** Dialog instance to use */
     Dialog: ClassicSyncDialog,
+    /** GlkApi instance to use */
+    Glk: GlkApi,
     /** GlkOte instance to use */
     GlkOte: GlkOte,
 
@@ -61,6 +66,7 @@ export function get_default_options(): ParchmentOptions {
             'unbox.ifarchive.org',
         ],
         do_vm_autosave: 1,
+        Glk: GlkOte_GlkApi,
         GlkOte: new WebGlkOte(),
         // This only makes sense after the source files are built
         lib_path: import.meta.url,
@@ -77,7 +83,8 @@ export function get_query_options(possible_query_options: Array<keyof ParchmentO
     const options: Partial<ParchmentOptions> = {}
     for (const option of possible_query_options) {
         if (query.has(option)) {
-            options[option] = query.get(option)
+            // I couldn't work out how to apply proper filtering here, so tell TS to ignore it
+            options[option] = query.get(option) as any
         }
     }
     return options
