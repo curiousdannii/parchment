@@ -1,7 +1,7 @@
 /*
 
-Common single-file processing
-=============================
+Common index.html processing
+============================
 
 Copyright (c) 2023 Dannii Willis
 MIT licenced
@@ -14,12 +14,21 @@ import {ParchmentOptions} from '../common/options.js'
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
 
+export interface Story {
+    author?: string
+    cover?: Uint8Array
+    data?: Uint8Array
+    description?: string
+    filename?: string
+    title?: string
+}
+
 export interface SingleFileOptions {
     date?: boolean | number
     font?: boolean | number
     format?: string
     single_file?: boolean | number
-    story_file?: Uint8Array
+    story_file?: Story
 }
 
 async function Uint8Array_to_base64(data: Buffer | Uint8Array): Promise<string> {
@@ -38,18 +47,8 @@ async function Uint8Array_to_base64(data: Buffer | Uint8Array): Promise<string> 
     throw new Error('Cannot encode base64')
 }
 
-export async function generate(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
+export async function make_single_file(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
     const inclusions: string[] = []
-    if (options.single_file) {
-        const parchment_options: Partial<ParchmentOptions> = {single_file: 1}
-        if (options.format) {
-            parchment_options.format = options.format
-        }
-        if (options.story_file) {
-            parchment_options.story = 'data:application/octet-stream;base64,' + await Uint8Array_to_base64(options.story_file)
-        }
-        inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
-    }
 
     // Process the files
     let indexhtml = ''
@@ -100,6 +99,20 @@ export async function generate(options: SingleFileOptions, files: Map<string, Ui
             inclusions.push(`<script type="text/plain" id="./${filename}">${data_as_string}</script>`)
         }
     }
+
+    // Parchment options
+    const parchment_options: Partial<ParchmentOptions> = {}
+    if (options.format) {
+        parchment_options.format = options.format
+    }
+    if (options.single_file) {
+        parchment_options.single_file = 1
+    }
+    if (options.story_file) {
+        parchment_options.story = 'embedded:' + options.story_file.filename
+        inclusions.push(`<script type="text/plain" id="${options.story_file.filename}">${await Uint8Array_to_base64(options.story_file.data!)}</script>`)
+    }
+    inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
 
     // Inject into index.html
     const gif = await Uint8Array_to_base64(files.get('waiting.gif')!)

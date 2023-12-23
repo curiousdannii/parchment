@@ -32,7 +32,7 @@ echo 'Test Parchment'
 TESTFILE=index.html
 run_tests
 
-echo 'Test single-file Parchment'
+echo -e '\nTest single-file Parchment'
 TESTFILE=dist/single-file/parchment.html
 run_tests
 

@@ -94,7 +94,7 @@ if (projects.includes('lectrote')) {
 if (projects.includes('tools')) {
     projects_to_build.push({
         entryPoints: {
-            'make-single-file': 'src/tools/make-single-file.ts',
+            'make-single-file': 'src/tools/single-file-cli.ts',
         },
         minify: false,
         outdir: 'tools',
@@ -165,10 +165,6 @@ for (const project of projects_to_build) {
         if (servemode) {
             const context = await esbuild.context(options)
             await context.watch()
-            await context.serve({
-                port: 8080,
-                servedir: '.',
-            })
         }
         else {
             const result = await esbuild.build(options)
@@ -177,4 +173,13 @@ for (const project of projects_to_build) {
             }
         }
     }
+}
+
+if (servemode) {
+    const context = await esbuild.context({})
+    let {host, port} = await context.serve({
+        port: 8080,
+        servedir: '.',
+    })
+    console.log(`Serving on http://${host}:${port}`)
 }

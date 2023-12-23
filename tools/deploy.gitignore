@@ -3,6 +3,7 @@
 build.js
 dist/**/package.json
 dist/inform7/Parchment*
+dist/single-file
 gulpfile.js
 node_modules
 package.json

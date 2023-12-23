@@ -21,7 +21,7 @@ import minimist from 'minimist'
 import {identify_blorb_storyfile_format} from '../common/formats.js'
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {generate} from './single-file.js'
+import {make_single_file, Story} from './index-processing.js'
 
 interface BasicFormat {
     extensions: RegExp
@@ -33,7 +33,7 @@ interface Options {
     font?: boolean | number
     format?: string
     single_file?: boolean | number
-    story_file?: Uint8Array
+    story_file?: Story
     terps: string[]
 }
 
@@ -102,7 +102,10 @@ const options = Object.assign({}, base_options, presets[preset])
 
 if (story_file_path) {
     try {
-        options.story_file = await fs.readFile(story_file_path)
+        options.story_file = {
+            data: await fs.readFile(story_file_path),
+            filename: path.basename(story_file_path),
+        }
     } catch (cause: any) {
         throw new Error(`Couldn't read story_file_path ${story_file_path}`, {cause})
     }
@@ -112,7 +115,7 @@ if (story_file_path) {
         throw new Error(`Unknown storyfile format ${story_file_path}`)
     }
     if (format === 'blorb') {
-        const blorb = new Blorb(options.story_file)
+        const blorb = new Blorb(options.story_file.data)
         format = identify_blorb_storyfile_format(blorb)
     }
     options.format = format
@@ -146,7 +149,7 @@ for (const file of common_files.concat(options.terps.map(terp => interpreter_fil
     files.set(path.basename(file), await fs.readFile(path.join(webpath, file)))
 }
 
-const indexhtml = await generate(options, files)
+const indexhtml = await make_single_file(options, files)
 
 await fs.mkdir(outdir, {recursive: true})
 const outpath = path.join(outdir, 'parchment.html')

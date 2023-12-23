@@ -20,6 +20,13 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string) {
     const proxy_url = `${options.proxy_url}?url=${story_url}`
     let response: Response
 
+    // Load an embedded storyfile
+    if (story_url.protocol === 'embedded:') {
+        const data = (document.getElementById(story_url.pathname) as HTMLScriptElement).text
+        const buffer = await parse_base64(data)
+        return new Uint8Array(buffer)
+    }
+
     // Only directly access files same origin files or those from the list of reliable domains
     let direct_access = same_domain || story_url.protocol === 'data:'
     if (!direct_access) {
