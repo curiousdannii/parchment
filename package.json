@@ -34,7 +34,7 @@
     "eslint": "^8.3.0",
     "eslint-plugin-compat": "^4.0.0",
     "minimist": "^1.2.6",
-    "regtest-html": "^0.1.2",
+    "regtest-html": "^0.1.3",
     "typescript": "~5.2.0"
   },
   "scripts": {
