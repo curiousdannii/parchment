@@ -3,31 +3,34 @@
 Dynamic iplayid.com front page
 ==============================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
-https://github.com/curiousdannii/iplayif.com
+https://github.com/curiousdannii/parchment
 
 */
 
+import Koa from 'koa'
 import {escape, truncate} from 'lodash-es'
 
-import {SUPPORTED_TYPES} from './common.js'
-import ProxyApp from './proxy.js'
+import {flatten_query, SiteOptions, SUPPORTED_TYPES} from './common.js'
+import {MetadataCache} from './metadata.js'
 
-export default class FrontPageApp extends ProxyApp {
-    index_html = 'ERROR: front page index.html not yet loaded'
+export default class FrontPage {
+    index_html: string = 'ERROR: front page index.html not yet loaded'
+    metadata: MetadataCache
+    options: SiteOptions
 
-    constructor(options) {
-        super(options)
-
+    constructor(options: SiteOptions, cache: MetadataCache) {
+        this.options = options
+        this.metadata = cache
         this.update_index_html()
-        setInterval(() => this.update_index_html(), this.options.front_page.index_update_time * 60000)
+        setInterval(() => this.update_index_html(), options.front_page.index_update_time * 60000)
     }
 
-    async front_page(ctx) {
+    async front_page(ctx: Koa.Context) {
         ctx.type = 'text/html; charset=UTF-8'
 
-        const story_url = ctx.query.story
+        const story_url = flatten_query(ctx.query.story)
         if (!story_url || !SUPPORTED_TYPES.test(story_url)) {
             ctx.body = this.index_html
             return
@@ -44,7 +47,7 @@ export default class FrontPageApp extends ProxyApp {
 
         const protocol_domain = `http${this.options.https ? 's' : ''}://${this.options.domain}`
 
-        const data = await this.metadata.get(story_url)
+        const data = (await this.metadata.get(story_url))!
         //console.log(data)
 
         // Embed the metadata into the page title
@@ -52,7 +55,7 @@ export default class FrontPageApp extends ProxyApp {
             .replace('<title>Parchment</title>', `<title>${escape(data.title)} - Parchment</title>`)
 
         // Open Graph meta data
-        const open_graph = []
+        const open_graph: string[] = []
         if (data.title && data.author) {
             open_graph.push(
                 `<meta property="og:site_name" content="Parchment"/>`,

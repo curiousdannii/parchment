@@ -10,6 +10,7 @@
     },
     "include": [
         "src/common/*.ts",
+        "src/iplayif.com/app/src/*.ts",
         "src/tools/*.ts",
         "src/types.d.ts",
     ],

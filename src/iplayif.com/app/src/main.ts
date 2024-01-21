@@ -3,9 +3,9 @@
 iplayif.com server
 ==================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
-https://github.com/curiousdannii/iplayif.com
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -13,9 +13,10 @@ import fs from 'fs/promises'
 import {merge} from 'lodash-es'
 import path from 'path'
 
-import IplayifApp from './converter.js'
+import IplayifApp from './app.js'
+import {SiteOptions} from './common.js'
 
-const default_options = {
+const default_options: SiteOptions = {
     cache_control_age: 604800, // 1 week
     cdn_domain: 'cdn.iplayif.com',
     domain: '127.0.0.1',
@@ -46,7 +47,7 @@ try {
     options_json = await fs.readFile(options_path, {encoding: 'utf8'})
 }
 catch (_) {}
-const options = merge({}, default_options, JSON.parse(options_json))
+const options: SiteOptions = merge({}, default_options, JSON.parse(options_json))
 
 // Start the server
 const app = new IplayifApp(options)

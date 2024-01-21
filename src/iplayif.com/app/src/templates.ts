@@ -3,15 +3,21 @@
 Templates
 =========
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
-https://github.com/curiousdannii/iplayif.com
+https://github.com/curiousdannii/parchment
 
 */
 
 import {escape} from 'lodash-es'
 
-export function wrapper(opts) {
+export interface WrapperOptions {
+    canonical?: boolean
+    content: string
+    title?: string
+}
+
+export function wrapper(opts: WrapperOptions) {
     if (!opts.title) {
         opts.title = 'Parchment'
     }
@@ -52,7 +58,7 @@ export function wrapper(opts) {
 </html>`
 }
 
-export function error(msg) {
+export function error(msg: string) {
     return `
         <div class="Description">
             <p><b>Error:</b></p>

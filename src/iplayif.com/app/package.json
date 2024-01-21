@@ -4,21 +4,22 @@
   "description": "iplayif.com proxy and metadata server",
   "author": "Dannii Willis <curiousdannii@gmail.com>",
   "license": "MIT",
-  "repository": "curiousdannii/iplayif.com",
+  "repository": "curiousdannii/parchment",
   "type": "module",
   "dependencies": {
+    "esbuild": "^0.19.11",
     "he": "^1.2.0",
-    "koa": "^2.13.4",
+    "koa": "^2.15.0",
     "koa-body": "^6.0.1",
     "lodash-es": "^4.17.21",
-    "lru-cache": "^7.13.1",
-    "sharp": "^0.30.7"
+    "lru-cache": "^10.1.0",
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
-    "eslint": "^8.20.0"
+    "@types/he": "^1.2.3"
   },
   "scripts": {
-    "lint": "eslint src",
-    "start": "node src/main.js"
+    "build": "esbuild src/main.ts --bundle --format=esm --outfile=build/main.js --packages=external --platform=node --sourcemap",
+    "start": "node build/main.js"
   }
 }

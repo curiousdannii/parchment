@@ -1,50 +1,68 @@
-import { MetaDataApp } from './metadata.js'
+/*
+
+Parchment site generator
+========================
+
+Copyright (c) 2024 Dannii Willis
+MIT licenced
+https://github.com/curiousdannii/parchment
+
+*/
+
 import fs from 'fs/promises'
 import child_process from 'child_process'
 import util from 'util'
 
+import Koa from 'koa'
+import {escape} from 'lodash-es'
+
+import {ParchmentOptions} from '../../../common/options.js'
+
+import FrontPage from './front-page.js'
+import {flatten_query, SiteOptions} from './common.js'
+
 const execFile = util.promisify(child_process.execFile)
-
-const parchment_formats = {
-    'zcode': 'zcode',
-    'blorbed zcode': 'zcode',
-    'glulx': 'glulx',
-    'blorbed glulx': 'glulx',
-    'tads2': 'tads',
-    'tads3': 'tads',
-    'hugo': 'hugo',
-    'adrift': 'adrift4',
-}
-
-const format_terp_files = {
-    zcode: ['zvm.js'],
-    glulx: ['quixe.js'],
-    tads: ['tads-core.wasm', 'tads.js'],
-    hugo: ['hugo-core.wasm', 'hugo.js'],
-    adrift4: ['scare-core.wasm', 'scare.js'],
-}
 
 const utf8decoder = new TextDecoder()
 
-function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g,
-        tag => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        }[tag]))
+const parchment_formats: Record<string, string> = {
+    adrift: 'adrift4',
+    'blorbed glulx': 'glulx',
+    'blorbed zcode': 'zcode',
+    glulx: 'glulx',
+    hugo: 'hugo',
+    tads2: 'tads',
+    tads3: 'tads',
+    zcode: 'zcode',
+}
+
+const format_terp_files: Record<string, string[]> = {
+    adrift4: ['scare-core.wasm', 'scare.js'],
+    glulx: ['quixe.js'],
+    hugo: ['hugo-core.wasm', 'hugo.js'],
+    tads: ['tads-core.wasm', 'tads.js'],
+    zcode: ['zvm.js'],
+}
+
+interface SiteGenOptions {
+    cdn_domain: string
+    font?: boolean
+    format?: string
+    ifid?: string
+    remote?: boolean
+    single_file?: boolean
+    story_file?: Buffer
+    title: string
 }
 
 // taken from https://github.com/curiousdannii/parchment/blob/master/src/tools/single-file.js
-async function generate(options, indexhtml, files) {
-    const inclusions = []
+async function generate(options: SiteGenOptions, indexhtml: string, files: Record<string, Buffer>) {
+    const inclusions: string[] = []
     if (options.ifid) {
         inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${options.ifid}">`)
     }
     if (options.single_file) {
-        const parchment_options = { single_file: 1 }
+        const parchment_options: Partial<ParchmentOptions> = { single_file: 1 }
         if (options.format) {
             parchment_options.format = options.format
         }
@@ -55,13 +73,13 @@ async function generate(options, indexhtml, files) {
     }
 
     // Process the files
-    for (const filename of Object.keys(files)) {
+    for (const [filename, raw_data] of Object.entries(files)) {
+        let data: Buffer | string = raw_data
         if (/\.(css|js|html)$/.test(filename)) {
-            files[filename] = utf8decoder.decode(files[filename])
+            data = utf8decoder.decode(raw_data)
                 .replace(/(\/\/|\/\*)# sourceMappingURL.+/, '')
                 .trim()
         }
-        let data = files[filename]
         if (filename === 'ie.js') {
             inclusions.push(`<script nomodule>${data}</script>`)
         }
@@ -82,7 +100,7 @@ async function generate(options, indexhtml, files) {
         else if (filename.endsWith('.css')) {
             // Only include a single font, the browser can fake bold and italics
             const fontfile = files['../fonts/iosevka/iosevka-extended.woff2'].toString('base64')
-            data = data.replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\(['"]woff2['"]\)}/g, (_, font, style, weight) => {
+            data = (data as string).replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\(['"]woff2['"]\)}/g, (_, font: string, style: string, weight: string) => {
                 if (font === 'Iosevka' && style === 'normal' && weight === '400' && options.font) {
                     return `@font-face{font-family:Iosevka;font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${fontfile}) format('woff2')}`
                 }
@@ -108,7 +126,7 @@ async function generate(options, indexhtml, files) {
         .replace(/<script.+?\/script>/g, '')
         .replace(/<link rel="stylesheet".+?>/g, '')
         .replace(/<img src="dist\/web\/waiting.gif"/, `<img src="data:image/gif;base64,${gif}"`)
-        .replace(/<title>.+?\/title>/, `<title>${escapeHTML(options.title)}</title>`)
+        .replace(/<title>.+?\/title>/, `<title>${escape(options.title)}</title>`)
         .replace(/^\s+$/gm, '')
 
     // Add the inclusions
@@ -120,8 +138,17 @@ async function generate(options, indexhtml, files) {
     return indexhtml
 }
 
-export default class ConverterApp extends MetaDataApp {
-    async converter(ctx) {
+export default class SiteGenerator {
+    // TODO: replace with a proper CDN cache thingy
+    front_page: FrontPage
+    options: SiteOptions
+
+    constructor(options: SiteOptions, front_page: FrontPage) {
+        this.options = options
+        this.front_page = front_page
+    }
+
+    async sitegen(ctx: Koa.Context) {
         if (ctx.request.method === 'GET') {
             ctx.type = 'text/html; charset=UTF-8'
             ctx.body = `<!DOCTYPE html><html><head><title>Parchment HTML Converter</title></head>
@@ -134,7 +161,7 @@ export default class ConverterApp extends MetaDataApp {
             </form>`
             return
         }
-        const story_file_path = ctx.request.files.story_file.filepath
+        const story_file_path = flatten_query(ctx.request.files!.story_file)!.filepath
         const identify_results = await execFile('babel', ['-identify', story_file_path])
         if (identify_results.stderr) {
             ctx.throw(400, 'Unsupported file type')
@@ -176,18 +203,18 @@ export default class ConverterApp extends MetaDataApp {
             [url, await fetch(`https://${this.options.cdn_domain}/dist/web/${url}`).then(r => r.arrayBuffer()).then(b => Buffer.from(b))]
         )))
 
-        const options = {
-            single_file: 1,
-            remote: 0,
-            font: 1,
+        const options: SiteGenOptions = {
+            cdn_domain: this.options.cdn_domain,
+            font: true,
             format: parchment_format,
+            ifid,
+            remote: false,
+            single_file: true,
             story_file: await fs.readFile(story_file_path),
             title: bibliographic,
-            ifid,
-            cdn_domain: this.options.cdn_domain
         }
 
-        const html = await generate(options, this.index_html, files)
+        const html = await generate(options, this.front_page.index_html, files)
         const outfileName = bibliographic.replace(/"/g, '').replace(/[^"\\A-Za-z0-9'-]+/g, '-')
         ctx.type = 'text/html; charset=UTF-8'
         ctx.set('Content-Disposition', `attachment; filename="${outfileName}.html"`)

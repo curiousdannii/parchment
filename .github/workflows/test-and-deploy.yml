@@ -47,6 +47,7 @@ jobs:
           # Manually run Puppeteer's post install script
           node ./node_modules/puppeteer/install.mjs
           npm run link-local-emglken
+          cd src/iplayif.com/app && npm install
       - name: Static tests
         run: |
           npm run lint

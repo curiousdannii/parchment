@@ -3,9 +3,9 @@
 Metadata cache
 ==============
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
-https://github.com/curiousdannii/iplayif.com
+https://github.com/curiousdannii/parchment
 
 */
 
@@ -19,39 +19,47 @@ import {pipeline} from 'stream/promises'
 import util from 'util'
 
 import he from 'he'
-import LRU from 'lru-cache'
+import Koa from 'koa'
+import {LRUCache} from 'lru-cache'
 import sharp from 'sharp'
 
+import {flatten_query, SiteOptions} from './common.js'
 import {SUPPORTED_TYPES} from './common.js'
-import FrontPageApp from './front-page.js'
 
 const execFile = util.promisify(child_process.execFile)
 
 class File {
-    constructor(title) {
+    author?: string
+    cover?: null | {
+        data: Uint8Array
+        type: string
+    }
+    description?: string
+    title: string
+
+    constructor(title: string) {
         this.title = title
-        this.author = null
-        this.cover = null
-        this.cover_type = null
-        this.description = null
     }
 }
 
 export class MetadataCache {
-    constructor(options) {
-        this.lru = new LRU({
+    lru: LRUCache<string, File>
+    temp: string
+
+    constructor(options: SiteOptions) {
+        this.lru = new LRUCache({
             fetchMethod: (url) => this.fetch(url),
             max: 1000,
             maxSize: options.metadata.max_size,
-            sizeCalculation: (value) => value.cover?.byteLength || 1,
+            sizeCalculation: (value) => value.cover?.data.byteLength || 1,
             ttl: options.metadata.max_age * 1000 * 60 * 60,
         })
         this.temp = fs_sync.mkdtempSync(`${os.tmpdir()}/`)
         process.chdir(this.temp)
     }
 
-    async fetch(url) {
-        const file_name = /([^/=]+)$/.exec(url)[1]
+    async fetch(url: string) {
+        const file_name = /([^/=]+)$/.exec(url)![1]
         const result = new File(file_name)
 
         // Absorb all errors here
@@ -64,7 +72,8 @@ export class MetadataCache {
 
             // Write the file stream to temp
             const file_path = `${this.temp}/${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}${path.extname(file_name)}`
-            await pipeline(response.body, fs_sync.createWriteStream(file_path))
+            // TODO: fix type
+            await pipeline(response.body as any, fs_sync.createWriteStream(file_path))
 
             // Run babel -identify
             const identify_results = await execFile('babel', ['-identify', file_path])
@@ -80,11 +89,12 @@ export class MetadataCache {
                 }
 
                 // Extract a cover
+                let cover: Uint8Array | undefined
                 if (!identify_data[2].includes('no cover')) {
                     const extract_cover_results = await execFile('babel', ['-cover', file_path])
                     if (!extract_cover_results.stderr.length) {
-                        const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)[1]
-                        result.cover = await fs.readFile(cover_path)
+                        const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)![1]
+                        cover = await fs.readFile(cover_path)
                         await fs.rm(cover_path)
                     }
                 }
@@ -97,22 +107,22 @@ export class MetadataCache {
 
                 // Check the IFDB for details
                 if (!result.author || !result.cover || !result.description) {
-                    const ifid = /IFID: ([-\w]+)/i.exec(identify_data[1])[1]
+                    const ifid = /IFID: ([-\w]+)/i.exec(identify_data[1])![1]
                     const ifdb_response = await fetch(`https://ifdb.org/viewgame?ifiction&ifid=${ifid}`)
                     if (ifdb_response.ok) {
                         const ifdb_xml = await ifdb_response.text()
                         if (!result.author) {
-                            result.author = he.decode(/<author>(.+?)<\/author>/.exec(ifdb_xml)[1])
+                            result.author = he.decode(/<author>(.+?)<\/author>/.exec(ifdb_xml)![1])
                         }
                         if (result.title === file_name) {
-                            result.title = he.decode(/<title>(.+?)<\/title>/.exec(ifdb_xml)[1])
+                            result.title = he.decode(/<title>(.+?)<\/title>/.exec(ifdb_xml)![1])
                         }
                         if (!result.cover) {
                             const cover_url = /<coverart><url>(.+?)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
                             if (cover_url) {
                                 const cover_response = await fetch(he.decode(cover_url))
                                 if (cover_response.ok) {
-                                    result.cover = Buffer.from(await cover_response.arrayBuffer())
+                                    cover = Buffer.from(await cover_response.arrayBuffer())
                                 }
                             }
                         }
@@ -122,8 +132,11 @@ export class MetadataCache {
                     }
                 }
 
-                if (result.cover) {
-                    result.cover_type = (await sharp(result.cover).metadata())?.format
+                if (cover) {
+                    result.cover = {
+                        data: cover,
+                        type: (await sharp(cover).metadata())!.format!
+                    }
                 }
             }
 
@@ -135,57 +148,60 @@ export class MetadataCache {
         return result
     }
 
-    get(url) {
+    get(url: string) {
         return this.lru.fetch(url)
     }
 }
 
-export class MetaDataApp extends FrontPageApp {
-    async metadata_cover(ctx) {
-        ctx.component_name = 'Parchment Metadata server'
-        const query = ctx.query
-        const url = query.url
+export async function metadata_cover(cache: MetadataCache, ctx: Koa.Context) {
+    ctx.component_name = 'Parchment Metadata server'
+    const query = ctx.query
+    const url = flatten_query(query.url)
 
-        if (!url) {
-            ctx.throw(400, 'No requested URL')
-        }
+    if (!url) {
+        ctx.throw(400, 'No requested URL')
+    }
 
-        if (!SUPPORTED_TYPES.test(url)) {
-            ctx.throw(400, 'Unsupported file type')
-        }
+    if (!SUPPORTED_TYPES.test(url)) {
+        ctx.throw(400, 'Unsupported file type')
+    }
 
-        const data = await this.metadata.get(url)
-        if (!data.cover) {
-            ctx.throw(400, 'Cover image not found')
-        }
+    const data = await cache.get(url)
+    if (!data?.cover) {
+        ctx.throw(400, 'Cover image not found')
+    }
 
-        ctx.type = data.cover_type
+    ctx.type = data.cover.type
 
-        const max_height = parseInt(query.maxh, 10)
+    const maxh = flatten_query(query.maxh)
+    if (!maxh) {
+        ctx.throw(400, 'maxh must be specified')
+    }
+    const max_height = parseInt(maxh, 10)
 
-        if (!max_height) {
-            ctx.body = data.cover
-        }
-        else {
-            ctx.body = await sharp(data.cover)
-                .resize({
-                    fit: 'inside',
-                    height: max_height,
-                    withoutEnlargement: true,
-                })
-                .toBuffer()
-        }
+    if (!max_height) {
+        ctx.body = data.cover
+    }
+    else {
+        ctx.body = await sharp(data.cover.data)
+            .resize({
+                fit: 'inside',
+                height: max_height,
+                withoutEnlargement: true,
+            })
+            .toBuffer()
+    }
 
-        // Set and check ETag
-        ctx.response.etag = crypto.createHash('md5').update(ctx.body).digest('hex')
-        if (ctx.fresh) {
-            ctx.status = 304
-            return
-        }
+    // Set and check ETag
+    // TODO: fix type
+    ctx.response.etag = crypto.createHash('md5').update(ctx.body as any).digest('hex')
+    if (ctx.fresh) {
+        ctx.status = 304
+        return
     }
 }
 
-function extract_description(ifction) {
+function extract_description(ifction: string) {
     const description = /<description>(.+?)<\/description>/.exec(ifction)
     if (description) {
         return he.decode(description[1]).replace(/<br\s*\/>/g, '\n')
