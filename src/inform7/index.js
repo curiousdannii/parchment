@@ -66,7 +66,7 @@ async function launch() {
     try {
         const buffer = await parse_base64(base64data)
         const data_array = new Uint8Array(buffer)
-        
+
         if (format === 'zcode') {
             const vm = new window.ZVM()
             const vm_options = Object.assign({}, options, {

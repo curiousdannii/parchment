@@ -1,6 +1,6 @@
 {
   "name": "parchment",
-  "version": "2023.12.0",
+  "version": "2024.1.0",
   "description": "Parchment Interactive Fiction Player",
   "repository": "curiousdannii/parchment",
   "keywords": [
@@ -42,7 +42,7 @@
     "check-compat": "tests/check-compat.sh",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
-    "lint": "eslint src/common/ src/inform7/ src/tools/",
+    "lint": "eslint src/common/ src/inform7/ src/iplayif.com/app/src/ src/tools/",
     "prepare": "./build.js",
     "start": "./build.js --serve",
     "test": "./tests/runtests.sh",
