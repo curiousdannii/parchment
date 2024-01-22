@@ -8,3 +8,5 @@ tools/make-single-file.js
 /*.js
 /*.ulx
 /*.z5
+
+!service-worker.js
