@@ -1,0 +1,11 @@
+# The Docker context of iplayif.com/app needs to be this top-level src folder so that files from common etc can be imported
+# That means the .dockerignore must be here, and folders must have relative paths
+
+fonts
+inform7
+iplayif.com/app/build
+iplayif.com/app/node_modules
+iplayif.com/app/npm-debug.log
+iplayif.com/data
+upstream
+web

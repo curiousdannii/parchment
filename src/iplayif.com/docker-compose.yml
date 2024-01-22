@@ -1,6 +1,8 @@
 services:
   app:
-    build: ./app
+    build:
+      context: ../
+      dockerfile: ./iplayif.com/app/Dockerfile
     environment:
       DATA_DIR: /home/data
     logging:

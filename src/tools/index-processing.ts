@@ -3,37 +3,41 @@
 Common index.html processing
 ============================
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import {ParchmentOptions} from '../common/options.js'
+import {escape} from 'lodash-es'
+
+import {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
 
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
 
 export interface Story {
+    // TODO use author and title
     author?: string
     cover?: Uint8Array
     data?: Uint8Array
     description?: string
     filename?: string
+    format?: string
+    ifid?: string
     title?: string
 }
 
 export interface SingleFileOptions {
-    date?: boolean | number
-    font?: boolean | number
-    format?: string
-    single_file?: boolean | number
-    story_file?: Story
+    date?: ParchmentTruthy
+    font?: ParchmentTruthy
+    single_file?: ParchmentTruthy
+    story?: Story
 }
 
-async function Uint8Array_to_base64(data: Buffer | Uint8Array): Promise<string> {
+async function Uint8Array_to_base64(data: Uint8Array): Promise<string> {
     if (typeof Buffer !== 'undefined') {
-        return data.toString('base64')
+        return Buffer.from(data.buffer).toString('base64')
     }
     // From https://stackoverflow.com/a/66046176/2854284
     else if (typeof FileReader !== 'undefined') {
@@ -47,8 +51,16 @@ async function Uint8Array_to_base64(data: Buffer | Uint8Array): Promise<string> 
     throw new Error('Cannot encode base64')
 }
 
-export async function make_single_file(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
+export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
+    const story = options.story
     const inclusions: string[] = []
+
+    // Metadata
+    if (story) {
+        if (story.ifid) {
+            inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${story?.ifid}">`)
+        }
+    }
 
     // Process the files
     let indexhtml = ''
@@ -102,15 +114,17 @@ export async function make_single_file(options: SingleFileOptions, files: Map<st
 
     // Parchment options
     const parchment_options: Partial<ParchmentOptions> = {}
-    if (options.format) {
-        parchment_options.format = options.format
-    }
     if (options.single_file) {
         parchment_options.single_file = 1
     }
-    if (options.story_file) {
-        parchment_options.story = 'embedded:' + options.story_file.filename
-        inclusions.push(`<script type="text/plain" id="${options.story_file.filename}">${await Uint8Array_to_base64(options.story_file.data!)}</script>`)
+    if (story) {
+        if (story.format) {
+            parchment_options.format = story?.format
+        }
+        if (story.data) {
+            parchment_options.story = 'embedded:' + story.filename!
+            inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
+        }
     }
     inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
 
@@ -127,7 +141,7 @@ export async function make_single_file(options: SingleFileOptions, files: Map<st
         const today = new Date()
         const title = `Parchment ${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`
         indexhtml = indexhtml
-            .replace(/<title.+?\/title>/, `<title>${title}</title>`)
+            .replace(/<title.+?\/title>/, `<title>${escape(title)}</title>`)
             .replace(/<\/noscript>/, `</noscript>\n<p id="footer-date">${title}</p>`)
     }
 

@@ -13,7 +13,7 @@ import {ClassicSyncDialog, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../up
 import WebDialog from '../upstream/glkote/dialog.js'
 import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
-type ParchmentTruthy = boolean | number
+export type ParchmentTruthy = boolean | number
 
 export interface ParchmentOptions extends Partial<GlkOteOptions> {
     // Parchment options

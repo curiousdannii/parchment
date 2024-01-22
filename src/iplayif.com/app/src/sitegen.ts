@@ -11,19 +11,17 @@ https://github.com/curiousdannii/parchment
 
 import fs from 'fs/promises'
 import child_process from 'child_process'
+import path from 'path'
 import util from 'util'
 
 import Koa from 'koa'
-import {escape} from 'lodash-es'
 
-import {ParchmentOptions} from '../../../common/options.js'
+import {process_index_html, SingleFileOptions} from '../../../tools/index-processing.js'
 
 import FrontPage from './front-page.js'
 import {flatten_query, SiteOptions} from './common.js'
 
 const execFile = util.promisify(child_process.execFile)
-
-const utf8decoder = new TextDecoder()
 
 const parchment_formats: Record<string, string> = {
     adrift: 'adrift4',
@@ -42,100 +40,6 @@ const format_terp_files: Record<string, string[]> = {
     hugo: ['hugo-core.wasm', 'hugo.js'],
     tads: ['tads-core.wasm', 'tads.js'],
     zcode: ['zvm.js'],
-}
-
-interface SiteGenOptions {
-    cdn_domain: string
-    font?: boolean
-    format?: string
-    ifid?: string
-    remote?: boolean
-    single_file?: boolean
-    story_file?: Buffer
-    title: string
-}
-
-// taken from https://github.com/curiousdannii/parchment/blob/master/src/tools/single-file.js
-async function generate(options: SiteGenOptions, indexhtml: string, files: Record<string, Buffer>) {
-    const inclusions: string[] = []
-    if (options.ifid) {
-        inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${options.ifid}">`)
-    }
-    if (options.single_file) {
-        const parchment_options: Partial<ParchmentOptions> = { single_file: 1 }
-        if (options.format) {
-            parchment_options.format = options.format
-        }
-        if (options.story_file) {
-            parchment_options.story = `data:application/octet-stream;base64,` + options.story_file.toString('base64')
-        }
-        inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
-    }
-
-    // Process the files
-    for (const [filename, raw_data] of Object.entries(files)) {
-        let data: Buffer | string = raw_data
-        if (/\.(css|js|html)$/.test(filename)) {
-            data = utf8decoder.decode(raw_data)
-                .replace(/(\/\/|\/\*)# sourceMappingURL.+/, '')
-                .trim()
-        }
-        if (filename === 'ie.js') {
-            inclusions.push(`<script nomodule>${data}</script>`)
-        }
-        else if (filename === 'jquery.min.js') {
-            if (options.remote) {
-                inclusions.push(`<script src="https://${options.cdn_domain}/dist/web/${filename}"></script>`)
-            } else {
-                inclusions.push(`<script>${data}</script>`)
-            }
-        }
-        else if (filename === 'main.js') {
-            if (options.remote) {
-                inclusions.push(`<script src="https://${options.cdn_domain}/dist/web/${filename}" type="module"></script>`)
-            } else {
-                inclusions.push(`<script type="module">${data}</script>`)
-            }
-        }
-        else if (filename.endsWith('.css')) {
-            // Only include a single font, the browser can fake bold and italics
-            const fontfile = files['../fonts/iosevka/iosevka-extended.woff2'].toString('base64')
-            data = (data as string).replace(/@font-face{font-family:([' \w]+);font-style:(\w+);font-weight:(\d+);src:url\([^)]+\) format\(['"]woff2['"]\)}/g, (_, font: string, style: string, weight: string) => {
-                if (font === 'Iosevka' && style === 'normal' && weight === '400' && options.font) {
-                    return `@font-face{font-family:Iosevka;font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${fontfile}) format('woff2')}`
-                }
-                return ''
-            })
-                .replace(/Iosevka Narrow/g, 'Iosevka')
-            if (!options.font) {
-                data = data.replace(/--glkote(-grid)?-mono-family: "Iosevka", monospace;?/g, '')
-            }
-            inclusions.push(`<style>${data}</style>`)
-        }
-        else if (filename.endsWith('.js')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${data}</script>`)
-        }
-        else if (filename.endsWith('.wasm')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${data.toString('base64')}</script>`)
-        }
-    }
-
-    // Inject into index.html
-    const gif = files['waiting.gif'].toString('base64')
-    indexhtml = indexhtml
-        .replace(/<script.+?\/script>/g, '')
-        .replace(/<link rel="stylesheet".+?>/g, '')
-        .replace(/<img src="dist\/web\/waiting.gif"/, `<img src="data:image/gif;base64,${gif}"`)
-        .replace(/<title>.+?\/title>/, `<title>${escape(options.title)}</title>`)
-        .replace(/^\s+$/gm, '')
-
-    // Add the inclusions
-    const parts = indexhtml.split(/\s*<\/head>/)
-    indexhtml = `${parts[0]}
-    ${inclusions.join('\n')}
-    </head>${parts[1]}`
-
-    return indexhtml
 }
 
 export default class SiteGenerator {
@@ -161,8 +65,9 @@ export default class SiteGenerator {
             </form>`
             return
         }
-        const story_file_path = flatten_query(ctx.request.files!.story_file)!.filepath
-        const identify_results = await execFile('babel', ['-identify', story_file_path])
+        const story_file = flatten_query(ctx.request.files!.story_file)!
+        const filename = story_file.originalFilename!
+        const identify_results = await execFile('babel', ['-identify', story_file.filepath])
         if (identify_results.stderr) {
             ctx.throw(400, 'Unsupported file type')
         }
@@ -190,7 +95,8 @@ export default class SiteGenerator {
 
         const terp_files = format_terp_files[parchment_format]
 
-        const urls = [
+        const paths = [
+            '../../index.html',
             'jquery.min.js',
             'main.js',
             'waiting.gif',
@@ -199,25 +105,26 @@ export default class SiteGenerator {
             ...terp_files,
         ]
 
-        const files = Object.fromEntries(await Promise.all(urls.map(async url =>
-            [url, await fetch(`https://${this.options.cdn_domain}/dist/web/${url}`).then(r => r.arrayBuffer()).then(b => Buffer.from(b))]
-        )))
-
-        const options: SiteGenOptions = {
-            cdn_domain: this.options.cdn_domain,
-            font: true,
-            format: parchment_format,
-            ifid,
-            remote: false,
-            single_file: true,
-            story_file: await fs.readFile(story_file_path),
-            title: bibliographic,
+        // Get all the files
+        const files: Map<string, Uint8Array> = new Map()
+        for (const file of paths) {
+            files.set(path.basename(file), await fetch(`https://${this.options.cdn_domain}/dist/web/${file}`).then(r => r.arrayBuffer()).then(b => new Uint8Array(b)))
         }
 
-        const html = await generate(options, this.front_page.index_html, files)
-        const outfileName = bibliographic.replace(/"/g, '').replace(/[^"\\A-Za-z0-9'-]+/g, '-')
+        const options: SingleFileOptions = {
+            font: true,
+            single_file: true,
+            story: {
+                data: await fs.readFile(story_file.filepath),
+                filename,
+                format: parchment_format,
+                ifid,
+                title: bibliographic,
+            },
+        }
+
         ctx.type = 'text/html; charset=UTF-8'
-        ctx.set('Content-Disposition', `attachment; filename="${outfileName}.html"`)
-        ctx.body = html
+        ctx.set('Content-Disposition', `attachment; filename="${filename}.html"`)
+        ctx.body = await process_index_html(options, files)
     }
 }

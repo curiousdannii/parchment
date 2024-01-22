@@ -10,20 +10,21 @@ RUN apk add --no-cache build-base curl && \
     make
 
 # Stage 2: The app itself
+# Note that the Docker context is the top level src/ folder
 
 FROM node:20-alpine
 
-WORKDIR /home/app
+EXPOSE 8080
+
+WORKDIR /home/iplayif.com/app
 
 COPY --from=build-babel /home/babel /usr/local/bin/
 
-COPY package*.json ./
+COPY iplayif.com/app/package*.json ./
 
 RUN npm ci --production
 
-COPY . .
-
-EXPOSE 8080
+COPY . ../../
 
 RUN npm run build
 

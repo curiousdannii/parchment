@@ -78,6 +78,8 @@ server {
     $SSL
     $GZIP
 
+    client_max_body_size 100M;
+
     location = / {
         proxy_pass http://app:8080;
     }

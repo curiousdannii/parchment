@@ -4,7 +4,7 @@
 Parchment single-file converter
 ===============================
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -21,19 +21,14 @@ import minimist from 'minimist'
 import {identify_blorb_storyfile_format} from '../common/formats.js'
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {make_single_file, Story} from './index-processing.js'
+import {process_index_html, SingleFileOptions} from './index-processing.js'
 
 interface BasicFormat {
     extensions: RegExp
     engine?: string
 }
 
-interface Options {
-    date?: boolean | number
-    font?: boolean | number
-    format?: string
-    single_file?: boolean | number
-    story_file?: Story
+interface Options extends SingleFileOptions {
     terps: string[]
 }
 
@@ -102,7 +97,7 @@ const options = Object.assign({}, base_options, presets[preset])
 
 if (story_file_path) {
     try {
-        options.story_file = {
+        options.story = {
             data: await fs.readFile(story_file_path),
             filename: path.basename(story_file_path),
         }
@@ -115,10 +110,10 @@ if (story_file_path) {
         throw new Error(`Unknown storyfile format ${story_file_path}`)
     }
     if (format === 'blorb') {
-        const blorb = new Blorb(options.story_file.data)
+        const blorb = new Blorb(options.story.data)
         format = identify_blorb_storyfile_format(blorb)
     }
-    options.format = format
+    options.story.format = format
     options.terps = [formats[format!].engine!]
 }
 
@@ -149,7 +144,7 @@ for (const file of common_files.concat(options.terps.map(terp => interpreter_fil
     files.set(path.basename(file), await fs.readFile(path.join(webpath, file)))
 }
 
-const indexhtml = await make_single_file(options, files)
+const indexhtml = await process_index_html(options, files)
 
 await fs.mkdir(outdir, {recursive: true})
 const outpath = path.join(outdir, 'parchment.html')
