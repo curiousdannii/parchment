@@ -3,7 +3,7 @@
 Common Parchment Options
 ========================
 
-Copyright (c) 2022 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -15,6 +15,13 @@ import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
 export type ParchmentTruthy = boolean | number
 
+export interface StoryOptions {
+    data?: Uint8Array
+    /** Format ID, matching formats.js */
+    format?: string
+    url?: string
+}
+
 export interface ParchmentOptions extends Partial<GlkOteOptions> {
     // Parchment options
 
@@ -24,16 +31,14 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     default_story?: [string],
     /** Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers */
     direct_domains: string[],
-    /** Format ID, matching formats.js */
-    format?: string,
     /** Path to resources */
     lib_path: string,
     /** URL of Proxy */
     proxy_url: string,
-    /** Whether to load embeded resources in single file mode */
+    /** Whether to load embedded resources in single file mode */
     single_file?: ParchmentTruthy,
-    /** Story path */
-    story?: string,
+    /** Storyfile path or metadata */
+    story?: string | StoryOptions,
     /** Theme name, can be set to 'dark */
     theme?: string,
     /** Name of theme cookie to check */

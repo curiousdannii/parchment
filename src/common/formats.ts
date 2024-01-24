@@ -3,7 +3,7 @@
 Format specifications
 =====================
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -177,7 +177,7 @@ export const formats: Format[] = [
 ]
 
 /** Match a format by format ID or file extension */
-export function find_format(format: string | null, path?: string) {
+export function find_format(format?: string | null, path?: string) {
     for (const formatspec of formats) {
         if (formatspec.id === format || (path && formatspec.extensions.test(path))) {
             return formatspec
@@ -195,7 +195,7 @@ export function identify_blorb_storyfile_format(blorb: Blorb) {
     }
     const chunktype = blorb.get_chunk('exec', 0)?.blorbtype
     if (chunktype && blorb_chunks[chunktype]) {
-        return blorb_chunks[chunktype]
+        return find_format(blorb_chunks[chunktype])
     }
     throw new Error('Unknown storyfile format in Blorb')
 }

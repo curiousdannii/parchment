@@ -118,11 +118,12 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         parchment_options.single_file = 1
     }
     if (story) {
+        parchment_options.story = {}
         if (story.format) {
-            parchment_options.format = story?.format
+            parchment_options.story.format = story?.format
         }
         if (story.data) {
-            parchment_options.story = 'embedded:' + story.filename!
+            parchment_options.story.url = 'embedded:' + story.filename!
             inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
         }
     }

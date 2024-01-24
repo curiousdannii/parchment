@@ -111,7 +111,7 @@ if (story_file_path) {
     }
     if (format === 'blorb') {
         const blorb = new Blorb(options.story.data)
-        format = identify_blorb_storyfile_format(blorb)
+        format = identify_blorb_storyfile_format(blorb).id
     }
     options.story.format = format
     options.terps = [formats[format!].engine!]
