@@ -9,7 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {escape} from 'lodash-es'
+import {escape, truncate} from 'lodash-es'
 
 import {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
 
@@ -17,19 +17,21 @@ import {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
 
 export interface Story {
-    // TODO use author and title
     author?: string
-    cover?: Uint8Array
+    cover?: Uint8Array | boolean
     data?: Uint8Array
     description?: string
     filename?: string
+    filesize?: number
     format?: string
     ifid?: string
     title?: string
+    url?: string
 }
 
 export interface SingleFileOptions {
     date?: ParchmentTruthy
+    domain?: string
     font?: ParchmentTruthy
     single_file?: ParchmentTruthy
     story?: Story
@@ -53,13 +55,59 @@ async function Uint8Array_to_base64(data: Uint8Array): Promise<string> {
 
 export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
     const story = options.story
+    let cover_image: string | undefined
     const inclusions: string[] = []
+    const parchment_options: Partial<ParchmentOptions> = {}
 
-    // Metadata
+    if (options.single_file) {
+        parchment_options.single_file = 1
+    }
+
+    // Add inclusions based on the story options we were given
     if (story) {
+        parchment_options.story = {}
         if (story.ifid) {
-            inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${story?.ifid}">`)
+            inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${story.ifid}">`)
         }
+        if (story.author && story.title) {
+            inclusions.push(
+                `<meta property="og:site_name" content="Parchment"/>`,
+                `<meta property="og:title" content="${escape(story.title)} by ${escape(story.author)}"/>`,
+                `<meta property="og:type" content="website"/>`,
+            )
+        }
+        if (story.description) {
+            inclusions.push(`<meta property="og:description" content="${escape(truncate(story.description, {
+                length: 1000,
+                separator: /[,.]? +/,
+            }))}"/>`)
+        }
+        if (story.url) {
+            if (!options.domain) {
+                throw new Error('The domain option is required when passing a story URL')
+            }
+            parchment_options.story.url = story.url
+            inclusions.push(`<meta property="og:url" content="${options.domain}/?story=${encodeURIComponent(story.url)}"/>`)
+            if (story.cover) {
+                cover_image = `/metadata/cover/?url=${encodeURIComponent(story.url)}&maxh=250`
+                inclusions.push(`<meta property="og:image" content="${options.domain}/metadata/cover/?url=${encodeURIComponent(story.url)}&maxh=630"/>`)
+            }
+        }
+        if (story.data) {
+            parchment_options.story.url = 'embedded:' + story.filename!
+            inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
+        }
+        if (story.filesize) {
+            parchment_options.story.filesize = story.filesize
+        }
+        if (story.format) {
+            parchment_options.story.format = story.format
+        }
+    }
+
+    // Parchment options
+    if (Object.keys(parchment_options).length) {
+        inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
     }
 
     // Process the files
@@ -70,6 +118,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             continue
         }
         else if (filename.endsWith('.gif')) {
+            cover_image = 'data:image/gif;base64,' + await Uint8Array_to_base64(data)
             continue
         }
 
@@ -112,38 +161,48 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         }
     }
 
-    // Parchment options
-    const parchment_options: Partial<ParchmentOptions> = {}
-    if (options.single_file) {
-        parchment_options.single_file = 1
-    }
-    if (story) {
-        parchment_options.story = {}
-        if (story.format) {
-            parchment_options.story.format = story?.format
-        }
-        if (story.data) {
-            parchment_options.story.url = 'embedded:' + story.filename!
-            inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
-        }
-    }
-    inclusions.push(`<script>parchment_options = ${JSON.stringify(parchment_options, null, 2)}</script>`)
-
     // Inject into index.html
-    const gif = await Uint8Array_to_base64(files.get('waiting.gif')!)
-    indexhtml = indexhtml
-        .replace(/<script.+?\/script>/g, '')
-        .replace(/<link rel="stylesheet".+?>/g, '')
-        .replace(/<img src="dist\/web\/waiting.gif"/, `<img src="data:image/gif;base64,${gif}"`)
-        .replace(/^\s+$/gm, '')
 
-    // Add a date if requested
-    if (options.date) {
-        const today = new Date()
-        const title = `Parchment ${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`
+    // Remove existing resources in single file mode
+    // TODO: fix for Frankendrift, as it wants a semi-single-file mode
+    if (options.single_file) {
         indexhtml = indexhtml
-            .replace(/<title.+?\/title>/, `<title>${escape(title)}</title>`)
-            .replace(/<\/noscript>/, `</noscript>\n<p id="footer-date">${title}</p>`)
+            .replace(/<script.+?\/script>/g, '')
+            .replace(/<link rel="stylesheet".+?>/g, '')
+            .replace(/^\s+$/gm, '')
+    }
+
+    // Embed the metadata into the page title
+    if (story?.title || options.date) {
+        let title = ''
+        if (options.story?.title) {
+            title = `${escape(story?.title)} - ${title}`
+        }
+        title += 'Parchment'
+        if (options.date) {
+            const today = new Date()
+            title += ` ${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`
+        }
+        indexhtml = indexhtml.replace(/<title.+?\/title>/, `<title>${title}</title>`)
+        // Add a date at the bottom too
+        if (options.date) {
+            indexhtml = indexhtml.replace(/<\/noscript>/, `</noscript>\n<p id="footer-date">${title}</p>`)
+        }
+    }
+
+    if (story) {
+        // And simplify the HTML a little
+        indexhtml = indexhtml.replace(/<div id="about">.+<\/noscript>\s+<\/div>/s, `<noscript>
+            <h1>Parchment</h1>
+            <p>is an interpreter for Interactive Fiction. <a href="https://github.com/curiousdannii/parchment">Find out more.</a></p>
+            <p>Parchment requires Javascript. Please enable it in your browser.</p>
+        </noscript>`)
+            .replace('<div id="loadingpane" style="display:none;">', '<div id="loadingpane">')
+    }
+
+    // Replace the cover image
+    if (cover_image) {
+        indexhtml = indexhtml.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${cover_image}"`)
     }
 
     // Add the inclusions

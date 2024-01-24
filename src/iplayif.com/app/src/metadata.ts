@@ -28,22 +28,28 @@ import {SUPPORTED_TYPES} from './common.js'
 
 const execFile = util.promisify(child_process.execFile)
 
-class File {
+export class FileMetadata {
     author?: string
     cover?: null | {
         data: Uint8Array
         type: string
     }
     description?: string
+    filesize: number
+    format: string
+    ifid: string
     title: string
 
-    constructor(title: string) {
+    constructor(title: string, filesize: number, format: string, ifid: string) {
         this.title = title
+        this.filesize = filesize
+        this.format = format
+        this.ifid = ifid
     }
 }
 
 export class MetadataCache {
-    lru: LRUCache<string, File>
+    lru: LRUCache<string, FileMetadata>
     temp: string
 
     constructor(options: SiteOptions) {
@@ -60,97 +66,119 @@ export class MetadataCache {
 
     async fetch(url: string) {
         const file_name = /([^/=]+)$/.exec(url)![1]
-        const result = new File(file_name)
+        const file_path = `${this.temp}/${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}${path.extname(file_name)}`
 
         // Absorb all errors here
         try {
             console.log(`Metadata server fetching ${url}`)
             const response = await fetch(url)
             if (!response.ok) {
-                return result
+                return
             }
 
             // Write the file stream to temp
-            const file_path = `${this.temp}/${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}${path.extname(file_name)}`
             // TODO: fix type
             await pipeline(response.body as any, fs_sync.createWriteStream(file_path))
 
-            // Run babel -identify
-            const identify_results = await execFile('babel', ['-identify', file_path])
-            if (identify_results.stderr.length) {
-                // If there was an error do nothing for now
-            }
-            else {
-                const identify_data = identify_results.stdout.split('\n')
-                if (identify_data[0] !== 'No bibliographic data') {
-                    const author_data = identify_data[0].split(' by ')
-                    result.author = author_data[1].trim()
-                    result.title = author_data[0].replace(/^[\s"]+|[\s"]+$/g, '')
-                }
-
-                // Extract a cover
-                let cover: Uint8Array | undefined
-                if (!identify_data[2].includes('no cover')) {
-                    const extract_cover_results = await execFile('babel', ['-cover', file_path])
-                    if (!extract_cover_results.stderr.length) {
-                        const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)![1]
-                        cover = await fs.readFile(cover_path)
-                        await fs.rm(cover_path)
-                    }
-                }
-
-                // See if there's a description
-                const description_results = await execFile('babel', ['-meta', file_path])
-                if (!description_results.stderr.length) {
-                    result.description = extract_description(description_results.stdout)
-                }
-
-                // Check the IFDB for details
-                if (!result.author || !result.cover || !result.description) {
-                    const ifid = /IFID: ([-\w]+)/i.exec(identify_data[1])![1]
-                    const ifdb_response = await fetch(`https://ifdb.org/viewgame?ifiction&ifid=${ifid}`)
-                    if (ifdb_response.ok) {
-                        const ifdb_xml = await ifdb_response.text()
-                        if (!result.author) {
-                            result.author = he.decode(/<author>(.+?)<\/author>/.exec(ifdb_xml)![1])
-                        }
-                        if (result.title === file_name) {
-                            result.title = he.decode(/<title>(.+?)<\/title>/.exec(ifdb_xml)![1])
-                        }
-                        if (!result.cover) {
-                            const cover_url = /<coverart><url>(.+?)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
-                            if (cover_url) {
-                                const cover_response = await fetch(he.decode(cover_url))
-                                if (cover_response.ok) {
-                                    cover = Buffer.from(await cover_response.arrayBuffer())
-                                }
-                            }
-                        }
-                        if (!result.description) {
-                            result.description = extract_description(ifdb_xml)
-                        }
-                    }
-                }
-
-                if (cover) {
-                    result.cover = {
-                        data: cover,
-                        type: (await sharp(cover).metadata())!.format!
-                    }
-                }
-            }
-
-            // Clean up and return
-            await fs.rm(file_path)
+            return await get_metadata(file_name, file_path)
         }
-        catch (_) {}
-
-        return result
+        finally {
+            // Clean up
+            await fs.rm(file_path, {force: true})
+        }
     }
 
     get(url: string) {
         return this.lru.fetch(url)
     }
+}
+
+export const parchment_formats: Record<string, string> = {
+    adrift: 'adrift4',
+    'blorbed glulx': 'glulx',
+    'blorbed zcode': 'zcode',
+    glulx: 'glulx',
+    hugo: 'hugo',
+    tads2: 'tads',
+    tads3: 'tads',
+    zcode: 'zcode',
+}
+
+export async function get_metadata(file_name: string, file_path: string) {
+    // Get filesize
+    const stats = await fs.stat(file_path)
+
+    // Run babel -identify
+    const identify_results = await execFile('babel', ['-identify', file_path])
+    //console.log(identify_results.stdout)
+
+    if (identify_results.stderr.length) {
+        // If there was an error we can't really do anything
+        return
+    }
+
+    const identify_data = identify_results.stdout.split('\n')
+
+    const [babel_format] = identify_data[2].split(',')
+    const result = new FileMetadata(file_name, stats.size, parchment_formats[babel_format], /IFID: ([-\w]+)/i.exec(identify_data[1])![1])
+
+    if (identify_data[0] !== 'No bibliographic data') {
+        const author_data = identify_data[0].split(' by ')
+        result.author = author_data[1].trim()
+        result.title = author_data[0].replace(/^[\s"]+|[\s"]+$/g, '')
+    }
+
+    // Extract a cover
+    let cover: Uint8Array | undefined
+    if (!identify_data[2].includes('no cover')) {
+        const extract_cover_results = await execFile('babel', ['-cover', file_path])
+        if (!extract_cover_results.stderr.length) {
+            const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)![1]
+            cover = await fs.readFile(cover_path)
+            await fs.rm(cover_path)
+        }
+    }
+
+    // See if there's a description
+    const description_results = await execFile('babel', ['-meta', file_path])
+    if (!description_results.stderr.length) {
+        result.description = extract_description(description_results.stdout)
+    }
+
+    // Check the IFDB for details
+    if (!result.author || !result.cover || !result.description) {
+        const ifdb_response = await fetch(`https://ifdb.org/viewgame?ifiction&ifid=${result.ifid}`)
+        if (ifdb_response.ok) {
+            const ifdb_xml = await ifdb_response.text()
+            if (!result.author) {
+                result.author = he.decode(/<author>(.+?)<\/author>/.exec(ifdb_xml)![1])
+            }
+            if (result.title === file_name) {
+                result.title = he.decode(/<title>(.+?)<\/title>/.exec(ifdb_xml)![1])
+            }
+            if (!result.cover) {
+                const cover_url = /<coverart><url>(.+?)<\/url><\/coverart>/.exec(ifdb_xml)?.[1]
+                if (cover_url) {
+                    const cover_response = await fetch(he.decode(cover_url))
+                    if (cover_response.ok) {
+                        cover = Buffer.from(await cover_response.arrayBuffer())
+                    }
+                }
+            }
+            if (!result.description) {
+                result.description = extract_description(ifdb_xml)
+            }
+        }
+    }
+
+    if (cover) {
+        result.cover = {
+            data: cover,
+            type: (await sharp(cover).metadata())!.format!
+        }
+    }
+
+    return result
 }
 
 export async function metadata_cover(cache: MetadataCache, ctx: Koa.Context) {

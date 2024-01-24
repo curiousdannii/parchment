@@ -35,3 +35,5 @@ export interface SiteOptions {
         max_size: number
     }
 }
+
+export const utf8encoder = new TextEncoder()

@@ -10,9 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import fs from 'fs/promises'
-import child_process from 'child_process'
 import path from 'path'
-import util from 'util'
 
 import Koa from 'koa'
 
@@ -20,19 +18,7 @@ import {process_index_html, SingleFileOptions} from '../../../tools/index-proces
 
 import FrontPage from './front-page.js'
 import {flatten_query, SiteOptions} from './common.js'
-
-const execFile = util.promisify(child_process.execFile)
-
-const parchment_formats: Record<string, string> = {
-    adrift: 'adrift4',
-    'blorbed glulx': 'glulx',
-    'blorbed zcode': 'zcode',
-    glulx: 'glulx',
-    hugo: 'hugo',
-    tads2: 'tads',
-    tads3: 'tads',
-    zcode: 'zcode',
-}
+import {get_metadata} from './metadata.js'
 
 const format_terp_files: Record<string, string[]> = {
     adrift4: ['scare-core.wasm', 'scare.js'],
@@ -67,33 +53,21 @@ export default class SiteGenerator {
         }
         const story_file = flatten_query(ctx.request.files!.story_file)!
         const filename = story_file.originalFilename!
-        const identify_results = await execFile('babel', ['-identify', story_file.filepath])
-        if (identify_results.stderr) {
+
+        const metadata = await get_metadata(filename, story_file.filepath)
+
+        if (!metadata?.format) {
             ctx.throw(400, 'Unsupported file type')
         }
 
-        const lines = identify_results.stdout.split('\n')
-        if (lines[0].startsWith('Warning:')) lines.shift()
-
-        let bibliographic = lines[0]
-        if (bibliographic === 'No bibliographic data') bibliographic = 'Parchment'
-        const ifid = lines[1].substring(6)
-        const [babel_format] = lines[2].split(',')
-
-        const parchment_format = parchment_formats[babel_format]
-
-        if (!parchment_format) {
-            ctx.throw(400, 'Unsupported file type')
-        }
-
-        if (parchment_format === 'adrift4') {
-            const adrift_version = Number(ifid.split('-')[1])
+        if (metadata.format === 'adrift4') {
+            const adrift_version = Number(metadata.ifid.split('-')[1])
             if (adrift_version > 400) {
                 ctx.throw(400, 'This is an Adrift 5 game file. This converter only supports Adrift 4 and earlier.')
             }
         }
 
-        const terp_files = format_terp_files[parchment_format]
+        const terp_files = format_terp_files[metadata.format]
 
         const paths = [
             '../../index.html',
@@ -112,14 +86,17 @@ export default class SiteGenerator {
         }
 
         const options: SingleFileOptions = {
+            domain: `http${this.options.https ? 's' : ''}://${this.options.domain}`,
             font: true,
             single_file: true,
             story: {
+                author: metadata.author,
                 data: await fs.readFile(story_file.filepath),
+                description: metadata.description,
                 filename,
-                format: parchment_format,
-                ifid,
-                title: bibliographic,
+                format: metadata.format,
+                ifid: metadata.ifid,
+                title: metadata.title,
             },
         }
 

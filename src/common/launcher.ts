@@ -14,7 +14,7 @@ import Cookies from 'js-cookie'
 import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
 import {get_default_options, get_query_options, ParchmentOptions, StoryOptions} from './options.js'
 import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
-import {find_format, Format, identify_blorb_storyfile_format} from './formats.js'
+import {find_format, identify_blorb_storyfile_format} from './formats.js'
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher
@@ -27,7 +27,12 @@ class ParchmentLauncher
     options: ParchmentOptions
 
     constructor(parchment_options?: ParchmentOptions) {
-        this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(['do_vm_autosave', 'story', 'use_asyncglk']))
+        // Only get story from the URL if there is no story already in the parchment_options
+        const query_options: Array<keyof ParchmentOptions> = ['do_vm_autosave', 'use_asyncglk']
+        if (!parchment_options?.story) {
+            query_options.push('story')
+        }
+        this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(query_options))
         // Use AsyncGlk if requested
         if (this.options.use_asyncglk) {
             this.options.Glk = new AsyncGlk()

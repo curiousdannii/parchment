@@ -17,6 +17,8 @@ export type ParchmentTruthy = boolean | number
 
 export interface StoryOptions {
     data?: Uint8Array
+    /** Size of storyfile in bytes, uncompressed */
+    filesize?: number
     /** Format ID, matching formats.js */
     format?: string
     url?: string

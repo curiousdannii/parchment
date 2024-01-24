@@ -1,6 +1,6 @@
 /*
 
-Dynamic iplayid.com front page
+Dynamic iplayif.com front page
 ==============================
 
 Copyright (c) 2024 Dannii Willis
@@ -10,10 +10,11 @@ https://github.com/curiousdannii/parchment
 */
 
 import Koa from 'koa'
-import {escape, truncate} from 'lodash-es'
 
-import {flatten_query, SiteOptions, SUPPORTED_TYPES} from './common.js'
-import {MetadataCache} from './metadata.js'
+import {process_index_html, SingleFileOptions} from '../../../tools/index-processing.js'
+
+import {flatten_query, SiteOptions, SUPPORTED_TYPES, utf8encoder} from './common.js'
+import {FileMetadata, MetadataCache} from './metadata.js'
 
 export default class FrontPage {
     index_html: string = 'ERROR: front page index.html not yet loaded'
@@ -36,63 +37,39 @@ export default class FrontPage {
             return
         }
 
-        // Check it's actually a URL
+        // Check it's actually a URL and that we have data
+        let data: FileMetadata
         try {
             new URL(story_url)
+            data = (await this.metadata.get(story_url))!
+            //console.log(data)
+            if (!data) {
+                throw null
+            }
         }
         catch (_) {
             ctx.body = this.index_html
             return
         }
 
-        const protocol_domain = `http${this.options.https ? 's' : ''}://${this.options.domain}`
-
-        const data = (await this.metadata.get(story_url))!
-        //console.log(data)
-
-        // Embed the metadata into the page title
-        let body = this.index_html
-            .replace('<title>Parchment</title>', `<title>${escape(data.title)} - Parchment</title>`)
-
-        // Open Graph meta data
-        const open_graph: string[] = []
-        if (data.title && data.author) {
-            open_graph.push(
-                `<meta property="og:site_name" content="Parchment"/>`,
-                `<meta property="og:title" content="${escape(data.title)} by ${escape(data.author)}"/>`,
-                `<meta property="og:type" content="website"/>`,
-                `<meta property="og:url" content="${protocol_domain}/?story=${encodeURIComponent(story_url)}"/>`,
-
-            )
-            if (data.description) {
-                open_graph.push(`<meta property="og:description" content="${escape(truncate(data.description, {
-                    length: 1000,
-                    separator: /[,.]? +/,
-                }))}"/>`)
-            }
-            if (data.cover) {
-                open_graph.push(`<meta property="og:image" content="${protocol_domain}/metadata/cover/?url=${encodeURIComponent(story_url)}&maxh=630"/>`)
-            }
-        }
-        if (open_graph.length) {
-            body = body.replace(/<\/head>/, `    ${open_graph.join('\n    ')}
-</head>`)
+        const options: SingleFileOptions = {
+            domain: `http${this.options.https ? 's' : ''}://${this.options.domain}`,
+            story: {
+                author: data.author,
+                cover: !!data.cover,
+                description: data.description,
+                filesize: data.filesize,
+                format: data.format,
+                ifid: data.ifid,
+                title: data.title,
+                url: story_url,
+            },
         }
 
-        // Use the story cover
-        if (data.cover) {
-            body = body.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${protocol_domain}/metadata/cover/?url=${encodeURIComponent(story_url)}&maxh=250"`)
-        }
+        const files: Map<string, Uint8Array> = new Map()
+        files.set('index.html', utf8encoder.encode(this.index_html))
 
-        // And simplify the HTML a little
-        body = body.replace(/<div id="about">.+<\/noscript>\s+<\/div>/s, `<noscript>
-            <h1>Parchment</h1>
-            <p>is an interpreter for Interactive Fiction. <a href="https://github.com/curiousdannii/parchment">Find out more.</a></p>
-            <p>Parchment requires Javascript. Please enable it in your browser.</p>
-        </noscript>`)
-            .replace('<div id="loadingpane" style="display:none;">', '<div id="loadingpane">')
-
-        ctx.body = body
+        ctx.body = await process_index_html(options, files)
     }
 
     async update_index_html() {
