@@ -3,7 +3,7 @@
 Parchment
 =========
 
-Copyright (c) 2020 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -50,4 +50,8 @@ body {
   bottom: 0;
   position: absolute;
   width: 100%;
+}
+
+#loading_progress {
+  width: 250px;
 }

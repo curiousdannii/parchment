@@ -10,6 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import {escape, truncate} from 'lodash-es'
+import prettyBytes from 'pretty-bytes'
 
 import {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
 
@@ -23,6 +24,7 @@ export interface Story {
     description?: string
     filename?: string
     filesize?: number
+    filesize_gz?: number
     format?: string
     ifid?: string
     title?: string
@@ -99,6 +101,9 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         }
         if (story.filesize) {
             parchment_options.story.filesize = story.filesize
+        }
+        if (story.filesize_gz) {
+            parchment_options.story.filesize_gz = story.filesize_gz
         }
         if (story.format) {
             parchment_options.story.format = story.format
@@ -198,6 +203,13 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             <p>Parchment requires Javascript. Please enable it in your browser.</p>
         </noscript>`)
             .replace('<div id="loadingpane" style="display:none;">', '<div id="loadingpane">')
+
+        // Add a progress indicator
+        if (story.filesize) {
+            indexhtml = indexhtml.replace('<em>&nbsp;&nbsp;&nbsp;Loading...</em>', `<em>&nbsp;&nbsp;&nbsp;Loading...</em><br>
+            <progress id="loading_progress" max="${story.filesize}" value="0"></progress><br>
+            <span id="loading_size">${story.filesize_gz ? prettyBytes(story.filesize_gz, {maximumFractionDigits: 1, minimumFractionDigits: 1}) : ''}</span>`)
+        }
     }
 
     // Replace the cover image

@@ -3,7 +3,7 @@
 File loader
 ===========
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -11,8 +11,12 @@ https://github.com/curiousdannii/parchment
 
 import {ParchmentOptions} from './options.js'
 
-// Fetch a storyfile, using the proxy if necessary, and handling JSified stories
-export async function fetch_storyfile(options: ParchmentOptions, url: string) {
+export type ProgressCallback = (bytes: number) => void
+
+const utf8decoder = new TextDecoder()
+
+/** Fetch a storyfile, using the proxy if necessary, and handling JSified stories */
+export async function fetch_storyfile(options: ParchmentOptions, url: string, progress_callback?: ProgressCallback): Promise<Uint8Array> {
     // Handle a relative URL
     const story_url = new URL(url, document.URL)
     const story_domain = story_url.hostname
@@ -23,8 +27,7 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string) {
     // Load an embedded storyfile
     if (story_url.protocol === 'embedded:') {
         const data = (document.getElementById(story_url.pathname) as HTMLScriptElement).text
-        const buffer = await parse_base64(data)
-        return new Uint8Array(buffer)
+        return parse_base64(data)
     }
 
     // Only directly access files same origin files or those from the list of reliable domains
@@ -64,23 +67,24 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string) {
 
     // It would be nice to check here if the file was compressed, but we can only read the Content-Encoding header for same domain files
 
+    const data = await read_response(response, progress_callback)
+
     // Handle JSified stories
     if (url.endsWith('.js')) {
-        const text = await response.text()
+        const text = utf8decoder.decode(data)
         const matched = /processBase64Zcode\(['"]([a-zA-Z0-9+/=]+)['"]\)/.exec(text)
         if (!matched) {
             throw new Error('Abnormal JSified story')
         }
 
-        const buffer = await parse_base64(matched[1])
-        return new Uint8Array(buffer)
+        return parse_base64(matched[1])
     }
 
-    const buffer = await response.arrayBuffer()
-    return new Uint8Array(buffer)
+    return data
 }
 
-export async function fetch_vm_resource(options: ParchmentOptions, path: string) {
+/** Fetch a VM resource */
+export async function fetch_vm_resource(options: ParchmentOptions, path: string, progress_callback?: ProgressCallback) {
     // Handle embedded resources in single file mode
     if (options.single_file) {
         const data = (document.getElementById(path) as HTMLScriptElement).text
@@ -107,23 +111,20 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string)
         url = options.lib_path + path
     }
     const response = await fetch(url)
-    if (!response.ok) {
-        throw new Error(`Could not fetch ${path}, got ${response.status}`)
-    }
-    return response.arrayBuffer()
+    return read_response(response, progress_callback)
 }
 
-// Parse Base 64 into an ArrayBuffer
-export async function parse_base64(data: string, data_type = 'octet-binary'): Promise<ArrayBuffer> {
+/** Parse Base 64 into a Uint8Array */
+export async function parse_base64(data: string, data_type = 'octet-binary'): Promise<Uint8Array> {
     // Parse base64 using a trick from https://stackoverflow.com/a/54123275/2854284
     const response = await fetch(`data:application/${data_type};base64,${data}`)
     if (!response.ok) {
         throw new Error(`Could not parse base64: ${response.status}`)
     }
-    return response.arrayBuffer()
+    return new Uint8Array(await response.arrayBuffer())
 }
 
-// Read an uploaded file and return it as a Uint8Array
+/** Read an uploaded file and return it as a Uint8Array */
 export function read_uploaded_file(file: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -131,4 +132,36 @@ export function read_uploaded_file(file: File): Promise<Uint8Array> {
         reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer))
         reader.readAsArrayBuffer(file)
     })
+}
+
+/** Read a response, with optional progress notifications */
+async function read_response(response: Response, progress_callback?: ProgressCallback): Promise<Uint8Array> {
+    if (!response.ok) {
+        throw new Error(`Could not fetch ${response.url}, got ${response.status}`)
+    }
+
+    if (!progress_callback) {
+        return new Uint8Array(await response.arrayBuffer())
+    }
+
+    // Read the response, calling the callback with each chunk
+    const chunks: Array<[number, Uint8Array]> = []
+    let length = 0
+    const reader = response.body!.getReader()
+    for (;;) {
+        const {done, value} = await reader.read()
+        if (done) {
+            break
+        }
+        chunks.push([length, value])
+        progress_callback(value.length)
+        length += value.length
+    }
+
+    // Join the chunks together
+    const result = new Uint8Array(length)
+    for (const [offset, chunk] of chunks) {
+        result.set(chunk, offset)
+    }
+    return result
 }

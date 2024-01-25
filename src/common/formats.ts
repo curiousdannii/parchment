@@ -25,12 +25,12 @@ export interface Format {
     id: string
 }
 
-async function generic_emglken_vm(options: ParchmentOptions, requires: [Uint8Array, any, ArrayBuffer])
+async function generic_emglken_vm(options: ParchmentOptions, requires: [Uint8Array, any, Uint8Array])
 {
     const [file_data, engine, wasmBinary] = requires
 
     const vm_options = Object.assign({}, options, {
-        wasmBinary,
+        wasmBinary: wasmBinary.buffer,
     })
 
     const vm = new engine.default()

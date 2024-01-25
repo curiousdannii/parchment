@@ -19,6 +19,8 @@ export interface StoryOptions {
     data?: Uint8Array
     /** Size of storyfile in bytes, uncompressed */
     filesize?: number
+    /** Size of storyfile in bytes, gzip compressed (doesn't need to be exact) */
+    filesize_gz?: number
     /** Format ID, matching formats.js */
     format?: string
     url?: string

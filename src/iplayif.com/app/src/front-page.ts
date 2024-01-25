@@ -59,6 +59,7 @@ export default class FrontPage {
                 cover: !!data.cover,
                 description: data.description,
                 filesize: data.filesize,
+                filesize_gz: data.filesize_gz,
                 format: data.format,
                 ifid: data.ifid,
                 title: data.title,

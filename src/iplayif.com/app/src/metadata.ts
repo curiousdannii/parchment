@@ -26,6 +26,7 @@ import sharp from 'sharp'
 import {flatten_query, SiteOptions} from './common.js'
 import {SUPPORTED_TYPES} from './common.js'
 
+const exec = util.promisify(child_process.exec)
 const execFile = util.promisify(child_process.execFile)
 
 export class FileMetadata {
@@ -36,6 +37,7 @@ export class FileMetadata {
     }
     description?: string
     filesize: number
+    filesize_gz?: number
     format: string
     ifid: string
     title: string
@@ -126,6 +128,12 @@ export async function get_metadata(file_name: string, file_path: string) {
         const author_data = identify_data[0].split(' by ')
         result.author = author_data[1].trim()
         result.title = author_data[0].replace(/^[\s"]+|[\s"]+$/g, '')
+    }
+
+    // Estimate the gzipped size
+    const gzip_results = await exec(`gzip -c ${file_path} | wc -c`)
+    if (!gzip_results.stderr.length) {
+        result.filesize_gz = parseInt(gzip_results.stdout, 10)
     }
 
     // Extract a cover

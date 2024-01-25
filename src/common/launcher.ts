@@ -10,11 +10,13 @@ https://github.com/curiousdannii/parchment
 */
 
 import Cookies from 'js-cookie'
+import prettyBytes from 'pretty-bytes'
 
 import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
-import {get_default_options, get_query_options, ParchmentOptions, StoryOptions} from './options.js'
-import {fetch_storyfile, fetch_vm_resource, read_uploaded_file} from './file.js'
+
+import {fetch_storyfile, fetch_vm_resource, ProgressCallback, read_uploaded_file} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
+import {get_default_options, get_query_options, ParchmentOptions, StoryOptions} from './options.js'
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher
@@ -117,11 +119,28 @@ class ParchmentLauncher
             // Identify the format
             let format = find_format(story.format, story.url)
 
+            // Look for the progress bar
+            let progress = 0
+            const progress_bar = $('#loading_progress')
+            let progress_callback: ProgressCallback | undefined
+            if (progress_bar.length) {
+                progress_callback = chunk_length => {
+                    progress += chunk_length
+                    progress_bar.val(progress)
+                }
+                if (story.filesize_gz) {
+                    $('#loading_size').text(prettyBytes(story.filesize_gz, {
+                        maximumFractionDigits: 1,
+                        minimumFractionDigits: 1,
+                    }))
+                }
+            }
+
             // If a blorb file extension is generic, we must download it first to identify its format
             let blorb: Blorb | undefined
             if (format.id === 'blorb') {
                 if (!story.data) {
-                    story.data = await fetch_storyfile(this.options, story.url!)
+                    story.data = await fetch_storyfile(this.options, story.url!, progress_callback)
                 }
                 blorb = new Blorb(story.data)
                 format = identify_blorb_storyfile_format(blorb)
@@ -130,7 +149,7 @@ class ParchmentLauncher
             const engine = format.engines![0]
 
             const requires = await Promise.all([
-                story.data || fetch_storyfile(this.options, story.url!),
+                story.data || fetch_storyfile(this.options, story.url!, progress_callback),
                 ...engine.load.map(path => fetch_vm_resource(this.options, path))
             ])
             story.data = requires[0]
