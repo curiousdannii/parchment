@@ -120,6 +120,9 @@ export async function get_metadata(file_name: string, file_path: string) {
     }
 
     const identify_data = identify_results.stdout.split('\n')
+    if (identify_data[0].startsWith('Warning: Story format could not be positively identified. Guessing')) {
+        identify_data.shift()
+    }
 
     const [babel_format] = identify_data[2].split(',')
     const result = new FileMetadata(file_name, stats.size, parchment_formats[babel_format], /IFID: ([-\w]+)/i.exec(identify_data[1])![1])

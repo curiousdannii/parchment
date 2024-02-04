@@ -43,6 +43,10 @@ export function wrapper(opts: WrapperOptions) {
         ul.list {
             margin: 1em 0;
         }
+        .Error {
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -58,11 +62,15 @@ export function wrapper(opts: WrapperOptions) {
 </html>`
 }
 
-export function error(msg: string) {
+export function error(err: Error) {
     return `
         <div class="Description">
             <p><b>Error:</b></p>
-            <p class="Error">${escape(msg)}</p>
+            <p class="Error">${escape(err.toString())}</p>
+            <details>
+                <summary>Stacktrace</summary>
+                <p class="Error">${escape(err.stack)}</p>
+            </details>
         </div>`
 }
 
