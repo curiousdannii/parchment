@@ -19,7 +19,7 @@ jobs:
         run: echo "ref=$(git submodule status src/upstream/emglken | cut -c 2-13)" >> $GITHUB_OUTPUT
       - name: Cache the built Emglken
         id: cache-emglken
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             src/upstream/emglken/build/*.js
@@ -54,7 +54,7 @@ jobs:
           npm run tsc-check
       - name: Restore Emglken from the cache
         id: cache-emglken
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             src/upstream/emglken/build/*.js

@@ -15,7 +15,7 @@
   "type": "module",
   "dependencies": {
     "base32768": "^3.0.1",
-    "emglken": "^0.5.1",
+    "emglken": "^0.6.0",
     "fflate": "^0.8.1",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
