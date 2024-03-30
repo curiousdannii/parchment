@@ -41,14 +41,19 @@ export default class SiteGenerator {
     async sitegen(ctx: Koa.Context) {
         if (ctx.request.method === 'GET') {
             ctx.type = 'text/html; charset=UTF-8'
-            ctx.body = `<!DOCTYPE html><html><head><title>Parchment HTML Converter</title></head>
-            <body>
-            <h1>Parchment HTML Converter</h1>
-            <p>Upload a Zcode, Glulx, TADS, Hugo, or ADRIFT 4 file to convert it to a self-contained HTML file, suitable for distribution or offline play.</p>
-            <form method=post enctype="multipart/form-data">
-                <input type=file name=story_file>
-                <button>submit</button>
-            </form>`
+            ctx.body = `<!DOCTYPE html>
+<html>
+    <head>
+        <title>Parchment Site Generator</title>
+        <link rel="stylesheet" href="/dist/web/web.css">
+    </head>
+    <body>
+        <h1>Parchment Site Generator</h1>
+        <p>Upload a Z-Code, Glulx, TADS, Hugo, or ADRIFT 4 file to generator a self-contained HTML file, suitable for distribution or offline play.</p>
+        <form method=post enctype="multipart/form-data">
+            <input type=file name=story_file>
+            <button>submit</button>
+        </form>`
             return
         }
         const story_file = flatten_query(ctx.request.files!.story_file)!
