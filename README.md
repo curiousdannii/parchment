@@ -3,16 +3,19 @@ Parchment
 
 Parchment is the Interactive Fiction player for the web. To play a story with Parchment go to <https://iplayif.com>!
 
+![IFTF logo](tools/iftf-logo.png)
+
+Parchment is made with the support of [a grant](https://blog.iftechfoundation.org/2024-02-18-announcing-iftf-grant-recipients.html) from the [Interactive Fiction Technology Foundation](https://iftechfoundation.org/).
+
 Parchment for Inform 7
 ----------------------
 
-[Inform 7](http://inform7.com/) includes Parchment, allowing you to produce [personal websites for your stories](http://inform7.com/book/WI_25_11.html). If you want to update the version of Parchment used by Inform 7, grab [parchment-for-inform7.zip](https://github.com/curiousdannii/parchment/raw/gh-pages/dist/inform7/parchment-for-inform7.zip) and unzip it into the Templates subfolder of your project's Materials folder.
+[Inform 7](http://inform7.com/) includes Parchment, allowing you to produce [personal websites for your stories](http://inform7.com/book/WI_25_11.html). If you want to update the version of Parchment used by Inform 7, get it [from the releases page](https://github.com/curiousdannii/parchment/releases) and unzip it into the Templates subfolder of your project's Materials folder.
 
-If you would like to make a website like what Inform 7 would produce, but for a pre-existing storyfile, we recommend [ifsitegen.py](https://intfiction.org/t/ifsitegen-py/50576). You can download parchment-for-inform7.zip and pass it with the `-i` option and it will use the new version instead of the old one bundled with Inform 7:
+Site Generator
+--------------
 
-```
-python3 ifsitegen.py -i parchment-for-inform7.zip Storyfile.ulx
-```
+For those who aren't using Inform 7 (or who can no longer recompile their storyfile), the [Parchment Site Generator](https://iplayif.com/api/sitegen) allows you to make a single file version of Parchment. This supports any of the formats supported by Parchment (Adrift 4, Glulx, Hugo, TADS 2/3, Z-Code).
 
 Single File Build
 -----------------
