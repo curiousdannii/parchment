@@ -11,31 +11,31 @@ https://github.com/curiousdannii/parchment
 
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {ParchmentOptions} from './options.js'
+import {ParchmentOptions, StoryOptions} from './options.js'
 
 export interface Engine {
     id: string
     load: string[]
-    start: (options: ParchmentOptions, requires: any) => void
+    start: (story: StoryOptions, options: ParchmentOptions, requires: any) => void
 }
 
 export interface Format {
+    blorbable?: boolean
     engines?: Engine[]
     extensions: RegExp
     id: string
 }
 
-async function generic_emglken_vm(options: ParchmentOptions, requires: [Uint8Array, any, Uint8Array])
+async function generic_emglken_vm(story: StoryOptions, options: ParchmentOptions, requires: [any, Uint8Array])
 {
-    const [file_data, engine, wasmBinary] = requires
+    const [engine, wasmBinary] = requires
 
     const vm_options = Object.assign({}, options, {
-        wasmBinary: wasmBinary.buffer,
+        arguments: [story.path],
     })
 
-    const vm = new engine.default()
-    vm.init(file_data, vm_options)
-    await vm.start()
+    const vm = await engine.default({wasmBinary})
+    vm.start(vm_options)
 }
 
 export const formats: Format[] = [
@@ -50,7 +50,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'scare',
-                load: ['./scare.js', './scare-core.wasm'],
+                load: ['./scare.js', './scare.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -58,6 +58,7 @@ export const formats: Format[] = [
 
     /*{
         id: 'adrift5',
+        blorbable: true,
         extensions: /\.(blb|blorb)/i,
         engines: [
             {
@@ -85,7 +86,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'hugo',
-                load: ['./hugo.js', './hugo-core.wasm'],
+                load: ['./hugo.js', './hugo.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -93,12 +94,13 @@ export const formats: Format[] = [
 
     {
         id: 'glulx',
+        blorbable: true,
         extensions: /\.(gblorb|glb|ulx)/i,
         engines: [
-            {
+            /*{
                 id: 'quixe',
                 load: ['./quixe.js'],
-                start: (options, requires) =>
+                start: (_story: StoryOptions, options, requires) =>
                 {
                     const [file_data, quixe] = requires
                     const data_array = file_data
@@ -117,17 +119,17 @@ export const formats: Format[] = [
 
                     quixe.GiLoad.load_run(vm_options, data_array, 'array')
                 },
-            },
+            },*/
 
             {
                 id: 'glulxe',
-                load: ['./glulxe.js', './glulxe-core.wasm'],
+                load: ['./glulxe.js', './glulxe.wasm'],
                 start: generic_emglken_vm,
             },
 
             {
                 id: 'git',
-                load: ['./git.js', './git-core.wasm'],
+                load: ['./git.js', './git.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -139,7 +141,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'tads',
-                load: ['./tads.js', './tads-core.wasm'],
+                load: ['./tads.js', './tads.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -147,12 +149,13 @@ export const formats: Format[] = [
 
     {
         id: 'zcode',
+        blorbable: true,
         extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/i,
         engines: [
-            {
+            /*{
                 id: 'zvm',
                 load: ['./zvm.js'],
-                start: (options, requires) =>
+                start: (_story: StoryOptions, options, requires) =>
                 {
                     const [file_data, zvm] = requires
 
@@ -165,11 +168,11 @@ export const formats: Format[] = [
                     vm.prepare(file_data, vm_options)
                     vm_options.Glk.init(vm_options)
                 },
-            },
+            },*/
 
             {
                 id: 'bocfel',
-                load: ['./bocfel.js', './bocfel-core.wasm'],
+                load: ['./bocfel.js', './bocfel.wasm'],
                 start: generic_emglken_vm,
             },
         ],

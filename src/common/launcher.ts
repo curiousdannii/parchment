@@ -12,9 +12,9 @@ https://github.com/curiousdannii/parchment
 import Cookies from 'js-cookie'
 import prettyBytes from 'pretty-bytes'
 
-import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
+import {AsyncGlk, Blorb, FileView, ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
 
-import {fetch_storyfile, fetch_vm_resource, ProgressCallback, read_uploaded_file} from './file.js'
+import {fetch_vm_resource, read_uploaded_file} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import {get_default_options, get_query_options, ParchmentOptions, StoryOptions} from './options.js'
 
@@ -54,10 +54,10 @@ class ParchmentLauncher
         return null
     }
 
-    launch() {
+    async launch() {
         try {
             // Update the Dialog storage version
-            this.options.Dialog.init()
+            await this.options.Dialog.init(this.options)
 
             // Apply the dark theme if set
             const theme = this.options.theme
@@ -107,12 +107,9 @@ class ParchmentLauncher
             $('#loadingpane').show()
 
             // Check we were given a sufficient story object
-            if (!story.url) {
-                if (!story.data) {
-                    throw new Error('Needs story data or URL')
-                }
-                if (!story.format) {
-                    throw new Error('Cannot identify storyfile format without path')
+            if (!story.path) {
+                if (!story.url) {
+                    throw new Error('Needs story path or URL')
                 }
             }
 
@@ -139,29 +136,33 @@ class ParchmentLauncher
             // If a blorb file extension is generic, we must download it first to identify its format
             let blorb: Blorb | undefined
             if (format.id === 'blorb') {
-                if (!story.data) {
-                    story.data = await fetch_storyfile(this.options, story.url!, progress_callback)
+                if (!story.path) {
+                    story.path = await this.options.Dialog.download(story.url!, progress_callback)
                 }
-                blorb = new Blorb(story.data)
+                const data = (await this.options.Dialog.read(story.path))!
+                blorb = new Blorb(data)
                 format = identify_blorb_storyfile_format(blorb)
             }
 
             const engine = format.engines![0]
 
             const requires = await Promise.all([
-                story.data || fetch_storyfile(this.options, story.url!, progress_callback),
-                ...engine.load.map(path => fetch_vm_resource(this.options, path))
+                story.path || this.options.Dialog.download(story.url!, progress_callback),
+                ...engine.load.map(path => fetch_vm_resource(this.options, path)),
             ])
-            story.data = requires[0]
+            story.path = requires.shift()
 
             // If the story is a Blorb, then parse it and pass in the options
             const options = Object.assign({}, this.options)
-            const view = new FileView(story.data)
-            if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
-                options.Blorb = blorb || new Blorb(story.data)
+            if (format.blorbable && !blorb) {
+                const data = (await this.options.Dialog.read(story.path!))!
+                const view = new FileView(data)
+                if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
+                    options.Blorb = blorb || new Blorb(data)
+                }
             }
 
-            await engine.start(options, requires)
+            await engine.start(story, options, requires)
         }
         catch (err) {
             this.options.GlkOte.error(err)
@@ -171,10 +172,10 @@ class ParchmentLauncher
 
     async load_uploaded_file(file: File) {
         try {
-            this.load({
+            /*this.load({
                 data: await read_uploaded_file(file),
                 url: file.name,
-            })
+            })*/
         }
         catch (err) {
             this.options.GlkOte.error(err)

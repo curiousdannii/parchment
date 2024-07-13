@@ -9,36 +9,33 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {ClassicSyncDialog, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
-import WebDialog from '../upstream/glkote/dialog.js'
+import {BrowserDialog, DownloadOptions, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
 import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
 export type ParchmentTruthy = boolean | number
 
 export interface StoryOptions {
-    data?: Uint8Array
     /** Size of storyfile in bytes, uncompressed */
     filesize?: number
     /** Size of storyfile in bytes, gzip compressed (doesn't need to be exact) */
     filesize_gz?: number
     /** Format ID, matching formats.js */
     format?: string
+    /** Dialog file path */
+    path?: string
+    /** Actual URL to the storyfile */
     url?: string
 }
 
-export interface ParchmentOptions extends Partial<GlkOteOptions> {
+export interface ParchmentOptions extends DownloadOptions, Partial<GlkOteOptions> {
     // Parchment options
 
     /** Whether or not to automatically launch Parchment */
     auto_launch?: ParchmentTruthy,
     /** Story path in the array format traditionally used by Parchment for Inform 7 */
     default_story?: [string],
-    /** Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers */
-    direct_domains: string[],
     /** Path to resources */
     lib_path: string,
-    /** URL of Proxy */
-    proxy_url: string,
     /** Whether to load embedded resources in single file mode */
     single_file?: ParchmentTruthy,
     /** Storyfile path or metadata */
@@ -49,13 +46,11 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     theme_cookie: string,
     /** Whether to test the AsyncGlk GlkApi library */
     use_asyncglk?: ParchmentTruthy,
-    /** Disable the file proxy, which may mean that some files can't be loaded */
-    use_proxy?: ParchmentTruthy,
 
     // Modules to pass to other modules
 
     /** Dialog instance to use */
-    Dialog: ClassicSyncDialog,
+    Dialog: BrowserDialog,
     /** GlkApi instance to use */
     Glk: GlkApi,
     /** GlkOte instance to use */
@@ -70,7 +65,7 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
 export function get_default_options(): ParchmentOptions {
     return {
         auto_launch: 1,
-        Dialog: WebDialog,
+        Dialog: new BrowserDialog(),
         direct_domains: [
             'unbox.ifarchive.org',
         ],

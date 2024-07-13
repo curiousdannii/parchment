@@ -4,7 +4,7 @@
 Parchment build script
 ======================
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -44,7 +44,7 @@ if (projects.includes('ifcomp')) {
             ie: 'src/common/ie.js',
             main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
-            tads: 'node_modules/emglken/src/tads.js',
+            tads: 'node_modules/emglken/build/tads.js',
             web: 'src/web/web.css',
             zvm: 'src/common/zvm.js',
         },
@@ -77,14 +77,14 @@ if (projects.includes('lectrote')) {
     projects_to_build.push({
         copy: [
             ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') && file !== 'bocfel-core.wasm'),
+                .filter(file => file.endsWith('.wasm') && file !== 'bocfel.wasm'),
         ],
         entryPoints: {
-            git: 'node_modules/emglken/src/git.js',
-            glulxe: 'node_modules/emglken/src/glulxe.js',
-            hugo: 'node_modules/emglken/src/hugo.js',
-            scare: 'node_modules/emglken/src/scare.js',
-            tads: 'node_modules/emglken/src/tads.js',
+            git: 'node_modules/emglken/build/git.js',
+            glulxe: 'node_modules/emglken/build/glulxe.js',
+            hugo: 'node_modules/emglken/build/hugo.js',
+            scare: 'node_modules/emglken/build/scare.js',
+            tads: 'node_modules/emglken/build/tads.js',
         },
         format: 'cjs',
         outdir: 'dist/lectrote',
@@ -124,15 +124,15 @@ if (projects.includes('web')) {
             'src/upstream/glkote/waiting.gif',
         ],
         entryPoints: {
-            bocfel: 'node_modules/emglken/src/bocfel.js',
-            git: 'node_modules/emglken/src/git.js',
-            glulxe: 'node_modules/emglken/src/glulxe.js',
-            hugo: 'node_modules/emglken/src/hugo.js',
+            //bocfel: 'node_modules/emglken/build/bocfel.js',
+            git: 'node_modules/emglken/build/git.js',
+            glulxe: 'node_modules/emglken/build/glulxe.js',
+            hugo: 'node_modules/emglken/build/hugo.js',
             ie: 'src/common/ie.js',
             main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
-            scare: 'node_modules/emglken/src/scare.js',
-            tads: 'node_modules/emglken/src/tads.js',
+            scare: 'node_modules/emglken/build/scare.js',
+            tads: 'node_modules/emglken/build/tads.js',
             web: 'src/web/web.css',
             zvm: 'src/common/zvm.js',
         },
