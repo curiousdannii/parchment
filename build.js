@@ -32,59 +32,53 @@ const projects_to_build = []
 
 if (projects.includes('ifcomp')) {
     projects_to_build.push({
-        copy: await readdir('src/fonts/iosevka'),
-        outdir: 'dist/ifcomp/fonts/iosevka',
-    }, {
-        copy: [
-            'node_modules/emglken/build/tads-core.wasm',
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-        ],
         entryPoints: {
             ie: 'src/common/ie.js',
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
             main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
-            tads: 'node_modules/emglken/build/tads.js',
+            tads: 'node_modules/emglken/build/tads.*',
+            waiting: 'src/upstream/glkote/waiting.gif',
             web: 'src/web/web.css',
             zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/ifcomp/interpreter',
         sourcemap: true,
+    }, {
+        entryPoints: ['src/fonts/iosevka/*.woff2'],
+        outdir: 'dist/fonts/iosevka',
     })
 }
 
 if (projects.includes('inform7')) {
     projects_to_build.push({
-        copy: [
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-            'src/upstream/quixe/media/resourcemap.js',
-        ],
         entryPoints: {
             ie: 'src/common/ie.js',
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
             main: 'src/inform7/index.js',
             parchment: 'src/inform7/inform7.css',
             quixe: 'src/inform7/quixe.js',
+            waiting: 'src/upstream/glkote/waiting.gif',
             zvm: 'src/inform7/zvm.js',
         },
         format: 'iife',
         logOverride: {'empty-import-meta': 'silent'},
+        outdir: 'dist/inform7/Parchment',
+    }, {
+        entryPoints: ['src/upstream/quixe/media/resourcemap.js'],
+        loader: {'.js': 'copy'},
         outdir: 'dist/inform7/Parchment',
     })
 }
 
 if (projects.includes('lectrote')) {
     projects_to_build.push({
-        copy: [
-            ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') && file !== 'bocfel.wasm'),
-        ],
         entryPoints: {
-            git: 'node_modules/emglken/build/git.js',
-            glulxe: 'node_modules/emglken/build/glulxe.js',
-            hugo: 'node_modules/emglken/build/hugo.js',
-            scare: 'node_modules/emglken/build/scare.js',
-            tads: 'node_modules/emglken/build/tads.js',
+            git: 'node_modules/emglken/build/git.*',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
+            hugo: 'node_modules/emglken/build/hugo.*',
+            scare: 'node_modules/emglken/build/scare.*',
+            tads: 'node_modules/emglken/build/tads.*',
         },
         format: 'cjs',
         outdir: 'dist/lectrote',
@@ -101,11 +95,8 @@ if (projects.includes('tools')) {
         platform: 'node',
         treeShaking: true,
     }, {
-        copy: [
-            'src/tools/file-exporter.html',
-        ],
         entryPoints: {
-            'file-exporter': 'src/tools/file-exporter.ts',
+            'file-exporter': 'src/tools/file-exporter.*',
         },
         outdir: 'dist/tools',
         sourcemap: true,
@@ -114,30 +105,26 @@ if (projects.includes('tools')) {
 
 if (projects.includes('web')) {
     projects_to_build.push({
-        copy: await readdir('src/fonts/iosevka'),
-        outdir: 'dist/fonts/iosevka',
-    }, {
-        copy: [
-            ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') || file.endsWith('.wasm.map')),
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-        ],
         entryPoints: {
-            //bocfel: 'node_modules/emglken/build/bocfel.js',
-            git: 'node_modules/emglken/build/git.js',
-            glulxe: 'node_modules/emglken/build/glulxe.js',
-            hugo: 'node_modules/emglken/build/hugo.js',
+            //bocfel: 'node_modules/emglken/build/bocfel.*',
+            git: 'node_modules/emglken/build/git.*',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
+            hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
             main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
-            scare: 'node_modules/emglken/build/scare.js',
-            tads: 'node_modules/emglken/build/tads.js',
+            scare: 'node_modules/emglken/build/scare.*',
+            tads: 'node_modules/emglken/build/tads.*',
+            waiting: 'src/upstream/glkote/waiting.gif',
             web: 'src/web/web.css',
             zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
         sourcemap: true,
+    }, {
+        entryPoints: ['src/fonts/iosevka/*.woff2'],
+        outdir: 'dist/fonts/iosevka',
     })
 }
 
@@ -145,6 +132,13 @@ const common_options = {
     bundle: true,
     external: ['*.woff2'],
     format: 'esm',
+    loader: {
+        '.gif': 'copy',
+        '.html': 'copy',
+        '.min.js': 'copy',
+        '.wasm': 'copy',
+        '.woff2': 'copy',
+    },
     minify: true,
     metafile: analyse,
 }
@@ -153,13 +147,6 @@ let have_given_emglken_warning
 
 for (const project of projects_to_build) {
     await fs.mkdir(project.outdir, {recursive: true})
-
-    if (project.copy) {
-        for (const file of project.copy) {
-            await fs.copyFile(file, `${project.outdir}/${path.basename(file)}`)
-        }
-        delete project.copy
-    }
 
     if (project.entryPoints) {
         // Warn if not using upstream Emglken

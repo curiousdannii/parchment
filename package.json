@@ -1,6 +1,6 @@
 {
   "name": "parchment",
-  "version": "2024.1.0",
+  "version": "2024.7.0",
   "description": "Parchment Interactive Fiction Player",
   "repository": "curiousdannii/parchment",
   "keywords": [
@@ -31,7 +31,7 @@
     "@types/minimist": "^1.2.2",
     "@typescript-eslint/eslint-plugin": "~6.7.0",
     "@typescript-eslint/parser": "~6.7.0",
-    "esbuild": "^0.19.0",
+    "esbuild": "^0.23.0",
     "eslint": "^8.3.0",
     "eslint-plugin-compat": "^4.0.0",
     "minimist": "^1.2.6",
