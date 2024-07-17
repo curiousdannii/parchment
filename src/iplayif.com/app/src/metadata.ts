@@ -23,7 +23,7 @@ import Koa from 'koa'
 import {LRUCache} from 'lru-cache'
 import sharp from 'sharp'
 
-import {flatten_query, SiteOptions} from './common.js'
+import {flatten_query, type SiteOptions} from './common.js'
 import {SUPPORTED_TYPES} from './common.js'
 
 const exec = util.promisify(child_process.exec)

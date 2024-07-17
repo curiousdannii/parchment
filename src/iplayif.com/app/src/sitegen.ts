@@ -14,10 +14,10 @@ import path from 'path'
 
 import Koa from 'koa'
 
-import {process_index_html, SingleFileOptions} from '../../../tools/index-processing.js'
+import {process_index_html, type SingleFileOptions} from '../../../tools/index-processing.js'
 
 import FrontPage from './front-page.js'
-import {flatten_query, SiteOptions} from './common.js'
+import {flatten_query, type SiteOptions} from './common.js'
 import {get_metadata} from './metadata.js'
 
 const format_terp_files: Record<string, string[]> = {

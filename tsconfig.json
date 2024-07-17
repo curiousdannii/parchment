@@ -6,7 +6,8 @@
         "moduleResolution": "Node",
         "rootDir": ".",
         "strict": true,
-        "target": "ES2022"
+        "target": "ES2022",
+        "verbatimModuleSyntax": true
     },
     "include": [
         "src/common/*.ts",

@@ -14,7 +14,7 @@ import {merge} from 'lodash-es'
 import path from 'path'
 
 import IplayifApp from './app.js'
-import {SiteOptions} from './common.js'
+import {type SiteOptions} from './common.js'
 
 const default_options: SiteOptions = {
     cache_control_age: 604800, // 1 week

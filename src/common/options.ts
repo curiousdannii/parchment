@@ -9,8 +9,9 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {BrowserDialog, DownloadOptions, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
-import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
+import type {DownloadOptions, /*GlkApi,*/ GlkOte, GlkOteOptions} from '../upstream/asyncglk/src/index-browser.js'
+import {BrowserDialog, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
+//import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
 export type ParchmentTruthy = boolean | number
 
@@ -52,7 +53,7 @@ export interface ParchmentOptions extends DownloadOptions, Partial<GlkOteOptions
     /** Dialog instance to use */
     Dialog: BrowserDialog,
     /** GlkApi instance to use */
-    Glk: GlkApi,
+    //Glk: GlkApi,
     /** GlkOte instance to use */
     GlkOte: GlkOte,
 
@@ -70,7 +71,7 @@ export function get_default_options(): ParchmentOptions {
             'unbox.ifarchive.org',
         ],
         do_vm_autosave: 1,
-        Glk: GlkOte_GlkApi,
+        //Glk: GlkOte_GlkApi,
         GlkOte: new WebGlkOte(),
         // This only makes sense after the source files are built
         lib_path: import.meta.url,

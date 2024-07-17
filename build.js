@@ -11,9 +11,10 @@ https://github.com/curiousdannii/parchment
 */
 
 import esbuild from 'esbuild'
+import esbuildSvelte from 'esbuild-svelte'
 import fs from 'fs/promises'
-import path from 'path'
 import minimist from 'minimist'
+import {sveltePreprocess} from 'svelte-preprocess'
 
 const argv = minimist(process.argv.slice(2))
 const projects = argv._
@@ -35,11 +36,10 @@ if (projects.includes('ifcomp')) {
         entryPoints: {
             ie: 'src/common/ie.js',
             'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-            main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
             tads: 'node_modules/emglken/build/tads.*',
             waiting: 'src/upstream/glkote/waiting.gif',
-            web: 'src/web/web.css',
+            web: 'src/common/launcher.ts',
             zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/ifcomp/interpreter',
@@ -112,12 +112,11 @@ if (projects.includes('web')) {
             hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
             'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-            main: 'src/common/launcher.ts',
             quixe: 'src/common/quixe.js',
             scare: 'node_modules/emglken/build/scare.*',
             tads: 'node_modules/emglken/build/tads.*',
             waiting: 'src/upstream/glkote/waiting.gif',
-            web: 'src/web/web.css',
+            web: 'src/common/launcher.ts',
             zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
@@ -141,6 +140,11 @@ const common_options = {
     },
     minify: true,
     metafile: analyse,
+    plugins: [
+        esbuildSvelte({
+            preprocess: sveltePreprocess(),
+        }),
+    ],
 }
 
 let have_given_emglken_warning

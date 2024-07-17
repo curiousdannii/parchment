@@ -11,7 +11,7 @@ https://github.com/curiousdannii/parchment
 
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {ParchmentOptions, StoryOptions} from './options.js'
+import {type ParchmentOptions, type StoryOptions} from './options.js'
 
 export interface Engine {
     id: string
@@ -152,6 +152,14 @@ export const formats: Format[] = [
         blorbable: true,
         extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/i,
         engines: [
+            {
+                id: 'fake-zvm',
+                load: [],
+                start: () => {
+                    throw new Error('Z-Code games are temporarily unsupported')
+                },
+            },
+
             /*{
                 id: 'zvm',
                 load: ['./zvm.js'],
@@ -170,11 +178,11 @@ export const formats: Format[] = [
                 },
             },*/
 
-            {
+            /*{
                 id: 'bocfel',
                 load: ['./bocfel.js', './bocfel.wasm'],
                 start: generic_emglken_vm,
-            },
+            },*/
         ],
     },
 ]
