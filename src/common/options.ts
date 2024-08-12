@@ -72,7 +72,10 @@ export function get_default_options(): ParchmentOptions {
         auto_launch: 1,
         Dialog: WebDialog,
         direct_domains: [
+            'ifarchive.org',
+            'mirror.ifarchive.org',
             'unbox.ifarchive.org',
+            'www.ifarchive.org',
         ],
         do_vm_autosave: 1,
         Glk: GlkOte_GlkApi,
