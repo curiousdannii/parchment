@@ -19,8 +19,6 @@ const utf8decoder = new TextDecoder()
 export async function fetch_storyfile(options: ParchmentOptions, url: string, progress_callback?: ProgressCallback): Promise<Uint8Array> {
     // Handle a relative URL
     const story_url = new URL(url, document.URL)
-    const story_domain = story_url.hostname
-    const same_domain = story_domain === document.location.hostname
     const proxy_url = `${options.proxy_url}?url=${story_url}`
     let response: Response
 
@@ -30,34 +28,17 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string, pr
         return parse_base64(data)
     }
 
-    // Only directly access files same origin files or those from the list of reliable domains
-    let direct_access = same_domain || story_url.protocol === 'data:'
-    if (!direct_access) {
-        for (const domain of options.direct_domains) {
-            if (story_domain.endsWith(domain)) {
-                direct_access = true
-                break
-            }
-        }
+    // Optimistically attempt direct access
+    try {
+        response = await fetch('' + story_url)
     }
-
-    if (direct_access) {
-        try {
-            response = await fetch('' + story_url)
-        }
+    catch (_) {
         // We can't specifically detect CORS errors but that's probably what happened
-        catch (_) {
-            throw new Error('Failed to fetch storyfile (possible CORS error)')
-        }
-    }
-
-    // Otherwise use the proxy
-    else {
         if (options.use_proxy) {
             response = await fetch(proxy_url)
         }
         else {
-            throw new Error('Storyfile not in list of direct domains and proxy disabled')
+            throw new Error('Failed to fetch storyfile (possible CORS error) and proxy disabled')
         }
     }
 

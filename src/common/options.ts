@@ -33,8 +33,6 @@ export interface ParchmentOptions extends Partial<GlkOteOptions> {
     auto_launch?: ParchmentTruthy,
     /** Story path in the array format traditionally used by Parchment for Inform 7 */
     default_story?: [string],
-    /** Domains to access directly: should always have both Access-Control-Allow-Origin and compression headers */
-    direct_domains: string[],
     /** Path to resources */
     lib_path: string,
     /** URL of Proxy */
@@ -71,9 +69,6 @@ export function get_default_options(): ParchmentOptions {
     return {
         auto_launch: 1,
         Dialog: WebDialog,
-        direct_domains: [
-            'unbox.ifarchive.org',
-        ],
         do_vm_autosave: 1,
         Glk: GlkOte_GlkApi,
         GlkOte: new WebGlkOte(),
