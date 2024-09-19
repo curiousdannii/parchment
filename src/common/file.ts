@@ -20,6 +20,7 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string, pr
     // Handle a relative URL
     const story_url = new URL(url, document.URL)
     const story_domain = story_url.hostname
+    const same_protocol = story_url.protocol === document.location.protocol
     const same_domain = story_domain === document.location.hostname
     const proxy_url = `${options.proxy_url}?url=${story_url}`
     let response: Response
@@ -31,8 +32,8 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string, pr
     }
 
     // Only directly access files same origin files or those from the list of reliable domains
-    let direct_access = same_domain || story_url.protocol === 'data:'
-    if (!direct_access) {
+    let direct_access = (same_protocol && same_domain) || story_url.protocol === 'data:'
+    if (!direct_access && same_protocol) {
         for (const domain of options.direct_domains) {
             if (story_domain.endsWith(domain)) {
                 direct_access = true
