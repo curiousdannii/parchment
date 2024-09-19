@@ -33,9 +33,11 @@ export async function fetch_storyfile(options: ParchmentOptions, url: string, pr
 
     // Only directly access files same origin files or those from the list of reliable domains
     let direct_access = (same_protocol && same_domain) || story_url.protocol === 'data:'
-    if (!direct_access && same_protocol) {
+    if (!direct_access) {
         for (const domain of options.direct_domains) {
             if (story_domain.endsWith(domain)) {
+                // all direct domains require HTTPS
+                story_url.protocol = 'https:'
                 direct_access = true
                 break
             }
