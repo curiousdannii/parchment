@@ -79,6 +79,9 @@ if (projects.includes('lectrote')) {
             ...(await readdir('node_modules/emglken/build'))
                 .filter(file => file.endsWith('.wasm') && file !== 'bocfel-core.wasm'),
         ],
+        define: {
+            'import.meta.url': `'.'`,
+        },
         entryPoints: {
             git: 'node_modules/emglken/src/git.js',
             glulxe: 'node_modules/emglken/src/glulxe.js',

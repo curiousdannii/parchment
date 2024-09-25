@@ -1,15 +1,15 @@
 [submodule "src/upstream/asyncglk"]
 	path = src/upstream/asyncglk
-	url = https://github.com/curiousdannii/asyncglk.git
+	url = ../../curiousdannii/asyncglk.git
 [submodule "src/upstream/emglken"]
 	path = src/upstream/emglken
-	url = https://github.com/curiousdannii/emglken.git
+	url = ../../curiousdannii/emglken.git
 [submodule "src/upstream/glkote"]
 	path = src/upstream/glkote
-	url = https://github.com/curiousdannii/glkote.git
+	url = ../../curiousdannii/glkote.git
 [submodule "src/upstream/ifvms.js"]
 	path = src/upstream/ifvms.js
-	url = https://github.com/curiousdannii/ifvms.js.git
+	url = ../../curiousdannii/ifvms.js.git
 [submodule "src/upstream/quixe"]
 	path = src/upstream/quixe
-	url = https://github.com/curiousdannii/quixe.git
+	url = ../../curiousdannii/quixe.git
