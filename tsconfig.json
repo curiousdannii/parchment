@@ -7,13 +7,14 @@
         "rootDir": ".",
         "strict": true,
         "target": "ES2022",
+        "types": ["jquery", "svelte"],
         "verbatimModuleSyntax": true
     },
     "include": [
         "src/common/*.ts",
         "src/iplayif.com/app/src/*.ts",
         "src/tools/*.ts",
-        "src/types.d.ts",
+        "src/types.d.ts"
     ],
     "exclude": [
         "node_modules"

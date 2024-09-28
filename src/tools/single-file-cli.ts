@@ -21,7 +21,7 @@ import minimist from 'minimist'
 import {identify_blorb_storyfile_format} from '../common/formats.js'
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {process_index_html, SingleFileOptions} from './index-processing.js'
+import {process_index_html, type SingleFileOptions} from './index-processing.js'
 
 interface BasicFormat {
     extensions: RegExp

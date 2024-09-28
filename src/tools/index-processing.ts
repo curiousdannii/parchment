@@ -12,7 +12,7 @@ https://github.com/curiousdannii/parchment
 import {escape, truncate} from 'lodash-es'
 import prettyBytes from 'pretty-bytes'
 
-import {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
+import type {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
 
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})

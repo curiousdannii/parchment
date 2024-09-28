@@ -16,7 +16,7 @@ import prettyBytes from 'pretty-bytes'
 
 import {AsyncGlk, Blorb, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
 
-import {fetch_vm_resource, read_uploaded_file} from './file.js'
+import {fetch_vm_resource, /*read_uploaded_file*/} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import {get_default_options, get_query_options, type ParchmentOptions, type StoryOptions} from './options.js'
 
@@ -74,17 +74,17 @@ class ParchmentLauncher
             const storyfile = this.get_storyfile_path()
             if (!storyfile) {
                 // Set up all the ways we can load a story
-                $('#custom-file-upload').show().on('keydown', event => {
-                    if (event.keyCode === 32 /*Space*/ || event.keyCode === 13 /*Enter*/) {
-                        event.target.click()
-                    }
-                })
-                $('#file-upload').on('change', () => {
-                    const file = ($('#file-upload')[0] as HTMLInputElement)?.files?.[0]
-                    if (file) {
-                        this.load_uploaded_file(file)
-                    }
-                })
+                // $('#custom-file-upload').show().on('keydown', event => {
+                //     if (event.keyCode === 32 /*Space*/ || event.keyCode === 13 /*Enter*/) {
+                //         event.target.click()
+                //     }
+                // })
+                // $('#file-upload').on('change', () => {
+                //     const file = ($('#file-upload')[0] as HTMLInputElement)?.files?.[0]
+                //     if (file) {
+                //         this.load_uploaded_file(file)
+                //     }
+                // })
                 $('#play-url').show()
                 $('#play-url-button').on('click', () => this.load_url())
                 $('#play-url-input').on('keydown', event => {
@@ -173,18 +173,18 @@ class ParchmentLauncher
         }
     }
 
-    async load_uploaded_file(file: File) {
+    /*async load_uploaded_file(file: File) {
         try {
-            /*this.load({
+            this.load({
                 data: await read_uploaded_file(file),
                 url: file.name,
-            })*/
+            })
         }
         catch (err) {
             this.options.GlkOte.error(err)
             throw err
         }
-    }
+    }*/
 
     load_url() {
         const url = $('#play-url-input').val() as string
