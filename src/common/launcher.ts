@@ -18,7 +18,8 @@ import {AsyncGlk, Blorb, FileView, type ProgressCallback} from '../upstream/asyn
 
 import {fetch_vm_resource, /*read_uploaded_file*/} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
-import {get_default_options, get_query_options, type ParchmentOptions, type StoryOptions} from './options.js'
+import type {ParchmentOptions, StoryOptions} from './interface.js'
+import {get_default_options, get_query_options} from './options.js'
 
 
 interface ParchmentWindow extends Window {

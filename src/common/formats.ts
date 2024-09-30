@@ -11,7 +11,7 @@ https://github.com/curiousdannii/parchment
 
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import {type ParchmentOptions, type StoryOptions} from './options.js'
+import type {ParchmentOptions, StoryOptions} from './interface.js'
 
 export interface Engine {
     id: string

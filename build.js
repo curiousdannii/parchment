@@ -169,7 +169,7 @@ for (const project of projects_to_build) {
         else {
             const result = await esbuild.build(options)
             if (analyse) {
-                console.log(await esbuild.analyzeMetafile(result.metafile))
+                console.log(await esbuild.analyzeMetafile(result.metafile, {verbose: true}))
             }
         }
     }

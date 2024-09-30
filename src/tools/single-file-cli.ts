@@ -121,20 +121,20 @@ if (story_file_path) {
 const common_files = [
     'jquery.min.js',
     'ie.js',
-    'main.js',
+    'web.js',
     'waiting.gif',
     'web.css',
     '../fonts/iosevka/iosevka-extended.woff2',
     '../../index.html',
 ]
 const interpreter_files: Record<string, string[]> = {
-    bocfel: ['bocfel-core.wasm', 'boxfel.js'],
-    git: ['git-core.wasm', 'git.js'],
-    glulxe: ['glulxe-core.wasm', 'glulxe.js'],
-    hugo: ['hugo-core.wasm', 'hugo.js'],
+    bocfel: ['bocfel.wasm', 'boxfel.js'],
+    git: ['git.wasm', 'git.js'],
+    glulxe: ['glulxe.wasm', 'glulxe.js'],
+    hugo: ['hugo.wasm', 'hugo.js'],
     quixe: ['quixe.js'],
-    scare: ['scare-core.wasm', 'scare.js'],
-    tads: ['tads-core.wasm', 'tads.js'],
+    scare: ['scare.wasm', 'scare.js'],
+    tads: ['tads.wasm', 'tads.js'],
     zvm: ['zvm.js'],
 }
 

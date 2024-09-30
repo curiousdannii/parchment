@@ -10,7 +10,7 @@ https://github.com/curiousdannii/parchment
 */
 
 import {parse_base64, type ProgressCallback, read_response} from '../upstream/asyncglk/src/index-browser.js'
-import type {ParchmentOptions} from './options.js'
+import type {ParchmentOptions} from './interface.js'
 
 /** Fetch a VM resource */
 export async function fetch_vm_resource(options: ParchmentOptions, path: string, progress_callback?: ProgressCallback) {
