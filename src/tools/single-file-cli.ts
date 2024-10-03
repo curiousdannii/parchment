@@ -46,7 +46,8 @@ const base_options: Options = {
 }
 const presets: Record<string, Options> = {
     dist: {
-        terps: ['hugo', 'quixe', 'scare', 'tads', 'zvm'],
+        //terps: ['hugo', 'quixe', 'scare', 'tads', 'zvm'],
+        terps: ['bocfel', 'glulxe', 'hugo', 'scare', 'tads'],
     },
     frankendrift: {
         single_file: 0,
@@ -54,7 +55,8 @@ const presets: Record<string, Options> = {
     },
     regtest: {
         font: 0,
-        terps: ['quixe', 'zvm'],
+        //terps: ['quixe', 'zvm'],
+        terps: ['bocfel', 'glulxe'],
     },
 }
 
@@ -121,14 +123,14 @@ if (story_file_path) {
 const common_files = [
     'jquery.min.js',
     'ie.js',
-    'web.js',
     'waiting.gif',
     'web.css',
+    'web.js',
     '../fonts/iosevka/iosevka-extended.woff2',
     '../../index.html',
 ]
 const interpreter_files: Record<string, string[]> = {
-    bocfel: ['bocfel.wasm', 'boxfel.js'],
+    bocfel: ['bocfel.wasm', 'bocfel.js'],
     git: ['git.wasm', 'git.js'],
     glulxe: ['glulxe.wasm', 'glulxe.js'],
     hugo: ['hugo.wasm', 'hugo.js'],

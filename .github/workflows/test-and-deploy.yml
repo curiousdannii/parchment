@@ -27,7 +27,7 @@ jobs:
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
-        run: ./src/upstream/emglken/src/build.sh
+        run: ./src/upstream/emglken/build.sh
     outputs:
       ref: ${{ steps.emglken-ref.outputs.ref }}
 
@@ -43,9 +43,7 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: |
-          npm install --ignore-scripts
-          # Manually run Puppeteer's post install script
-          node ./node_modules/puppeteer/install.mjs
+          npm install
           npm run link-local-emglken
           cd src/iplayif.com/app && npm install
       - name: Static tests

@@ -140,7 +140,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         else if (filename === 'jquery.min.js') {
             inclusions.push(`<script>${data_as_string}</script>`)
         }
-        else if (filename === 'main.js') {
+        else if (filename === 'web.js') {
             inclusions.push(`<script type="module">${data_as_string}</script>`)
         }
         else if (filename.endsWith('.css')) {

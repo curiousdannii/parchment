@@ -14,7 +14,7 @@ import '../web/web.css'
 import Cookies from 'js-cookie'
 import prettyBytes from 'pretty-bytes'
 
-import {AsyncGlk, Blorb, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
+import {/*AsyncGlk,*/ Blorb, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
 
 import {fetch_vm_resource, /*read_uploaded_file*/} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
@@ -40,9 +40,9 @@ class ParchmentLauncher
         }
         this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(query_options))
         // Use AsyncGlk if requested
-        if (this.options.use_asyncglk) {
+        /*if (this.options.use_asyncglk) {
             this.options.Glk = new AsyncGlk()
-        }
+        }*/
     }
 
     get_storyfile_path(): StoryOptions | null {

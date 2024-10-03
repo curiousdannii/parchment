@@ -106,18 +106,18 @@ if (projects.includes('tools')) {
 if (projects.includes('web')) {
     projects_to_build.push({
         entryPoints: {
-            //bocfel: 'node_modules/emglken/build/bocfel.*',
+            bocfel: 'node_modules/emglken/build/bocfel.*',
             git: 'node_modules/emglken/build/git.*',
             glulxe: 'node_modules/emglken/build/glulxe.*',
             hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
             'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-            quixe: 'src/common/quixe.js',
+            //quixe: 'src/common/quixe.js',
             scare: 'node_modules/emglken/build/scare.*',
             tads: 'node_modules/emglken/build/tads.*',
             waiting: 'src/upstream/glkote/waiting.gif',
             web: 'src/common/launcher.ts',
-            zvm: 'src/common/zvm.js',
+            //zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
         sourcemap: true,
