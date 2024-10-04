@@ -16,7 +16,7 @@ import prettyBytes from 'pretty-bytes'
 
 import {/*AsyncGlk,*/ Blorb, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
 
-import {fetch_vm_resource, /*read_uploaded_file*/} from './file.js'
+import {fetch_vm_resource} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import type {ParchmentOptions, StoryOptions} from './interface.js'
 import {get_default_options, get_query_options} from './options.js'
