@@ -75,17 +75,17 @@ class ParchmentLauncher
             const storyfile = this.get_storyfile_path()
             if (!storyfile) {
                 // Set up all the ways we can load a story
-                // $('#custom-file-upload').show().on('keydown', event => {
-                //     if (event.keyCode === 32 /*Space*/ || event.keyCode === 13 /*Enter*/) {
-                //         event.target.click()
-                //     }
-                // })
-                // $('#file-upload').on('change', () => {
-                //     const file = ($('#file-upload')[0] as HTMLInputElement)?.files?.[0]
-                //     if (file) {
-                //         this.load_uploaded_file(file)
-                //     }
-                // })
+                $('#custom-file-upload').show().on('keydown', event => {
+                    if (event.keyCode === 32 /*Space*/ || event.keyCode === 13 /*Enter*/) {
+                        event.target.click()
+                    }
+                })
+                $('#file-upload').on('change', () => {
+                    const file = ($('#file-upload')[0] as HTMLInputElement)?.files?.[0]
+                    if (file) {
+                        this.load_uploaded_file(file)
+                    }
+                })
                 $('#play-url').show()
                 $('#play-url-button').on('click', () => this.load_url())
                 $('#play-url-input').on('keydown', event => {
@@ -118,7 +118,7 @@ class ParchmentLauncher
             }
 
             // Identify the format
-            let format = find_format(story.format, story.url)
+            let format = find_format(story.format, story.path || story.url)
 
             // Look for the progress bar
             let progress = 0
@@ -174,18 +174,17 @@ class ParchmentLauncher
         }
     }
 
-    /*async load_uploaded_file(file: File) {
+    async load_uploaded_file(file: File) {
         try {
             this.load({
-                data: await read_uploaded_file(file),
-                url: file.name,
+                path: await this.options.Dialog.upload(file),
             })
         }
         catch (err) {
             this.options.GlkOte.error(err)
             throw err
         }
-    }*/
+    }
 
     load_url() {
         const url = $('#play-url-input').val() as string
