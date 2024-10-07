@@ -111,7 +111,6 @@ if (projects.includes('web')) {
             glulxe: 'node_modules/emglken/build/glulxe.*',
             hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
-            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
             //quixe: 'src/common/quixe.js',
             scare: 'node_modules/emglken/build/scare.*',
             tads: 'node_modules/emglken/build/tads.*',
@@ -121,6 +120,16 @@ if (projects.includes('web')) {
         },
         outdir: 'dist/web',
         sourcemap: true,
+    },
+    // To avoid breaking .min.js files, we'll copy jQuery by itself
+    {
+        entryPoints: {
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
+        },
+        loader: {
+            '.min.js': 'copy',
+        },
+        outdir: 'dist/web',
     }, {
         entryPoints: ['src/fonts/iosevka/*.woff2'],
         outdir: 'dist/fonts/iosevka',
@@ -134,7 +143,6 @@ const common_options = {
     loader: {
         '.gif': 'copy',
         '.html': 'copy',
-        '.min.js': 'copy',
         '.wasm': 'copy',
         '.woff2': 'copy',
     },

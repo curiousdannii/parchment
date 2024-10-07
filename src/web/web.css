@@ -2,7 +2,6 @@
 
 @import url('./parchment.css');
 @import url('../upstream/asyncglk/src/glkote/web/glkote.css');
-@import url('../upstream/asyncglk/src/dialog/browser/ui/dialog.css');
 @import url('../fonts/fonts.css');
 @import url('../upstream/asyncglk/src/glkote/web/light.css');
 @import url('../upstream/asyncglk/src/glkote/web/dark.css');
