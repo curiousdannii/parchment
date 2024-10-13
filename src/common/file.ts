@@ -97,7 +97,7 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string,
         if (!path.endsWith('.wasm')) {
             throw new Error(`Can't load ${path} in single file mode`)
         }
-        return parse_base64(data, 'wasm')
+        return parse_base64(data)
     }
 
     if (path.endsWith('.js')) {
@@ -118,9 +118,24 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string,
 }
 
 /** Parse Base 64 into a Uint8Array */
-export async function parse_base64(data: string, data_type = 'octet-binary'): Promise<Uint8Array> {
+export async function parse_base64(data: string): Promise<Uint8Array> {
+    // Firefox has a data URL limit of 32MB, so we have to chunk large data
+    const chunk_length = 30_000_000
+    if (data.length < chunk_length) {
+        return parse_base64_with_data_url(data)
+    }
+    const chunks: Uint8Array[] = []
+    let i = 0
+    while (i < data.length) {
+        chunks.push(await parse_base64_with_data_url(data.substring(i, i += chunk_length)))
+    }
+    const blob = new Blob(chunks)
+    return new Uint8Array(await blob.arrayBuffer())
+}
+
+async function parse_base64_with_data_url(data: string) {
     // Parse base64 using a trick from https://stackoverflow.com/a/54123275/2854284
-    const response = await fetch(`data:application/${data_type};base64,${data}`)
+    const response = await fetch(`data:application/octet-stream;base64,${data}`)
     if (!response.ok) {
         throw new Error(`Could not parse base64: ${response.status}`)
     }
