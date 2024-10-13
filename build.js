@@ -29,22 +29,36 @@ async function readdir(path) {
     return (await fs.readdir(path)).map(file => `${path}/${file}`)
 }
 
+// To avoid breaking .min.js files, we'll copy jQuery by itself
+function jquery_copier(outdir) {
+    return {
+        entryPoints: {
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
+        },
+        loader: {
+            '.min.js': 'copy',
+        },
+        outdir,
+    }
+}
+
 const projects_to_build = []
 
 if (projects.includes('ifcomp')) {
     projects_to_build.push({
         entryPoints: {
+            bocfel: 'node_modules/emglken/build/bocfel.*',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
             ie: 'src/common/ie.js',
-            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-            quixe: 'src/common/quixe.js',
             tads: 'node_modules/emglken/build/tads.*',
-            waiting: 'src/upstream/glkote/waiting.gif',
+            waiting: 'src/common/waiting.gif',
             web: 'src/common/launcher.ts',
-            zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/ifcomp/interpreter',
         sourcemap: true,
-    }, {
+    },
+    jquery_copier('dist/ifcomp/interpreter'),
+    {
         entryPoints: ['src/fonts/iosevka/*.woff2'],
         outdir: 'dist/fonts/iosevka',
     })
@@ -54,17 +68,15 @@ if (projects.includes('inform7')) {
     projects_to_build.push({
         entryPoints: {
             ie: 'src/common/ie.js',
-            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-            main: 'src/inform7/index.js',
-            parchment: 'src/inform7/inform7.css',
-            quixe: 'src/inform7/quixe.js',
-            waiting: 'src/upstream/glkote/waiting.gif',
-            zvm: 'src/inform7/zvm.js',
+            parchment: 'src/inform7/index.ts',
+            waiting: 'src/common/waiting.gif',
         },
         format: 'iife',
         logOverride: {'empty-import-meta': 'silent'},
         outdir: 'dist/inform7/Parchment',
-    }, {
+    },
+    jquery_copier('dist/inform7/Parchment'),
+    {
         entryPoints: ['src/upstream/quixe/media/resourcemap.js'],
         loader: {'.js': 'copy'},
         outdir: 'dist/inform7/Parchment',
@@ -88,6 +100,7 @@ if (projects.includes('lectrote')) {
 if (projects.includes('tools')) {
     projects_to_build.push({
         entryPoints: {
+            'inform7-wasm': 'src/tools/inform7-wasm-cli.ts',
             'make-single-file': 'src/tools/single-file-cli.ts',
         },
         minify: false,
@@ -114,23 +127,15 @@ if (projects.includes('web')) {
             //quixe: 'src/common/quixe.js',
             scare: 'node_modules/emglken/build/scare.*',
             tads: 'node_modules/emglken/build/tads.*',
-            waiting: 'src/upstream/glkote/waiting.gif',
+            waiting: 'src/common/waiting.gif',
             web: 'src/common/launcher.ts',
             //zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
         sourcemap: true,
     },
-    // To avoid breaking .min.js files, we'll copy jQuery by itself
+    jquery_copier('dist/web'),
     {
-        entryPoints: {
-            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
-        },
-        loader: {
-            '.min.js': 'copy',
-        },
-        outdir: 'dist/web',
-    }, {
         entryPoints: ['src/fonts/iosevka/*.woff2'],
         outdir: 'dist/fonts/iosevka',
     })

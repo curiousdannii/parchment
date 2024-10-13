@@ -12,6 +12,7 @@ https://github.com/curiousdannii/parchment
 import {escape, truncate} from 'lodash-es'
 import prettyBytes from 'pretty-bytes'
 
+import {Uint8Array_to_base64} from '../common/file.js'
 import type {ParchmentTruthy, ParchmentOptions} from '../common/interface.js'
 
 // Is ASCII really okay here?
@@ -37,22 +38,6 @@ export interface SingleFileOptions {
     font?: ParchmentTruthy
     single_file?: ParchmentTruthy
     story?: Story
-}
-
-async function Uint8Array_to_base64(data: Uint8Array): Promise<string> {
-    if (typeof Buffer !== 'undefined') {
-        return Buffer.from(data.buffer).toString('base64')
-    }
-    // From https://stackoverflow.com/a/66046176/2854284
-    else if (typeof FileReader !== 'undefined') {
-        const data_url: string = await new Promise(resolve => {
-            const reader = new FileReader()
-            reader.onload = () => resolve(reader.result as string)
-            reader.readAsDataURL(new Blob([data]))
-        })
-        return data_url.split(',', 2)[1]
-    }
-    throw new Error('Cannot encode base64')
 }
 
 export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {

@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")/.."
 
-./build.js inform7
+./build.js inform7 tools
+./tools/inform7-wasm.js
 
 sed "s/DATE/$(date '+%Y.%-m')/" src/inform7/manifest.txt > 'dist/inform7/Parchment/(manifest).txt'
 
@@ -25,6 +26,7 @@ unzip -joq parchment-for-inform7.zip -d Parchment-old
 diff Parchment Parchment-old >/dev/null
 if [ $? -ne 0 ]; then
     echo "Files changed; updating parchment-for-inform7.zip"
+    rm parchment-for-inform7.zip
     zip -r parchment-for-inform7.zip Parchment
 else
     echo "Files are unchanged"

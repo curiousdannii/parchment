@@ -46,13 +46,14 @@ gz
 [INTERPRETERHEAD]
     <link rel="stylesheet" href="interpreter/parchment.css" type="text/css">
     <script src="interpreter/jquery.min.js"></script>
-    <script src="interpreter/main.js"></script>
     <script src="interpreter/ie.js" nomodule></script>
+    <script src="interpreter/parchment.js"></script>
     <script src="interpreter/resourcemap.js" type="text/javascript"></script>
     <script>
         parchment_options = {
             default_story: [ "interpreter/[ENCODEDSTORYFILE]" ],
             lib_path: 'interpreter/',
+            story_name: '[ENCODEDSTORYFILE]',
         };
     </script>
 []
@@ -101,11 +102,11 @@ processBase64Zcode('
 ! Non-comment lines are the names of files which are copied across when the
 ! release is made. Anything not listed here won't be copied.
 
+bocfel.js
+glulxe.js
 ie.js
 jquery.min.js
-main.js
 parchment.css
+parchment.js
 resourcemap.js
-quixe.js
 waiting.gif
-zvm.js
