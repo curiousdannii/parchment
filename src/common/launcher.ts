@@ -138,14 +138,14 @@ class ParchmentLauncher
             }
 
             // If a blorb file extension is generic, we must download it first to identify its format
-            let blorb: Blorb | undefined
+            const options = Object.assign({}, this.options)
             if (format.id === 'blorb') {
                 if (!story.path) {
                     story.path = await this.options.Dialog.download(story.url!, progress_callback)
                 }
                 const data = (await this.options.Dialog.read(story.path))!
-                blorb = new Blorb(data)
-                format = identify_blorb_storyfile_format(blorb)
+                options.Blorb = new Blorb(data)
+                format = identify_blorb_storyfile_format(options.Blorb)
             }
 
             const engine = format.engines![0]
@@ -156,13 +156,12 @@ class ParchmentLauncher
             ])
             story.path = requires.shift()
 
-            // If the story is a Blorb, then parse it and pass in the options
-            const options = Object.assign({}, this.options)
-            if (format.blorbable && !blorb) {
+            // If the story is a Blorb then parse it
+            if (format.blorbable && !options.Blorb) {
                 const data = (await this.options.Dialog.read(story.path!))!
                 const view = new FileView(data)
                 if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
-                    options.Blorb = blorb || new Blorb(data)
+                    options.Blorb = new Blorb(data)
                 }
             }
 
