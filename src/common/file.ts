@@ -23,7 +23,7 @@ export async function fetch_vm_resource(options: ParchmentOptions, path: string,
         if (!path.endsWith('.wasm')) {
             throw new Error(`Can't load ${path} in single file mode`)
         }
-        return parse_base64(data, 'wasm')
+        return parse_base64(data)
     }
 
     if (path.endsWith('.js')) {
