@@ -49,10 +49,11 @@ Building Instructions
 
 Parchment is only designed for building in Linux and may not work in other OSes. You'll need to install Git and Node version >= 16.
 
-The upstream projects are included as git submodules. Start by initializing the submodules:
+The upstream projects are included as Git submodules. Start by cloning the Git repository:
 
 ```
-git submodule update --init --recursive
+git clone --recurse-submodules https://github.com/curiousdannii/parchment.git
+cd parchment
 ```
 
 Then install the `npm` dependencies:

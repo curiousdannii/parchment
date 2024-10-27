@@ -9,6 +9,11 @@ https://github.com/curiousdannii/parchment
 
 */
 
+body, html {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   background: var(--glkote-page-bg);
   color: var(--glkote-buffer-fg);
