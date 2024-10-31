@@ -14,9 +14,9 @@ import prettyBytes from 'pretty-bytes'
 
 import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
 
-import {fetch_storyfile, fetch_vm_resource, ProgressCallback, read_uploaded_file} from './file.js'
+import {fetch_storyfile, fetch_vm_resource, type ProgressCallback, read_uploaded_file} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
-import {get_default_options, get_query_options, ParchmentOptions, StoryOptions} from './options.js'
+import {get_default_options, get_query_options, type ParchmentOptions, type StoryOptions} from './options.js'
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher

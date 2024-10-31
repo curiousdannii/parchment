@@ -11,9 +11,9 @@ https://github.com/curiousdannii/parchment
 
 import Koa from 'koa'
 
-import {process_index_html, SingleFileOptions} from '../../../tools/index-processing.js'
+import {process_index_html, type SingleFileOptions} from '../../../tools/index-processing.js'
 
-import {flatten_query, SiteOptions, SUPPORTED_TYPES, utf8encoder} from './common.js'
+import {flatten_query, type SiteOptions, SUPPORTED_TYPES, utf8encoder} from './common.js'
 import {FileMetadata, MetadataCache} from './metadata.js'
 
 export default class FrontPage {

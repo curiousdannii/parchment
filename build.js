@@ -4,16 +4,18 @@
 Parchment build script
 ======================
 
-Copyright (c) 2023 Dannii Willis
+Copyright (c) 2024 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
 import esbuild from 'esbuild'
+import esbuildSvelte from 'esbuild-svelte'
 import fs from 'fs/promises'
 import path from 'path'
 import minimist from 'minimist'
+import {sveltePreprocess} from 'svelte-preprocess'
 
 const argv = minimist(process.argv.slice(2))
 const projects = argv._
@@ -150,6 +152,11 @@ const common_options = {
     format: 'esm',
     minify: true,
     metafile: analyse,
+    plugins: [
+        esbuildSvelte({
+            preprocess: sveltePreprocess(),
+        }),
+    ],
 }
 
 let have_given_emglken_warning

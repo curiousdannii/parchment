@@ -11,7 +11,7 @@ https://github.com/curiousdannii/parchment
 
 import {decode as base32768_decode} from 'base32768'
 import filesaver from 'file-saver'
-import {ZippableFile, zipSync} from 'fflate'
+import {type ZippableFile, zipSync} from 'fflate'
 
 declare global {
     interface Window {run: () => void}

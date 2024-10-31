@@ -9,7 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {ParchmentOptions} from './options.js'
+import type {ParchmentOptions} from './options.js'
 
 export type ProgressCallback = (bytes: number) => void
 

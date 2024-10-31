@@ -9,7 +9,8 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {ClassicSyncDialog, GlkApi, GlkOte, GlkOteOptions, WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
+import type {ClassicSyncDialog, GlkApi, GlkOte, GlkOteOptions} from '../upstream/asyncglk/src/index-browser.js'
+import {WebGlkOte} from '../upstream/asyncglk/src/index-browser.js'
 import WebDialog from '../upstream/glkote/dialog.js'
 import GlkOte_GlkApi from '../upstream/glkote/glkapi.js'
 
