@@ -121,6 +121,7 @@ if (projects.includes('web')) {
         entryPoints: {
             bocfel: 'node_modules/emglken/build/bocfel.*',
             git: 'node_modules/emglken/build/git.*',
+            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
             glulxe: 'node_modules/emglken/build/glulxe.*',
             hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
