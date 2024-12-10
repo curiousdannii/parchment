@@ -14,13 +14,11 @@ import '../web/web.css'
 import Cookies from 'js-cookie'
 import prettyBytes from 'pretty-bytes'
 
-import {/*AsyncGlk,*/ Blorb, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
+import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
 
-import {fetch_vm_resource} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import type {ParchmentOptions, StoryOptions} from './interface.js'
 import {get_default_options, get_query_options} from './options.js'
-
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher
@@ -152,7 +150,7 @@ class ParchmentLauncher
 
             const requires = await Promise.all([
                 story.path || this.options.Dialog.download(story.url!, progress_callback),
-                ...engine.load.map(path => fetch_vm_resource(this.options, path)),
+                ...engine.load.map(path => fetch_resource(this.options, path)),
             ])
             story.path = requires.shift()
 

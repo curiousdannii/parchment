@@ -41,6 +41,7 @@ const webpath = path.join(rootpath, 'dist/web')
 const base_options: Options = {
     date: 1,
     font: 1,
+    gzip: 1,
     single_file: 1,
     terps: [],
 }
@@ -75,7 +76,7 @@ const formats: Record<string, BasicFormat> = {
     },
     glulx: {
         extensions: /\.(gblorb|glb|ulx)/i,
-        engine: 'quixe',
+        engine: 'glulxe',
     },
     tads: {
         extensions: /\.(gam|t3)/i,
@@ -83,7 +84,7 @@ const formats: Record<string, BasicFormat> = {
     },
     zcode: {
         extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/i,
-        engine: 'zvm',
+        engine: 'bocfel',
     }
 }
 
@@ -131,18 +132,19 @@ const common_files = [
 ]
 const interpreter_files: Record<string, string[]> = {
     bocfel: ['bocfel.wasm', 'bocfel.js'],
-    git: ['git.wasm', 'git.js'],
-    glulxe: ['glulxe.wasm', 'glulxe.js'],
+    git: ['git.wasm', 'git.js', 'glkaudio_bg.wasm'],
+    glulxe: ['glkaudio_bg.wasm', 'glulxe.wasm', 'glulxe.js'],
     hugo: ['hugo.wasm', 'hugo.js'],
-    quixe: ['quixe.js'],
+    quixe: ['glkaudio_bg.wasm', 'quixe.js'],
     scare: ['scare.wasm', 'scare.js'],
     tads: ['tads.wasm', 'tads.js'],
     zvm: ['zvm.js'],
 }
 
-// Get all the files
+// Get all the files, flattened and deduplicated
+const filenames = [...new Set(common_files.concat(options.terps.map(terp => interpreter_files[terp]).flat()))]
 const files: Map<string, Uint8Array> = new Map()
-for (const file of common_files.concat(options.terps.map(terp => interpreter_files[terp]).flat())) {
+for (const file of filenames) {
     files.set(path.basename(file), await fs.readFile(path.join(webpath, file)))
 }
 

@@ -9,11 +9,14 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import {gzipSync} from 'zlib'
+
 import {escape, truncate} from 'lodash-es'
 import prettyBytes from 'pretty-bytes'
 
+import type {TruthyOption} from '../upstream/asyncglk/src/index-common.js'
 import {Uint8Array_to_base64} from '../common/file.js'
-import type {ParchmentTruthy, ParchmentOptions} from '../common/interface.js'
+import type {ParchmentOptions} from '../common/interface.js'
 
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
@@ -33,10 +36,11 @@ export interface Story {
 }
 
 export interface SingleFileOptions {
-    date?: ParchmentTruthy
+    date?: TruthyOption
     domain?: string
-    font?: ParchmentTruthy
-    single_file?: ParchmentTruthy
+    font?: TruthyOption
+    gzip?: TruthyOption
+    single_file?: TruthyOption
     story?: Story
 }
 
@@ -81,8 +85,11 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             }
         }
         if (story.data) {
+            if (options.gzip) {
+                story.data = gzipSync(story.data, {level: 9})
+            }
             parchment_options.story.url = 'embedded:' + story.filename!
-            inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
+            inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
         }
         if (story.filesize) {
             parchment_options.story.filesize = story.filesize
@@ -102,9 +109,12 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
 
     // Process the files
     let indexhtml = ''
-    for (const [filename, data] of files) {
+    for (let [filename, data] of files) {
         if (filename.endsWith('.wasm')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${await Uint8Array_to_base64(data)}</script>`)
+            if (options.gzip) {
+                data = gzipSync(data, {level: 9})
+            }
+            inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${filename}">${await Uint8Array_to_base64(data)}</script>`)
             continue
         }
         else if (filename.endsWith('.gif')) {
@@ -147,7 +157,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             inclusions.push(`<style>${data_as_string}</style>`)
         }
         else if (filename.endsWith('.js')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${data_as_string}</script>`)
+            inclusions.push(`<script type="text/plain" id="${filename}">${data_as_string}</script>`)
         }
     }
 

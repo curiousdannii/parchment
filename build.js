@@ -48,6 +48,7 @@ if (projects.includes('ifcomp')) {
     projects_to_build.push({
         entryPoints: {
             bocfel: 'node_modules/emglken/build/bocfel.*',
+            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
             glulxe: 'node_modules/emglken/build/glulxe.*',
             ie: 'src/common/ie.js',
             tads: 'node_modules/emglken/build/tads.*',

@@ -50,7 +50,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'scare',
-                load: ['./scare.js', './scare.wasm'],
+                load: ['scare.js', 'scare.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -63,7 +63,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'frankendrift',
-                load: ['./frankendrift.js'],
+                load: ['frankendrift.js'],
                 start: (options, requires) => {
                     const [file_data, FrankenDrift] = requires
 
@@ -86,7 +86,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'hugo',
-                load: ['./hugo.js', './hugo.wasm'],
+                load: ['hugo.js', 'hugo.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -99,7 +99,7 @@ export const formats: Format[] = [
         engines: [
             /*{
                 id: 'quixe',
-                load: ['./quixe.js'],
+                load: ['quixe.js'],
                 start: (_story: StoryOptions, options, requires) =>
                 {
                     const [file_data, quixe] = requires
@@ -123,13 +123,13 @@ export const formats: Format[] = [
 
             {
                 id: 'glulxe',
-                load: ['./glulxe.js', './glulxe.wasm'],
+                load: ['glulxe.js', 'glulxe.wasm'],
                 start: generic_emglken_vm,
             },
 
             {
                 id: 'git',
-                load: ['./git.js', './git.wasm'],
+                load: ['git.js', 'git.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -141,7 +141,7 @@ export const formats: Format[] = [
         engines: [
             {
                 id: 'tads',
-                load: ['./tads.js', './tads.wasm'],
+                load: ['tads.js', 'tads.wasm'],
                 start: generic_emglken_vm,
             },
         ],
@@ -154,7 +154,7 @@ export const formats: Format[] = [
         engines: [
             /*{
                 id: 'zvm',
-                load: ['./zvm.js'],
+                load: ['zvm.js'],
                 start: (_story: StoryOptions, options, requires) =>
                 {
                     const [file_data, zvm] = requires
@@ -172,7 +172,7 @@ export const formats: Format[] = [
 
             {
                 id: 'bocfel',
-                load: ['./bocfel.js', './bocfel.wasm'],
+                load: ['bocfel.js', 'bocfel.wasm'],
                 start: generic_emglken_vm,
             },
         ],

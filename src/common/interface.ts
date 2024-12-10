@@ -9,9 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import type {BrowserDialog, DownloadOptions, /*GlkApi,*/ GlkOte, GlkOteOptions} from '../upstream/asyncglk/src/index-common.js'
-
-export type ParchmentTruthy = boolean | number
+import type {BrowserDialog, /*GlkApi,*/ GlkOte, GlkOteOptions, TruthyOption} from '../upstream/asyncglk/src/index-common.js'
 
 export interface StoryOptions {
     /** Size of storyfile in bytes, uncompressed */
@@ -26,17 +24,13 @@ export interface StoryOptions {
     url?: string
 }
 
-export interface ParchmentOptions extends DownloadOptions, Partial<GlkOteOptions> {
+export interface ParchmentOptions extends Omit<GlkOteOptions, 'accept'> {
     // Parchment options
 
     /** Whether or not to automatically launch Parchment */
-    auto_launch?: ParchmentTruthy,
+    auto_launch?: TruthyOption,
     /** Story path in the array format traditionally used by Parchment for Inform 7 */
     default_story?: [string],
-    /** Path to resources */
-    lib_path: string,
-    /** Whether to load embedded resources in single file mode */
-    single_file?: ParchmentTruthy,
     /** Storyfile path or metadata */
     story?: string | StoryOptions,
     /** Theme name, can be set to 'dark */
@@ -44,7 +38,7 @@ export interface ParchmentOptions extends DownloadOptions, Partial<GlkOteOptions
     /** Name of theme cookie to check */
     theme_cookie: string,
     /** Whether to test the AsyncGlk GlkApi library */
-    use_asyncglk?: ParchmentTruthy,
+    use_asyncglk?: TruthyOption,
 
     // Modules to pass to other modules
 
@@ -58,5 +52,5 @@ export interface ParchmentOptions extends DownloadOptions, Partial<GlkOteOptions
     // Common options for VMs
 
     /** Whether or not to load an autosave */
-    do_vm_autosave?: ParchmentTruthy,
+    do_vm_autosave?: TruthyOption,
 }
