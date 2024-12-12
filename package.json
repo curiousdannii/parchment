@@ -1,6 +1,6 @@
 {
   "name": "parchment",
-  "version": "2024.10.0",
+  "version": "2024.12.0",
   "description": "Parchment Interactive Fiction Player",
   "repository": "curiousdannii/parchment",
   "keywords": [
@@ -33,28 +33,29 @@
     "@types/js-cookie": "^3.0.4",
     "@types/lodash-es": "^4.17.5",
     "@types/minimist": "^1.2.2",
-    "@typescript-eslint/eslint-plugin": "~6.7.0",
-    "@typescript-eslint/parser": "~6.7.0",
+    "@typescript-eslint/parser": "~8.18.0",
     "esbuild": "^0.24.0",
     "esbuild-svelte": "^0.8.1",
-    "eslint": "^8.3.0",
-    "eslint-plugin-compat": "^4.0.0",
+    "eslint": "^9.12.0",
+    "eslint-plugin-compat": "^6.0.0",
+    "eslint-plugin-svelte": "^2.44.1",
     "minimist": "^1.2.6",
     "regtest-html": "^0.1.4",
-    "svelte": "^4.2.18",
-    "svelte-preprocess": "^6.0.2",
-    "typescript": "~5.2.0"
+    "svelte": "^4.2.19",
+    "svelte-check": "^4.0.4",
+    "svelte-preprocess": "^6.0.3",
+    "typescript": "~5.6.0",
+    "typescript-eslint": "~8.17.0"
   },
   "scripts": {
     "build": "./build.js",
     "check-compat": "tests/check-compat.sh",
     "inform7": "tools/package-inform7.sh",
     "link-local-emglken": "npm link ./src/upstream/emglken",
-    "lint": "eslint src/common/ src/inform7/ src/iplayif.com/app/src/ src/tools/",
-    "prepare": "./build.js",
+    "lint": "eslint src/common/**/* src/inform7/ src/iplayif.com/app/src/ src/tools/",
     "start": "./build.js --serve",
-    "test": "./tests/runtests.sh",
-    "tsc-check": "tsc --noEmit"
+    "svelte-check": "svelte-check",
+    "test": "./tests/runtests.sh"
   },
   "browserslist": [
     "> 0.2% and supports es6-module",

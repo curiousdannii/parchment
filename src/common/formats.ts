@@ -26,8 +26,7 @@ export interface Format {
     id: string
 }
 
-async function generic_emglken_vm(story: StoryOptions, options: ParchmentOptions, requires: [any, Uint8Array])
-{
+async function generic_emglken_vm(story: StoryOptions, options: ParchmentOptions, requires: [any, Uint8Array]) {
     const [engine, wasmBinary] = requires
 
     const vm_options = Object.assign({}, options, {

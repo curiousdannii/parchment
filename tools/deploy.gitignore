@@ -1,4 +1,5 @@
 .eslintrc.*js
+**/eslint.config.js
 .gitmodules
 build.js
 dist/**/package.json

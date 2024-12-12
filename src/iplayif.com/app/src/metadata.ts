@@ -23,6 +23,8 @@ import Koa from 'koa'
 import {LRUCache} from 'lru-cache'
 import sharp from 'sharp'
 
+import type {FileSize} from '../../../common/interface.js'
+
 import {flatten_query, type SiteOptions} from './common.js'
 import {SUPPORTED_TYPES} from './common.js'
 
@@ -36,15 +38,13 @@ export class FileMetadata {
         type: string
     }
     description?: string
-    filesize: number
-    filesize_gz?: number
+    filesize?: FileSize
     format: string
     ifid: string
     title: string
 
-    constructor(title: string, filesize: number, format: string, ifid: string) {
+    constructor(title: string, format: string, ifid: string) {
         this.title = title
-        this.filesize = filesize
         this.format = format
         this.ifid = ifid
     }
@@ -125,7 +125,7 @@ export async function get_metadata(file_name: string, file_path: string) {
     }
 
     const [babel_format] = identify_data[2].split(',')
-    const result = new FileMetadata(file_name, stats.size, parchment_formats[babel_format], /IFID: ([-\w]+)/i.exec(identify_data[1])![1])
+    const result = new FileMetadata(file_name, parchment_formats[babel_format], /IFID: ([-\w]+)/i.exec(identify_data[1])![1])
 
     if (identify_data[0] !== 'No bibliographic data') {
         const author_data = identify_data[0].split(' by ')
@@ -136,7 +136,10 @@ export async function get_metadata(file_name: string, file_path: string) {
     // Estimate the gzipped size
     const gzip_results = await exec(`gzip -c ${file_path} | wc -c`)
     if (!gzip_results.stderr.length) {
-        result.filesize_gz = parseInt(gzip_results.stdout, 10)
+        result.filesize = {
+            gz: parseInt(gzip_results.stdout, 10),
+            size: stats.size,
+        }
     }
 
     // Extract a cover
@@ -185,7 +188,7 @@ export async function get_metadata(file_name: string, file_path: string) {
     if (cover) {
         result.cover = {
             data: cover,
-            type: (await sharp(cover).metadata())!.format!
+            type: (await sharp(cover).metadata())!.format!,
         }
     }
 

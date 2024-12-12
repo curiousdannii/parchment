@@ -23,6 +23,7 @@ jobs:
         with:
           path: |
             src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.json
             src/upstream/emglken/build/*.wasm
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - name: Build Emglken
@@ -46,18 +47,19 @@ jobs:
           npm install
           npm run link-local-emglken
           cd src/iplayif.com/app && npm install
-      - name: Static tests
-        run: |
-          npm run lint
-          npm run tsc-check
       - name: Restore Emglken from the cache
         id: cache-emglken
         uses: actions/cache@v4
         with:
           path: |
             src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.json
             src/upstream/emglken/build/*.wasm
           key: emglken-${{ needs.build-emglken.outputs.ref }}
+      - name: Static tests
+        run: |
+          npm run lint
+          npm run svelte-check
       - name: Build Parchment distributions
         run: |
           ./build.js

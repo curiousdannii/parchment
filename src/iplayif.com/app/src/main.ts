@@ -46,7 +46,7 @@ let options_json = '{}'
 try {
     options_json = await fs.readFile(options_path, {encoding: 'utf8'})
 }
-catch (_) {}
+catch {}
 const options: SiteOptions = merge({}, default_options, JSON.parse(options_json))
 
 // Start the server

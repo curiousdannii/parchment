@@ -85,7 +85,7 @@ const formats: Record<string, BasicFormat> = {
     zcode: {
         extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/i,
         engine: 'bocfel',
-    }
+    },
 }
 
 const argv = minimist(process.argv.slice(2))
@@ -104,7 +104,8 @@ if (story_file_path) {
             data: await fs.readFile(story_file_path),
             filename: path.basename(story_file_path),
         }
-    } catch (cause: any) {
+    }
+    catch (cause: any) {
         throw new Error(`Couldn't read story_file_path ${story_file_path}`, {cause})
     }
 

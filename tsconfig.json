@@ -4,6 +4,7 @@
         "isolatedModules": true,
         "module": "ES2022",
         "moduleResolution": "Node",
+        "resolveJsonModule": true,
         "rootDir": ".",
         "strict": true,
         "target": "ES2022",

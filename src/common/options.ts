@@ -17,6 +17,8 @@ import type {ParchmentOptions} from './interface.js'
 export function get_default_options(): ParchmentOptions {
     return {
         auto_launch: 1,
+        // Autoplay by default, unless we're loaded inside an iframe
+        autoplay: window.self === window.top,
         Dialog: new ProviderBasedBrowserDialog(),
         direct_domains: [
             'ifarchive.org',
@@ -42,8 +44,14 @@ export function get_query_options(possible_query_options: Array<keyof ParchmentO
     const options: Partial<ParchmentOptions> = {}
     for (const option of possible_query_options) {
         if (query.has(option)) {
-            // I couldn't work out how to apply proper filtering here, so tell TS to ignore it
-            options[option] = query.get(option) as any
+            // I couldn't work out how to apply proper types here, so tell TS to ignore it
+            const value = query.get(option)
+            try {
+                options[option] = JSON.parse(value!)
+            }
+            catch {
+                options[option] = value as any
+            }
         }
     }
     return options
