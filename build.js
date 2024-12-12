@@ -145,7 +145,15 @@ if (projects.includes('web')) {
 
 const common_options = {
     bundle: true,
-    external: ['*.woff2'],
+    define: {
+        ENVIRONMENT_IS_NODE: 'false',
+        ENVIRONMENT_IS_WEB: 'true',
+        ENVIRONMENT_IS_WORKER: 'false',
+    },
+    external: [
+        '*.woff2',
+        // Emglken now conditionally imports Node code, but esbuild complains about it
+    ],
     format: 'esm',
     loader: {
         '.gif': 'copy',
@@ -159,6 +167,20 @@ const common_options = {
         esbuildSvelte({
             preprocess: sveltePreprocess(),
         }),
+        {
+            // Removing the Emscripten ENVIRONMENT_IS_ variables so that the globals defined above will be used instead. Most Node code will be excluded, except that some variables will still be defined
+            name: 'EmglkenEnvironmentRemover',
+            setup(build) {
+                build.onLoad({filter: /emglken\/build\/\w+.js$/}, async (args) => {
+                    const code = await fs.readFile(args.path, 'utf8')
+                    return {
+                        contents: code.replace('var ENVIRONMENT_IS_WEB = typeof window == "object"', '')
+                            .replace('var ENVIRONMENT_IS_WORKER = typeof importScripts == "function"', '')
+                            .replace('var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string"', '')
+                    }
+                })
+            },
+        },
     ],
 }
 
