@@ -152,7 +152,6 @@ const common_options = {
     },
     external: [
         '*.woff2',
-        // Emglken now conditionally imports Node code, but esbuild complains about it
     ],
     format: 'esm',
     loader: {
@@ -176,7 +175,7 @@ const common_options = {
                     return {
                         contents: code.replace('var ENVIRONMENT_IS_WEB = typeof window == "object"', '')
                             .replace('var ENVIRONMENT_IS_WORKER = typeof importScripts == "function"', '')
-                            .replace('var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string"', '')
+                            .replace('var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer"', '')
                     }
                 })
             },
