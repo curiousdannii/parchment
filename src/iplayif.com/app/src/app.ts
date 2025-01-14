@@ -12,7 +12,7 @@ https://github.com/curiousdannii/parchment
 import Koa from 'koa'
 import {koaBody} from 'koa-body'
 
-import type {SiteOptions} from './common.js'
+import {type SiteOptions} from './common.js'
 import FrontPage from './front-page.js'
 import {MetadataCache, metadata_cover} from './metadata.js'
 import proxy from './proxy.js'

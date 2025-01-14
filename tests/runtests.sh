@@ -51,4 +51,13 @@ python ./tests/ifsitegen.py \
 TESTFILE="file://$(pwd)/tests/Release/index.html"
 run_test advent.z5.regtest
 
+python ./tests/ifsitegen.py \
+    -a tests/inform7-6M62 \
+    -i dist/inform7/parchment-for-inform7.zip \
+    -r tests/Release \
+    src/upstream/emglken/tests/advent.ulx
+
+TESTFILE="file://$(pwd)/tests/Release/index.html"
+run_test advent.ulx.regtest
+
 exit $FAILURES

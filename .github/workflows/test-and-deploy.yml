@@ -23,11 +23,12 @@ jobs:
         with:
           path: |
             src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.json
             src/upstream/emglken/build/*.wasm
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
-        run: ./src/upstream/emglken/src/build.sh
+        run: ./src/upstream/emglken/build.sh
     outputs:
       ref: ${{ steps.emglken-ref.outputs.ref }}
 
@@ -43,23 +44,22 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: |
-          npm install --ignore-scripts
-          # Manually run Puppeteer's post install script
-          node ./node_modules/puppeteer/install.mjs
+          npm install
           npm run link-local-emglken
           cd src/iplayif.com/app && npm install
-      - name: Static tests
-        run: |
-          npm run lint
-          npm run tsc-check
       - name: Restore Emglken from the cache
         id: cache-emglken
         uses: actions/cache@v4
         with:
           path: |
             src/upstream/emglken/build/*.js
+            src/upstream/emglken/build/*.json
             src/upstream/emglken/build/*.wasm
           key: emglken-${{ needs.build-emglken.outputs.ref }}
+      - name: Static tests
+        run: |
+          npm run lint
+          npm run svelte-check
       - name: Build Parchment distributions
         run: |
           ./build.js
@@ -67,8 +67,8 @@ jobs:
           ./tools/package-inform7.sh
       - name: Test storyfiles
         run: ./tests/runtests.sh
-#      - name: Check browser compatibility
-#        run: ./tests/check-compat.sh
+      - name: Check browser compatibility
+        run: ./tests/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore
       - name: Deploy to Pages 🚀
         if: github.ref == 'refs/heads/master'

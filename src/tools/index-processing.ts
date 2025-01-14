@@ -9,10 +9,13 @@ https://github.com/curiousdannii/parchment
 
 */
 
-import {escape, truncate} from 'lodash-es'
-import prettyBytes from 'pretty-bytes'
+import {gzipSync} from 'zlib'
 
-import type {ParchmentTruthy, ParchmentOptions} from '../common/options.js'
+import {escape, truncate} from 'lodash-es'
+
+import type {TruthyOption} from '../upstream/asyncglk/src/index-common.js'
+import {Uint8Array_to_base64} from '../common/file.js'
+import type {FileSize, ParchmentOptions} from '../common/interface.js'
 
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
@@ -23,8 +26,7 @@ export interface Story {
     data?: Uint8Array
     description?: string
     filename?: string
-    filesize?: number
-    filesize_gz?: number
+    filesize?: FileSize
     format?: string
     ifid?: string
     title?: string
@@ -32,27 +34,12 @@ export interface Story {
 }
 
 export interface SingleFileOptions {
-    date?: ParchmentTruthy
+    date?: TruthyOption
     domain?: string
-    font?: ParchmentTruthy
-    single_file?: ParchmentTruthy
+    font?: TruthyOption
+    gzip?: TruthyOption
+    single_file?: TruthyOption
     story?: Story
-}
-
-async function Uint8Array_to_base64(data: Uint8Array): Promise<string> {
-    if (typeof Buffer !== 'undefined') {
-        return Buffer.from(data.buffer).toString('base64')
-    }
-    // From https://stackoverflow.com/a/66046176/2854284
-    else if (typeof FileReader !== 'undefined') {
-        const data_url: string = await new Promise(resolve => {
-            const reader = new FileReader()
-            reader.onload = () => resolve(reader.result as string)
-            reader.readAsDataURL(new Blob([data]))
-        })
-        return data_url.split(',', 2)[1]
-    }
-    throw new Error('Cannot encode base64')
 }
 
 export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
@@ -71,12 +58,18 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         if (story.ifid) {
             inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${story.ifid}">`)
         }
-        if (story.author && story.title) {
-            inclusions.push(
-                `<meta property="og:site_name" content="Parchment"/>`,
-                `<meta property="og:title" content="${escape(story.title)} by ${escape(story.author)}"/>`,
-                `<meta property="og:type" content="website"/>`,
-            )
+        if (story.title) {
+            story.title = escape(story.title)
+            parchment_options.story.title = story.title
+            if (story.author) {
+                story.author = escape(story.author)
+                inclusions.push(
+                    `<meta property="og:site_name" content="Parchment"/>`,
+                    `<meta property="og:title" content="${story.title} by ${story.author}"/>`,
+                    `<meta property="og:type" content="website"/>`,
+                )
+                parchment_options.story.title += ' by ' + story.author
+            }
         }
         if (story.description) {
             inclusions.push(`<meta property="og:description" content="${escape(truncate(story.description, {
@@ -89,21 +82,22 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
                 throw new Error('The domain option is required when passing a story URL')
             }
             parchment_options.story.url = story.url
-            inclusions.push(`<meta property="og:url" content="${options.domain}/?story=${encodeURIComponent(story.url)}"/>`)
+            const encoded_url = encodeURIComponent(story.url)
+            inclusions.push(`<meta property="og:url" content="${options.domain}/?story=${encoded_url}"/>`)
             if (story.cover) {
-                cover_image = `/metadata/cover/?url=${encodeURIComponent(story.url)}&maxh=250`
-                inclusions.push(`<meta property="og:image" content="${options.domain}/metadata/cover/?url=${encodeURIComponent(story.url)}&maxh=630"/>`)
+                cover_image = `/metadata/cover/?url=${encoded_url}&maxh=250`
+                inclusions.push(`<meta property="og:image" content="${options.domain}/metadata/cover/?url=${encoded_url}&maxh=630"/>`)
             }
         }
         if (story.data) {
+            if (options.gzip) {
+                story.data = gzipSync(story.data, {level: 9})
+            }
             parchment_options.story.url = 'embedded:' + story.filename!
-            inclusions.push(`<script type="text/plain" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
+            inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
         }
-        if (story.filesize) {
+        else if (story.filesize) {
             parchment_options.story.filesize = story.filesize
-        }
-        if (story.filesize_gz) {
-            parchment_options.story.filesize_gz = story.filesize_gz
         }
         if (story.format) {
             parchment_options.story.format = story.format
@@ -117,9 +111,12 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
 
     // Process the files
     let indexhtml = ''
-    for (const [filename, data] of files) {
+    for (let [filename, data] of files) {
         if (filename.endsWith('.wasm')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${await Uint8Array_to_base64(data)}</script>`)
+            if (options.gzip) {
+                data = gzipSync(data, {level: 9})
+            }
+            inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${filename}">${await Uint8Array_to_base64(data)}</script>`)
             continue
         }
         else if (filename.endsWith('.gif')) {
@@ -140,7 +137,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         else if (filename === 'jquery.min.js') {
             inclusions.push(`<script>${data_as_string}</script>`)
         }
-        else if (filename === 'main.js') {
+        else if (filename === 'web.js') {
             inclusions.push(`<script type="module">${data_as_string}</script>`)
         }
         else if (filename.endsWith('.css')) {
@@ -162,7 +159,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             inclusions.push(`<style>${data_as_string}</style>`)
         }
         else if (filename.endsWith('.js')) {
-            inclusions.push(`<script type="text/plain" id="./${filename}">${data_as_string}</script>`)
+            inclusions.push(`<script type="text/plain" id="${filename}">${data_as_string}</script>`)
         }
     }
 
@@ -180,8 +177,8 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
     // Embed the metadata into the page title
     if (story?.title || options.date) {
         let title = ''
-        if (options.story?.title) {
-            title = `${escape(story?.title)} - ${title}`
+        if (story?.title) {
+            title = story.title + ' - '
         }
         title += 'Parchment'
         if (options.date) {
@@ -203,18 +200,11 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             <p>Parchment requires Javascript. Please enable it in your browser.</p>
         </noscript>`)
             .replace('<div id="loadingpane" style="display:none;">', '<div id="loadingpane">')
-
-        // Add a progress indicator
-        if (story.filesize) {
-            indexhtml = indexhtml.replace('<em>&nbsp;&nbsp;&nbsp;Loading...</em>', `<em>&nbsp;&nbsp;&nbsp;Loading...</em><br>
-            <progress id="loading_progress" max="${story.filesize}" value="0"></progress><br>
-            <span id="loading_size">${story.filesize_gz ? prettyBytes(story.filesize_gz, {maximumFractionDigits: 1, minimumFractionDigits: 1}) : ''}</span>`)
-        }
     }
 
     // Replace the cover image
     if (cover_image) {
-        indexhtml = indexhtml.replace(/<img src="dist\/web\/waiting\.gif"/, `<img src="${cover_image}"`)
+        indexhtml = indexhtml.replace(/<img src="dist\/web\/waiting\.gif".+?>/, `<img src="${cover_image}" alt="Cover art">`)
     }
 
     // Add the inclusions

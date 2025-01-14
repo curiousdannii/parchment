@@ -14,7 +14,7 @@ import {merge} from 'lodash-es'
 import path from 'path'
 
 import IplayifApp from './app.js'
-import type {SiteOptions} from './common.js'
+import {type SiteOptions} from './common.js'
 
 const default_options: SiteOptions = {
     cache_control_age: 604800, // 1 week
@@ -46,7 +46,7 @@ let options_json = '{}'
 try {
     options_json = await fs.readFile(options_path, {encoding: 'utf8'})
 }
-catch (_) {}
+catch {}
 const options: SiteOptions = merge({}, default_options, JSON.parse(options_json))
 
 // Start the server

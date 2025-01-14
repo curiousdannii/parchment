@@ -49,21 +49,21 @@ Building Instructions
 
 Parchment is only designed for building in Linux and may not work in other OSes. You'll need to install Git and Node version >= 16.
 
-The upstream projects are included as git submodules. Start by initializing the submodules:
+The upstream projects are included as Git submodules. Start by cloning the Git repository:
 
 ```
-git submodule update --init --recursive
+git clone --recurse-submodules https://github.com/curiousdannii/parchment.git
+cd parchment
 ```
 
-Then install the `npm` dependencies:
+Install the `npm` dependencies, and then build Parchment:
 
 ```
 npm install
+npm run build
 ```
 
-This will also automatically build Parchment.
-
-Then, you'll need to open `index.html` on a web server. (It won't work when you run it on your filesystem as a `file:///` URL.) You can launch a simple web server like this:
+You can now open `index.html` on a web server. But... it won't work when you run it on your filesystem as a `file:///` URL. You can instead launch a simple web server like this:
 
 ```
 npm start
@@ -71,11 +71,10 @@ npm start
 
 Then you can view Parchment at `http://localhost:8080` to see your handiwork.
 
-Each time you change code in the `src` folder, the server will automatically rebuild the web code. Refresh to see your changes.
+In addition, each time you change code in the `src` folder, the server will automatically rebuild the web code! Refresh to see your changes.
 
 You can also build your own `dist/inform/parchment-for-inform7.zip` like this:
 
 ```
-npm install
 npm run inform7
 ```

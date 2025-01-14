@@ -41,12 +41,14 @@ const webpath = path.join(rootpath, 'dist/web')
 const base_options: Options = {
     date: 1,
     font: 1,
+    gzip: 1,
     single_file: 1,
     terps: [],
 }
 const presets: Record<string, Options> = {
     dist: {
-        terps: ['hugo', 'quixe', 'scare', 'tads', 'zvm'],
+        //terps: ['hugo', 'quixe', 'scare', 'tads', 'zvm'],
+        terps: ['bocfel', 'glulxe', 'hugo', 'scare', 'tads'],
     },
     frankendrift: {
         single_file: 0,
@@ -54,7 +56,8 @@ const presets: Record<string, Options> = {
     },
     regtest: {
         font: 0,
-        terps: ['quixe', 'zvm'],
+        //terps: ['quixe', 'zvm'],
+        terps: ['bocfel', 'glulxe'],
     },
 }
 
@@ -73,7 +76,7 @@ const formats: Record<string, BasicFormat> = {
     },
     glulx: {
         extensions: /\.(gblorb|glb|ulx)/i,
-        engine: 'quixe',
+        engine: 'glulxe',
     },
     tads: {
         extensions: /\.(gam|t3)/i,
@@ -81,8 +84,8 @@ const formats: Record<string, BasicFormat> = {
     },
     zcode: {
         extensions: /\.(zblorb|zlb|z3|z4|z5|z8)/i,
-        engine: 'zvm',
-    }
+        engine: 'bocfel',
+    },
 }
 
 const argv = minimist(process.argv.slice(2))
@@ -101,7 +104,8 @@ if (story_file_path) {
             data: await fs.readFile(story_file_path),
             filename: path.basename(story_file_path),
         }
-    } catch (cause: any) {
+    }
+    catch (cause: any) {
         throw new Error(`Couldn't read story_file_path ${story_file_path}`, {cause})
     }
 
@@ -121,26 +125,27 @@ if (story_file_path) {
 const common_files = [
     'jquery.min.js',
     'ie.js',
-    'main.js',
     'waiting.gif',
     'web.css',
+    'web.js',
     '../fonts/iosevka/iosevka-extended.woff2',
     '../../index.html',
 ]
 const interpreter_files: Record<string, string[]> = {
-    bocfel: ['bocfel-core.wasm', 'boxfel.js'],
-    git: ['git-core.wasm', 'git.js'],
-    glulxe: ['glulxe-core.wasm', 'glulxe.js'],
-    hugo: ['hugo-core.wasm', 'hugo.js'],
-    quixe: ['quixe.js'],
-    scare: ['scare-core.wasm', 'scare.js'],
-    tads: ['tads-core.wasm', 'tads.js'],
+    bocfel: ['bocfel.wasm', 'bocfel.js'],
+    git: ['git.wasm', 'git.js', 'glkaudio_bg.wasm'],
+    glulxe: ['glkaudio_bg.wasm', 'glulxe.wasm', 'glulxe.js'],
+    hugo: ['hugo.wasm', 'hugo.js'],
+    quixe: ['glkaudio_bg.wasm', 'quixe.js'],
+    scare: ['scare.wasm', 'scare.js'],
+    tads: ['tads.wasm', 'tads.js'],
     zvm: ['zvm.js'],
 }
 
-// Get all the files
+// Get all the files, flattened and deduplicated
+const filenames = [...new Set(common_files.concat(options.terps.map(terp => interpreter_files[terp]).flat()))]
 const files: Map<string, Uint8Array> = new Map()
-for (const file of common_files.concat(options.terps.map(terp => interpreter_files[terp]).flat())) {
+for (const file of filenames) {
     files.set(path.basename(file), await fs.readFile(path.join(webpath, file)))
 }
 

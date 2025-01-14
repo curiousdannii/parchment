@@ -13,7 +13,6 @@ https://github.com/curiousdannii/parchment
 import esbuild from 'esbuild'
 import esbuildSvelte from 'esbuild-svelte'
 import fs from 'fs/promises'
-import path from 'path'
 import minimist from 'minimist'
 import {sveltePreprocess} from 'svelte-preprocess'
 
@@ -30,66 +29,69 @@ async function readdir(path) {
     return (await fs.readdir(path)).map(file => `${path}/${file}`)
 }
 
+// To avoid breaking .min.js files, we'll copy jQuery by itself
+function jquery_copier(outdir) {
+    return {
+        entryPoints: {
+            'jquery.min': 'node_modules/jquery/dist/jquery.min.js',
+        },
+        loader: {
+            '.min.js': 'copy',
+        },
+        outdir,
+    }
+}
+
 const projects_to_build = []
 
 if (projects.includes('ifcomp')) {
     projects_to_build.push({
-        copy: await readdir('src/fonts/iosevka'),
-        outdir: 'dist/ifcomp/fonts/iosevka',
-    }, {
-        copy: [
-            'node_modules/emglken/build/tads-core.wasm',
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-        ],
         entryPoints: {
+            bocfel: 'node_modules/emglken/build/bocfel.*',
+            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
             ie: 'src/common/ie.js',
-            main: 'src/common/launcher.ts',
-            quixe: 'src/common/quixe.js',
-            tads: 'node_modules/emglken/src/tads.js',
-            web: 'src/web/web.css',
-            zvm: 'src/common/zvm.js',
+            tads: 'node_modules/emglken/build/tads.*',
+            waiting: 'src/common/waiting.gif',
+            web: 'src/common/launcher.ts',
         },
         outdir: 'dist/ifcomp/interpreter',
         sourcemap: true,
+    },
+    jquery_copier('dist/ifcomp/interpreter'),
+    {
+        entryPoints: ['src/fonts/iosevka/*.woff2'],
+        outdir: 'dist/fonts/iosevka',
     })
 }
 
 if (projects.includes('inform7')) {
     projects_to_build.push({
-        copy: [
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-            'src/upstream/quixe/media/resourcemap.js',
-        ],
         entryPoints: {
             ie: 'src/common/ie.js',
-            main: 'src/inform7/index.js',
-            parchment: 'src/inform7/inform7.css',
-            quixe: 'src/inform7/quixe.js',
-            zvm: 'src/inform7/zvm.js',
+            parchment: 'src/inform7/index.ts',
+            waiting: 'src/common/waiting.gif',
         },
         format: 'iife',
         logOverride: {'empty-import-meta': 'silent'},
+        outdir: 'dist/inform7/Parchment',
+    },
+    jquery_copier('dist/inform7/Parchment'),
+    {
+        entryPoints: ['src/upstream/quixe/media/resourcemap.js'],
+        loader: {'.js': 'copy'},
         outdir: 'dist/inform7/Parchment',
     })
 }
 
 if (projects.includes('lectrote')) {
     projects_to_build.push({
-        copy: [
-            ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') && file !== 'bocfel-core.wasm'),
-        ],
-        define: {
-            'import.meta.url': `'.'`,
-        },
         entryPoints: {
-            git: 'node_modules/emglken/src/git.js',
-            glulxe: 'node_modules/emglken/src/glulxe.js',
-            hugo: 'node_modules/emglken/src/hugo.js',
-            scare: 'node_modules/emglken/src/scare.js',
-            tads: 'node_modules/emglken/src/tads.js',
+            git: 'node_modules/emglken/build/git.*',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
+            hugo: 'node_modules/emglken/build/hugo.*',
+            scare: 'node_modules/emglken/build/scare.*',
+            tads: 'node_modules/emglken/build/tads.*',
         },
         format: 'cjs',
         outdir: 'dist/lectrote',
@@ -99,6 +101,7 @@ if (projects.includes('lectrote')) {
 if (projects.includes('tools')) {
     projects_to_build.push({
         entryPoints: {
+            'inform7-wasm': 'src/tools/inform7-wasm-cli.ts',
             'make-single-file': 'src/tools/single-file-cli.ts',
         },
         minify: false,
@@ -106,11 +109,8 @@ if (projects.includes('tools')) {
         platform: 'node',
         treeShaking: true,
     }, {
-        copy: [
-            'src/tools/file-exporter.html',
-        ],
         entryPoints: {
-            'file-exporter': 'src/tools/file-exporter.ts',
+            'file-exporter': 'src/tools/file-exporter.*',
         },
         outdir: 'dist/tools',
         sourcemap: true,
@@ -119,43 +119,67 @@ if (projects.includes('tools')) {
 
 if (projects.includes('web')) {
     projects_to_build.push({
-        copy: await readdir('src/fonts/iosevka'),
-        outdir: 'dist/fonts/iosevka',
-    }, {
-        copy: [
-            ...(await readdir('node_modules/emglken/build'))
-                .filter(file => file.endsWith('.wasm') || file.endsWith('.wasm.map')),
-            'node_modules/jquery/dist/jquery.min.js',
-            'src/upstream/glkote/waiting.gif',
-        ],
         entryPoints: {
-            bocfel: 'node_modules/emglken/src/bocfel.js',
-            git: 'node_modules/emglken/src/git.js',
-            glulxe: 'node_modules/emglken/src/glulxe.js',
-            hugo: 'node_modules/emglken/src/hugo.js',
+            bocfel: 'node_modules/emglken/build/bocfel.*',
+            git: 'node_modules/emglken/build/git.*',
+            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
+            glulxe: 'node_modules/emglken/build/glulxe.*',
+            hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
-            main: 'src/common/launcher.ts',
-            quixe: 'src/common/quixe.js',
-            scare: 'node_modules/emglken/src/scare.js',
-            tads: 'node_modules/emglken/src/tads.js',
-            web: 'src/web/web.css',
-            zvm: 'src/common/zvm.js',
+            //quixe: 'src/common/quixe.js',
+            scare: 'node_modules/emglken/build/scare.*',
+            tads: 'node_modules/emglken/build/tads.*',
+            waiting: 'src/common/waiting.gif',
+            web: 'src/common/launcher.ts',
+            //zvm: 'src/common/zvm.js',
         },
         outdir: 'dist/web',
         sourcemap: true,
+    },
+    jquery_copier('dist/web'),
+    {
+        entryPoints: ['src/fonts/iosevka/*.woff2'],
+        outdir: 'dist/fonts/iosevka',
     })
 }
 
 const common_options = {
     bundle: true,
-    external: ['*.woff2'],
+    define: {
+        ENVIRONMENT_IS_NODE: 'false',
+        ENVIRONMENT_IS_WEB: 'true',
+        ENVIRONMENT_IS_WORKER: 'false',
+    },
+    external: [
+        '*.woff2',
+    ],
     format: 'esm',
+    loader: {
+        '.gif': 'copy',
+        '.html': 'copy',
+        '.wasm': 'copy',
+        '.woff2': 'copy',
+    },
     minify: true,
     metafile: analyse,
     plugins: [
         esbuildSvelte({
             preprocess: sveltePreprocess(),
         }),
+        {
+            // Removing the Emscripten ENVIRONMENT_IS_ variables so that the globals defined above will be used instead. Most Node code will be excluded, except that some variables will still be defined
+            name: 'EmglkenEnvironmentRemover',
+            setup(build) {
+                build.onLoad({filter: /emglken\/build\/\w+.js$/}, async (args) => {
+                    const code = await fs.readFile(args.path, 'utf8')
+                    return {
+                        contents: code.replace('var ENVIRONMENT_IS_WEB = typeof window == "object"', '')
+                            .replace('var ENVIRONMENT_IS_WORKER = typeof importScripts == "function"', '')
+                            .replace('var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer"', '')
+                    }
+                })
+            },
+        },
     ],
 }
 
@@ -163,13 +187,6 @@ let have_given_emglken_warning
 
 for (const project of projects_to_build) {
     await fs.mkdir(project.outdir, {recursive: true})
-
-    if (project.copy) {
-        for (const file of project.copy) {
-            await fs.copyFile(file, `${project.outdir}/${path.basename(file)}`)
-        }
-        delete project.copy
-    }
 
     if (project.entryPoints) {
         // Warn if not using upstream Emglken
@@ -188,7 +205,7 @@ for (const project of projects_to_build) {
         else {
             const result = await esbuild.build(options)
             if (analyse) {
-                console.log(await esbuild.analyzeMetafile(result.metafile))
+                console.log(await esbuild.analyzeMetafile(result.metafile, {verbose: true}))
             }
         }
     }

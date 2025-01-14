@@ -9,14 +9,18 @@ https://github.com/curiousdannii/parchment
 
 */
 
+import '../web/web.css'
+
 import Cookies from 'js-cookie'
-import prettyBytes from 'pretty-bytes'
 
-import {AsyncGlk, Blorb, FileView} from '../upstream/asyncglk/src/index-browser.js'
+import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
+import emglken_file_sizes from '../upstream/emglken/build/file-sizes.json'
 
-import {fetch_storyfile, fetch_vm_resource, type ProgressCallback, read_uploaded_file} from './file.js'
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
-import {get_default_options, get_query_options, type ParchmentOptions, type StoryOptions} from './options.js'
+import type {ParchmentOptions, StoryOptions} from './interface.js'
+import {get_default_options, get_query_options} from './options.js'
+
+import LoadingPane from './ui/LoadingPane.svelte'
 
 interface ParchmentWindow extends Window {
     parchment: ParchmentLauncher
@@ -24,21 +28,22 @@ interface ParchmentWindow extends Window {
 }
 declare let window: ParchmentWindow
 
-class ParchmentLauncher
-{
+class ParchmentLauncher {
+    loading_pane?: LoadingPane
     options: ParchmentOptions
+    story?: StoryOptions
 
     constructor(parchment_options?: ParchmentOptions) {
         // Only get story from the URL if there is no story already in the parchment_options
-        const query_options: Array<keyof ParchmentOptions> = ['do_vm_autosave', 'use_asyncglk']
+        const query_options: Array<keyof ParchmentOptions> = ['autoplay', 'do_vm_autosave', 'use_asyncglk']
         if (!parchment_options?.story) {
             query_options.push('story')
         }
         this.options = Object.assign({}, get_default_options(), parchment_options, get_query_options(query_options))
         // Use AsyncGlk if requested
-        if (this.options.use_asyncglk) {
+        /*if (this.options.use_asyncglk) {
             this.options.Glk = new AsyncGlk()
-        }
+        }*/
     }
 
     get_storyfile_path(): StoryOptions | null {
@@ -54,10 +59,10 @@ class ParchmentLauncher
         return null
     }
 
-    launch() {
+    async launch() {
         try {
             // Update the Dialog storage version
-            this.options.Dialog.init()
+            await this.options.Dialog.init(this.options)
 
             // Apply the dark theme if set
             const theme = this.options.theme
@@ -83,16 +88,17 @@ class ParchmentLauncher
                     }
                 })
                 $('#play-url').show()
-                $('#play-url-button').on('click', () => this.load_url())
+                $('#play-url-button').on('click', () => this.play_url())
                 $('#play-url-input').on('keydown', event => {
                     if (event.keyCode === 13 /*Enter*/) {
-                        this.load_url()
+                        this.play_url()
                     }
                 })
                 return
             }
 
-            this.load(storyfile)
+            this.story = storyfile
+            this.preload()
         }
         catch (err) {
             this.options.GlkOte.error(err)
@@ -100,68 +106,91 @@ class ParchmentLauncher
         }
     }
 
-    async load(story: StoryOptions) {
+    /** Prepare to load the game, but if autoplaying is disabled this will only show the loading pane */
+    preload() {
         try {
-            // Hide the about page, and show the loading spinner instead
-            $('#about').remove()
-            $('#loadingpane').show()
-
+            const story = this.story!
             // Check we were given a sufficient story object
-            if (!story.url) {
-                if (!story.data) {
-                    throw new Error('Needs story data or URL')
+            if (!story.path) {
+                if (!story.url) {
+                    throw new Error('Needs story path or URL')
                 }
-                if (!story.format) {
-                    throw new Error('Cannot identify storyfile format without path')
-                }
+            }
+
+            // Hide the about page, and show the loading pane instead
+            $('#about').remove()
+            const cover_image_url = $('#loadingpane img').attr('src')!
+            $('#loadingpane').remove()
+
+            const gameport = document.getElementById('gameport')!
+            this.loading_pane = new LoadingPane({
+                target: gameport,
+                props: {
+                    cover_image_url,
+                    play: this.load,
+                    playing: !!this.options.autoplay,
+                    title: story.title ?? /\/([^/]+)$/.exec((story.path || story.url)!)![1],
+                },
+            })
+            if (this.options.autoplay) {
+                this.load()
+            }
+        }
+        catch (err) {
+            this.options.GlkOte.error(err)
+            throw err
+        }
+    }
+
+    /** Actually load and play the storyfile */
+    load = async () => {
+        try {
+            const story = this.story!
+            // We'll display download progress only if we know the file size of the storyfile
+            let progress_callback: ProgressCallback | undefined
+            if (story.filesize) {
+                this.loading_pane!.add_file(story.filesize, true)
+                progress_callback = this.loading_pane!.update_progress
             }
 
             // Identify the format
-            let format = find_format(story.format, story.url)
-
-            // Look for the progress bar
-            let progress = 0
-            const progress_bar = $('#loading_progress')
-            let progress_callback: ProgressCallback | undefined
-            if (progress_bar.length) {
-                progress_callback = chunk_length => {
-                    progress += chunk_length
-                    progress_bar.val(progress)
-                }
-                if (story.filesize_gz) {
-                    $('#loading_size').text(prettyBytes(story.filesize_gz, {
-                        maximumFractionDigits: 1,
-                        minimumFractionDigits: 1,
-                    }))
-                }
-            }
+            let format = find_format(story.format, story.path || story.url)
 
             // If a blorb file extension is generic, we must download it first to identify its format
-            let blorb: Blorb | undefined
+            const options = Object.assign({}, this.options)
             if (format.id === 'blorb') {
-                if (!story.data) {
-                    story.data = await fetch_storyfile(this.options, story.url!, progress_callback)
+                if (!story.path) {
+                    story.path = await this.options.Dialog.download(story.url!, progress_callback)
                 }
-                blorb = new Blorb(story.data)
-                format = identify_blorb_storyfile_format(blorb)
+                const data = (await this.options.Dialog.read(story.path))!
+                options.Blorb = new Blorb(data)
+                format = identify_blorb_storyfile_format(options.Blorb)
             }
 
             const engine = format.engines![0]
 
             const requires = await Promise.all([
-                story.data || fetch_storyfile(this.options, story.url!, progress_callback),
-                ...engine.load.map(path => fetch_vm_resource(this.options, path))
+                story.path || this.options.Dialog.download(story.url!, progress_callback),
+                ...engine.load.map(path => {
+                    if (story.filesize && (path in emglken_file_sizes)) {
+                        this.loading_pane!.add_file(emglken_file_sizes[path as keyof typeof emglken_file_sizes])
+                    }
+                    return fetch_resource(this.options, path, progress_callback)
+                }),
             ])
-            story.data = requires[0]
+            // TODO: load glkaudio_bg.wasm if we predict we'll need it
+            story.path = requires.shift()
 
-            // If the story is a Blorb, then parse it and pass in the options
-            const options = Object.assign({}, this.options)
-            const view = new FileView(story.data)
-            if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
-                options.Blorb = blorb || new Blorb(story.data)
+            // If the story is a Blorb then parse it
+            if (format.blorbable && !options.Blorb) {
+                const data = (await this.options.Dialog.read(story.path!))!
+                const view = new FileView(data)
+                if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
+                    options.Blorb = new Blorb(data)
+                }
             }
 
-            await engine.start(options, requires)
+            await engine.start(story, options, requires)
         }
         catch (err) {
             this.options.GlkOte.error(err)
@@ -171,10 +200,12 @@ class ParchmentLauncher
 
     async load_uploaded_file(file: File) {
         try {
-            this.load({
-                data: await read_uploaded_file(file),
-                url: file.name,
-            })
+            this.options.autoplay = 1
+            this.story = {
+                path: await this.options.Dialog.upload(file),
+                title: file.name,
+            }
+            this.preload()
         }
         catch (err) {
             this.options.GlkOte.error(err)
@@ -182,7 +213,7 @@ class ParchmentLauncher
         }
     }
 
-    load_url() {
+    play_url() {
         const url = $('#play-url-input').val() as string
         if (!url) {
             return
@@ -191,7 +222,7 @@ class ParchmentLauncher
         try {
             new URL(url)
         }
-        catch (_) {
+        catch {
             $('#play-url-error').text('Please enter a valid URL')
             return
         }
