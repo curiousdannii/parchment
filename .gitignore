@@ -1,8 +1,9 @@
 .eslintrc.*js
+**/eslint.config.js
 .gitmodules
 build.js
 dist/**/package.json
-dist/inform7/Parchment*
+dist/inform7
 dist/single-file
 gulpfile.js
 node_modules
