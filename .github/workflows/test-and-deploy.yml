@@ -28,7 +28,7 @@ jobs:
           key: emglken-${{ steps.emglken-ref.outputs.ref }}
       - name: Build Emglken
         if: steps.cache-emglken.outputs.cache-hit != 'true'
-        run: ./src/upstream/emglken/build.sh
+        run: sudo ./src/upstream/emglken/build.sh
     outputs:
       ref: ${{ steps.emglken-ref.outputs.ref }}
 
