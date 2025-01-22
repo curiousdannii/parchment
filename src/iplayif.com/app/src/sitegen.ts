@@ -22,10 +22,10 @@ import {get_metadata} from './metadata.js'
 
 const format_terp_files: Record<string, string[]> = {
     adrift4: ['scare-core.wasm', 'scare.js'],
-    glulx: ['quixe.js'],
+    glulx: ['glulxe.wasm', 'glulxe.js'],
     hugo: ['hugo-core.wasm', 'hugo.js'],
     tads: ['tads-core.wasm', 'tads.js'],
-    zcode: ['zvm.js'],
+    zcode: ['bocfel.wasm', 'bocfel.js'],
 }
 
 export default class SiteGenerator {
@@ -77,7 +77,7 @@ export default class SiteGenerator {
         const paths = [
             '../../index.html',
             'jquery.min.js',
-            'main.js',
+            'web.js',
             'waiting.gif',
             'web.css',
             '../fonts/iosevka/iosevka-extended.woff2',
@@ -87,7 +87,13 @@ export default class SiteGenerator {
         // Get all the files
         const files: Map<string, Uint8Array> = new Map()
         for (const file of paths) {
-            files.set(path.basename(file), await fetch(`https://${this.options.cdn_domain}/dist/web/${file}`).then(r => r.arrayBuffer()).then(b => new Uint8Array(b)))
+            const url = `https://${this.options.cdn_domain}/dist/web/${file}`
+            const response = await fetch(url)
+            if (!response.ok) {
+                ctx.throw(500, `Failed ${response.status} downloading ${url}`)
+            }
+            const data = await response.arrayBuffer().then(b => new Uint8Array(b))
+            files.set(path.basename(file), data)
         }
 
         const options: SingleFileOptions = {
