@@ -14,7 +14,7 @@ import '../web/web.css'
 import Cookies from 'js-cookie'
 
 import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
-import emglken_file_sizes from '../upstream/emglken/build/file-sizes.json'
+import emglken_file_sizes from 'emglken/build/file-sizes.json'
 
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import type {ParchmentOptions, StoryOptions} from './interface.js'
