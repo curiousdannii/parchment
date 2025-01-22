@@ -3,7 +3,7 @@
 Common index.html processing
 ============================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2025 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -59,13 +59,11 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
             inclusions.push(`<meta prefix="ifiction: http://babel.ifarchive.org/protocol/iFiction/" property="ifiction:ifid" content="${story.ifid}">`)
         }
         if (story.title) {
-            story.title = escape(story.title)
             parchment_options.story.title = story.title
             if (story.author) {
-                story.author = escape(story.author)
                 inclusions.push(
                     `<meta property="og:site_name" content="Parchment"/>`,
-                    `<meta property="og:title" content="${story.title} by ${story.author}"/>`,
+                    `<meta property="og:title" content="${escape(story.title)} by ${escape(story.author)}"/>`,
                     `<meta property="og:type" content="website"/>`,
                 )
                 parchment_options.story.title += ' by ' + story.author
@@ -178,7 +176,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
     if (story?.title || options.date) {
         let title = ''
         if (story?.title) {
-            title = story.title + ' - '
+            title = escape(story.title) + ' - '
         }
         title += 'Parchment'
         if (options.date) {
