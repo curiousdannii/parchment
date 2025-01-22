@@ -87,7 +87,13 @@ export default class SiteGenerator {
         // Get all the files
         const files: Map<string, Uint8Array> = new Map()
         for (const file of paths) {
-            files.set(path.basename(file), await fetch(`https://${this.options.cdn_domain}/dist/web/${file}`).then(r => r.arrayBuffer()).then(b => new Uint8Array(b)))
+            const url = `https://${this.options.cdn_domain}/dist/web/${file}`;
+            const response = await fetch(url)
+            if (!response.ok) {
+                ctx.throw(500, `Failed ${response.status} downloading ${url}`)
+            }
+            const data = await response.arrayBuffer().then(b => new Uint8Array(b))
+            files.set(path.basename(file), data)
         }
 
         const options: SingleFileOptions = {
