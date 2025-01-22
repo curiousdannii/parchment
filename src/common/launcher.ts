@@ -129,7 +129,8 @@ class ParchmentLauncher {
                     cover_image_url,
                     play: this.load,
                     playing: !!this.options.autoplay,
-                    title: story.title ?? /\/([^/]+)$/.exec((story.path || story.url)!)![1],
+                    // At this point in time we don't know the final (after following redirects) URL of the storyfile. For Unboxer URLs we could have an ugly query string, so try to account for that by just cutting off the URL after the last =
+                    title: story.title ?? /([/=])([^/=]+)$/.exec((story.path || story.url)!)![2],
                 },
             })
             if (this.options.autoplay) {
