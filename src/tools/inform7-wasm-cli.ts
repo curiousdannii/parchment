@@ -21,7 +21,7 @@ const rootpath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 // Compress and base64 encode the wasm files
 for (const vm of ['bocfel', 'glulxe']) {
-    const wasm = await fs.readFile(path.join(rootpath, `src/upstream/emglken/build/${vm}.wasm`))
+    const wasm = await fs.readFile(path.join(rootpath, `node_modules/emglken/build/${vm}.wasm`))
     const wasm_gz = gzipSync(wasm, {level: 9})
     const base64 = await Uint8Array_to_base64(wasm_gz)
     await fs.writeFile(path.join(rootpath, `dist/inform7/Parchment/${vm}.js`), `processBase64Zcode('${base64}')`)

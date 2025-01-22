@@ -67,6 +67,16 @@ jobs:
           ./tools/package-inform7.sh
       - name: Test storyfiles
         run: ./tests/runtests.sh
+      - name: Test npm version of Emglken
+        if: github.ref == 'refs/heads/master'
+        run: |
+          npm install
+          ./build.js
+          ./tools/make-single-file.js
+          ./tools/package-inform7.sh
+          ./tests/runtests.sh
+          # But restore the local version again before deploying!
+          npm run link-local-emglken
       - name: Check browser compatibility
         run: ./tests/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore

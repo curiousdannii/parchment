@@ -12,8 +12,8 @@ https://github.com/curiousdannii/parchment
 import {gunzipSync} from 'fflate'
 
 import {Blorb, FileView, parse_base64} from '../upstream/asyncglk/src/index-browser.ts'
-import {default as Bocfel} from '../upstream/emglken/build/bocfel.js'
-import {default as Glulxe} from '../upstream/emglken/build/glulxe.js'
+import {default as Bocfel} from 'emglken/build/bocfel.js'
+import {default as Glulxe} from 'emglken/build/glulxe.js'
 import type {ParchmentOptions} from '../common/interface.js'
 import {get_default_options, get_query_options} from '../common/options.js'
 
