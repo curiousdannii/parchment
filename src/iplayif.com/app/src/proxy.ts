@@ -3,7 +3,7 @@
 The Parchment proxy
 ===================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2025 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -40,6 +40,12 @@ export default async function proxy(app: IplayifApp, ctx: Koa.Context) {
     const response = await fetch(url, {redirect: 'follow'})
     if (!response.ok) {
         throw new Error(`Cannot access ${url}: ${response.status}, ${response.statusText}`)
+    }
+
+    // Send the final URL if it was redirected
+    const decoded_final_url = decodeURI(response.url)
+    if (decoded_final_url !== url) {
+        ctx.set('Final-Url', decoded_final_url)
     }
 
     const buffer = Buffer.from(await response.arrayBuffer())
