@@ -51,7 +51,7 @@
     <p><img src="{cover_image_url}" alt="Cover art"></p>
     {#if playing}
         {#if set_storyfile_size}
-            <p><progress max="${totalsize}" value="{progress}"></progress></p>
+            <p><progress max="{totalsize}" value="{progress}"></progress></p>
             <p>{prettyBytes(totalsize_gz, {maximumFractionDigits: 1, minimumFractionDigits: 1})}</p>
         {:else}
             <p><progress></progress></p>
