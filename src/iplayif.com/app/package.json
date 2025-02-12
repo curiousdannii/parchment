@@ -9,7 +9,7 @@
   "dependencies": {
     "esbuild": "^0.19.11",
     "he": "^1.2.0",
-    "koa": "^2.15.0",
+    "koa": "^2.15.4",
     "koa-body": "^6.0.1",
     "lodash-es": "^4.17.21",
     "lru-cache": "^10.1.0",
