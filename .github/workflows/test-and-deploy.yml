@@ -45,8 +45,18 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm run link-local-emglken
           cd src/iplayif.com/app && npm install
+      - name: Static tests
+        run: |
+          npm run lint
+          npm run svelte-check
+      - name: Test npm version of Emglken
+        if: github.ref == 'refs/heads/master'
+        run: |
+          ./build.js
+          ./tools/make-single-file.js
+          ./tools/package-inform7.sh
+          ./tests/runtests.sh
       - name: Restore Emglken from the cache
         id: cache-emglken
         uses: actions/cache@v4
@@ -56,27 +66,14 @@ jobs:
             src/upstream/emglken/build/*.json
             src/upstream/emglken/build/*.wasm
           key: emglken-${{ needs.build-emglken.outputs.ref }}
-      - name: Static tests
-        run: |
-          npm run lint
-          npm run svelte-check
       - name: Build Parchment distributions
         run: |
+          npm run link-local-emglken
           ./build.js
           ./tools/make-single-file.js
           ./tools/package-inform7.sh
       - name: Test storyfiles
         run: ./tests/runtests.sh
-      - name: Test npm version of Emglken
-        if: github.ref == 'refs/heads/master'
-        run: |
-          npm install
-          ./build.js
-          ./tools/make-single-file.js
-          ./tools/package-inform7.sh
-          ./tests/runtests.sh
-          # But restore the local version again before deploying!
-          npm run link-local-emglken
       - name: Check browser compatibility
         run: ./tests/check-compat.sh
       - run: cp tools/deploy.gitignore .gitignore
