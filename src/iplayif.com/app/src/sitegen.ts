@@ -3,7 +3,7 @@
 Parchment site generator
 ========================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2025 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -21,10 +21,10 @@ import {flatten_query, type SiteOptions} from './common.js'
 import {get_metadata} from './metadata.js'
 
 const format_terp_files: Record<string, string[]> = {
-    adrift4: ['scare-core.wasm', 'scare.js'],
+    adrift4: ['scare.wasm', 'scare.js'],
     glulx: ['glulxe.wasm', 'glulxe.js'],
-    hugo: ['hugo-core.wasm', 'hugo.js'],
-    tads: ['tads-core.wasm', 'tads.js'],
+    hugo: ['hugo.wasm', 'hugo.js'],
+    tads: ['tads.wasm', 'tads.js'],
     zcode: ['bocfel.wasm', 'bocfel.js'],
 }
 
