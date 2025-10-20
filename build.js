@@ -4,7 +4,7 @@
 Parchment build script
 ======================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2025 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -171,11 +171,22 @@ const common_options = {
             name: 'EmglkenEnvironmentRemover',
             setup(build) {
                 build.onLoad({filter: /emglken\/build\/\w+.js$/}, async (args) => {
-                    const code = await fs.readFile(args.path, 'utf8')
+                    let code = await fs.readFile(args.path, 'utf8')
+                    const env_lines = [
+                        // Emscripten 3.1.74
+                        'var ENVIRONMENT_IS_WEB = typeof window == "object"',
+                        'var ENVIRONMENT_IS_WORKER = typeof importScripts == "function"',
+                        'var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer"',
+                        // Emscripten 4.0.16
+                        'var ENVIRONMENT_IS_WEB = !!globalThis.window',
+                        'var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope',
+                        'var ENVIRONMENT_IS_NODE = globalThis.process?.versions?.node && globalThis.process?.type != "renderer"',
+                    ]
+                    for (const line of env_lines) {
+                        code = code.replace(line, '')
+                    }
                     return {
-                        contents: code.replace('var ENVIRONMENT_IS_WEB = typeof window == "object"', '')
-                            .replace('var ENVIRONMENT_IS_WORKER = typeof importScripts == "function"', '')
-                            .replace('var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer"', '')
+                        contents: code,
                     }
                 })
             },
