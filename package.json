@@ -58,7 +58,7 @@
     "test": "./tests/runtests.sh"
   },
   "browserslist": [
-    "> 0.2% and supports es6-module",
+    "> 0.2% and supports es6-module and not ios < 15",
     "last 2 versions and supports es6-module",
     "Firefox ESR",
     "not dead"
