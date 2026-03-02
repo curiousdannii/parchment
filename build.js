@@ -68,6 +68,7 @@ if (projects.includes('ifcomp')) {
 if (projects.includes('inform7')) {
     projects_to_build.push({
         entryPoints: {
+            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
             ie: 'src/common/ie.js',
             parchment: 'src/inform7/index.ts',
             waiting: 'src/common/waiting.gif',

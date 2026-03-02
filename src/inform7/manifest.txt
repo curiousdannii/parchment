@@ -62,16 +62,18 @@ gz
 ! or gadget actually appears.
 
 [INTERPRETERBODY]
-        <div id="windowport">
-            <noscript>
-                <p>You'll need to turn on Javascript in your web browser to play this game.</p>
-            </noscript>
+        <div id="gameport">
+            <div id="windowport">
+                <noscript>
+                    <p>You'll need to turn on Javascript in your web browser to play this game.</p>
+                </noscript>
+            </div>
+            <div id="loadingpane">
+                <img src="interpreter/waiting.gif" alt="LOADING"><br>
+                <em>&nbsp;&nbsp;&nbsp;Loading...</em>
+            </div>
+            <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
         </div>
-        <div id="loadingpane">
-            <img src="interpreter/waiting.gif" alt="LOADING"><br>
-            <em>&nbsp;&nbsp;&nbsp;Loading...</em>
-        </div>
-        <div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
 []
 
 ! The following footnote is added to the small print about how to play IF
@@ -103,6 +105,7 @@ processBase64Zcode('
 ! release is made. Anything not listed here won't be copied.
 
 bocfel.js
+glkaudio_bg.wasm
 glulxe.js
 ie.js
 jquery.min.js
