@@ -18,7 +18,7 @@
     "@audio/decode-vorbis": "^1.0.0",
     "base32768": "^5.0.0",
     "body-scroll-lock": "^4.0.0-beta.0",
-    "emglken": "^0.7.0",
+    "emglken": "^0.7.1",
     "fflate": "^0.8.1",
     "file-saver": "^2.0.5",
     "jquery": "^4.0.0",
