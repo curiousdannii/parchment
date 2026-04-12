@@ -11,6 +11,14 @@ https://github.com/curiousdannii/parchment
 
 import type {BrowserDialog, /*GlkApi,*/ GlkOte, GlkOteOptions, TruthyOption} from '../upstream/asyncglk/src/index-common.js'
 
+export interface EmglkenEngineOptions extends ParchmentOptions {
+    arguments: string[],
+}
+
+export interface EmglkenEngine {
+    start: (options: EmglkenEngineOptions) => void,
+}
+
 /** The size and gzipped size of a file */
 export interface FileSize {
     /** Size of file in bytes, gzip compressed (doesn't need to be exact) */

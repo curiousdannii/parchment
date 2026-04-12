@@ -66,7 +66,7 @@ export default class FrontPage {
             },
         }
 
-        const files: Map<string, Uint8Array> = new Map()
+        const files: Map<string, Uint8Array<ArrayBuffer>> = new Map()
         files.set('index.html', utf8encoder.encode(this.index_html))
 
         ctx.body = await process_index_html(options, files)

@@ -11,7 +11,7 @@ https://github.com/curiousdannii/parchment
 
 import {Blorb} from '../upstream/asyncglk/src/index-common.js'
 
-import type {ParchmentOptions, StoryOptions} from './interface.js'
+import type {EmglkenEngine, EmglkenEngineOptions, ParchmentOptions, StoryOptions} from './interface.js'
 
 export interface Engine {
     id: string
@@ -29,11 +29,11 @@ export interface Format {
 async function generic_emglken_vm(story: StoryOptions, options: ParchmentOptions, requires: [any, Uint8Array]) {
     const [engine, wasmBinary] = requires
 
-    const vm_options = Object.assign({}, options, {
-        arguments: [story.path],
+    const vm_options: EmglkenEngineOptions = Object.assign({}, options, {
+        arguments: [story.path!],
     })
 
-    const vm = await engine.default({wasmBinary})
+    const vm: EmglkenEngine = await engine.default({wasmBinary})
     vm.start(vm_options)
 }
 
@@ -195,7 +195,7 @@ export function identify_blorb_storyfile_format(blorb: Blorb) {
         GLUL: 'glulx',
         ZCOD: 'zcode',
     }
-    const chunktype = blorb.get_chunk('exec', 0)?.blorbtype
+    const chunktype = blorb.get_chunk('Exec', 0)?.chunktype
     if (chunktype && blorb_chunks[chunktype]) {
         return find_format(blorb_chunks[chunktype])
     }

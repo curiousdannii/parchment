@@ -9,7 +9,7 @@ https://github.com/curiousdannii/parchment
 
 */
 
-export async function Uint8Array_to_base64(data: Uint8Array): Promise<string> {
+export async function Uint8Array_to_base64(data: Uint8Array<ArrayBuffer>): Promise<string> {
     if (typeof Buffer !== 'undefined') {
         return Buffer.from(data.buffer).toString('base64')
     }

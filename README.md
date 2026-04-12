@@ -30,7 +30,7 @@ Parchment is MIT licensed, and incorporates the following upstream projects:
 Name    | Upstream repo | License
 ------- | ------------- | -------
 AsyncGlk | [curiousdannii/asyncglk](https://github.com/curiousdannii/asyncglk) | [MIT](https://github.com/curiousdannii/asyncglk/blob/master/LICENSE)
-Bocfel  | [garglk/garglk](https://github.com/garglk/garglk) | [GPL-2.0](https://github.com/garglk/garglk/blob/master/terps/bocfel/COPYING.GPLv2)/[GPL-3.0](https://github.com/garglk/garglk/blob/master/terps/bocfel/COPYING.GPLv3)
+Bocfel  | [garglk/garglk](https://github.com/garglk/garglk) | [MIT](https://github.com/garglk/garglk/blob/master/terps/bocfel/LICENSE)
 Emglken | [curiousdannii/emglken](https://github.com/curiousdannii/emglken) | [MIT](https://github.com/curiousdannii/emglken/blob/master/LICENSE)
 Git     | [DavidKinder/Git](https://github.com/DavidKinder/Git) | [MIT](https://github.com/DavidKinder/Git/blob/master/README.txt)
 Glulxe  | [erkyrath/glulxe](https://github.com/erkyrath/glulxe) | [MIT](https://github.com/erkyrath/glulxe/blob/master/LICENSE)

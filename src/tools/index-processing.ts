@@ -22,8 +22,8 @@ const utf8decoder = new TextDecoder('ascii', {fatal: true})
 
 export interface Story {
     author?: string
-    cover?: Uint8Array | boolean
-    data?: Uint8Array
+    cover?: Uint8Array<ArrayBuffer> | boolean
+    data?: Uint8Array<ArrayBuffer>
     description?: string
     filename?: string
     filesize?: FileSize
@@ -42,7 +42,7 @@ export interface SingleFileOptions {
     story?: Story
 }
 
-export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array>): Promise<string> {
+export async function process_index_html(options: SingleFileOptions, files: Map<string, Uint8Array<ArrayBuffer>>): Promise<string> {
     const story = options.story
     let cover_image: string | undefined
     const inclusions: string[] = []
@@ -89,7 +89,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         }
         if (story.data) {
             if (options.gzip) {
-                story.data = gzipSync(story.data, {level: 9})
+                story.data = gzipSync(story.data, {level: 9}) as Uint8Array<ArrayBuffer>
             }
             parchment_options.story.url = 'embedded:' + story.filename!
             inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
@@ -112,7 +112,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
     for (let [filename, data] of files) {
         if (filename.endsWith('.wasm')) {
             if (options.gzip) {
-                data = gzipSync(data, {level: 9})
+                data = gzipSync(data, {level: 9}) as Uint8Array<ArrayBuffer>
             }
             inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${filename}">${await Uint8Array_to_base64(data)}</script>`)
             continue

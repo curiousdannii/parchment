@@ -12,15 +12,14 @@ https://github.com/curiousdannii/parchment
 import {gunzipSync} from 'fflate'
 
 import {Blorb, FileView, parse_base64} from '../upstream/asyncglk/src/index-browser.ts'
-import {default as Bocfel} from 'emglken/build/bocfel.js'
+import {default as Bocfel} from 'emglken/build/bocfel-noz6.js'
 import {default as Glulxe} from 'emglken/build/glulxe.js'
-import type {ParchmentOptions} from '../common/interface.js'
+import type {EmglkenEngine, EmglkenEngineOptions} from '../common/interface.js'
 import {get_default_options, get_query_options} from '../common/options.js'
 
 import './inform7.css'
 
-interface Inform7ParchmentOptions extends ParchmentOptions {
-    arguments?: string[],
+interface Inform7ParchmentOptions extends EmglkenEngineOptions {
     story_name: string,
 }
 
@@ -37,7 +36,7 @@ async function launch() {
     }
 
     // Update the Dialog storage version
-    await options.Dialog.init(this.options)
+    await options.Dialog.init(options)
 
     // Discriminate
     const storyfilepath = options.default_story[0]
@@ -59,7 +58,7 @@ async function launch() {
     })
 
     const engine = format === 'zcode' ? Bocfel : Glulxe
-    const wasm_base_filename = format === 'zcode' ? 'bocfel.js' : 'glulxe.js'
+    const wasm_base_filename = format === 'zcode' ? 'bocfel-noz6.js' : 'glulxe.js'
     let wasm_base64: string
     try {
         wasm_base64 = await $.ajax({
@@ -69,7 +68,7 @@ async function launch() {
             url: options.lib_path + wasm_base_filename,
         })
     }
-    catch (err) {
+    catch (err: any) {
         return options.GlkOte.error(`Error loading engine: ${err.status}`)
     }
 
@@ -82,7 +81,7 @@ async function launch() {
             url: storyfilepath,
         })
     }
-    catch (err) {
+    catch (err: any) {
         return options.GlkOte.error(`Error loading storyfile: ${err.status}`)
     }
 
@@ -97,7 +96,7 @@ async function launch() {
 
         const wasmBinary_gz = await parse_base64(wasm_base64)
         const wasmBinary = gunzipSync(wasmBinary_gz)
-        const vm = await engine({wasmBinary})
+        const vm: EmglkenEngine = await engine({wasmBinary}) as EmglkenEngine
         vm.start(options)
     }
     catch (err) {

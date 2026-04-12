@@ -85,7 +85,7 @@ export default class SiteGenerator {
         ]
 
         // Get all the files
-        const files: Map<string, Uint8Array> = new Map()
+        const files: Map<string, Uint8Array<ArrayBuffer>> = new Map()
         for (const file of paths) {
             const url = `https://${this.options.cdn_domain}/dist/web/${file}`
             const response = await fetch(url)
@@ -102,7 +102,7 @@ export default class SiteGenerator {
             single_file: true,
             story: {
                 author: metadata.author,
-                data: await fs.readFile(story_file.filepath),
+                data: await fs.readFile(story_file.filepath) as Uint8Array<ArrayBuffer>,
                 description: metadata.description,
                 filename,
                 format: metadata.format,

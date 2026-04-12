@@ -39,6 +39,6 @@ window.run = function() {
         files[usr_path] = [base32768_decode(data), {mtime: metadata.mtime}]
     }
 
-    const zip_file = zipSync(files)
+    const zip_file = zipSync(files) as Uint8Array<ArrayBuffer>
     filesaver.saveAs(new Blob([zip_file]), 'parchment-files.zip')
 }

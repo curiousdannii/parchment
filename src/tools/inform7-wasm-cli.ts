@@ -20,7 +20,7 @@ import {Uint8Array_to_base64} from '../common/file.js'
 const rootpath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 // Compress and base64 encode the wasm files
-for (const vm of ['bocfel', 'glulxe']) {
+for (const vm of ['bocfel-noz6', 'glulxe']) {
     const wasm = await fs.readFile(path.join(rootpath, `node_modules/emglken/build/${vm}.wasm`))
     const wasm_gz = gzipSync(wasm, {level: 9})
     const base64 = await Uint8Array_to_base64(wasm_gz)

@@ -101,7 +101,7 @@ const options = Object.assign({}, base_options, presets[preset])
 if (story_file_path) {
     try {
         options.story = {
-            data: await fs.readFile(story_file_path),
+            data: await fs.readFile(story_file_path) as Uint8Array<ArrayBuffer>,
             filename: path.basename(story_file_path),
         }
     }
@@ -133,10 +133,10 @@ const common_files = [
 ]
 const interpreter_files: Record<string, string[]> = {
     bocfel: ['bocfel.wasm', 'bocfel.js'],
-    git: ['git.wasm', 'git.js', 'glkaudio_bg.wasm'],
-    glulxe: ['glkaudio_bg.wasm', 'glulxe.wasm', 'glulxe.js'],
+    git: ['git.wasm', 'git.js'],
+    glulxe: ['glulxe.wasm', 'glulxe.js'],
     hugo: ['hugo.wasm', 'hugo.js'],
-    quixe: ['glkaudio_bg.wasm', 'quixe.js'],
+    quixe: ['quixe.js'],
     scare: ['scare.wasm', 'scare.js'],
     tads: ['tads.wasm', 'tads.js'],
     zvm: ['zvm.js'],
@@ -144,9 +144,9 @@ const interpreter_files: Record<string, string[]> = {
 
 // Get all the files, flattened and deduplicated
 const filenames = [...new Set(common_files.concat(options.terps.map(terp => interpreter_files[terp]).flat()))]
-const files: Map<string, Uint8Array> = new Map()
+const files: Map<string, Uint8Array<ArrayBuffer>> = new Map()
 for (const file of filenames) {
-    files.set(path.basename(file), await fs.readFile(path.join(webpath, file)))
+    files.set(path.basename(file), await fs.readFile(path.join(webpath, file)) as Uint8Array<ArrayBuffer>)
 }
 
 const indexhtml = await process_index_html(options, files)

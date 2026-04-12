@@ -179,7 +179,6 @@ class ParchmentLauncher {
                     return fetch_resource(this.options, path, progress_callback)
                 }),
             ])
-            // TODO: load glkaudio_bg.wasm if we predict we'll need it
             story.path = requires.shift()
 
             // If the story is a Blorb then parse it

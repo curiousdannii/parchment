@@ -48,7 +48,6 @@ if (projects.includes('ifcomp')) {
     projects_to_build.push({
         entryPoints: {
             bocfel: 'node_modules/emglken/build/bocfel.*',
-            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
             glulxe: 'node_modules/emglken/build/glulxe.*',
             ie: 'src/common/ie.js',
             tads: 'node_modules/emglken/build/tads.*',
@@ -122,7 +121,6 @@ if (projects.includes('web')) {
         entryPoints: {
             bocfel: 'node_modules/emglken/build/bocfel.*',
             git: 'node_modules/emglken/build/git.*',
-            glkaudio_bg: 'node_modules/glkaudio/glkaudio_bg.wasm',
             glulxe: 'node_modules/emglken/build/glulxe.*',
             hugo: 'node_modules/emglken/build/hugo.*',
             ie: 'src/common/ie.js',
@@ -170,7 +168,7 @@ const common_options = {
             // Removing the Emscripten ENVIRONMENT_IS_ variables so that the globals defined above will be used instead. Most Node code will be excluded, except that some variables will still be defined
             name: 'EmglkenEnvironmentRemover',
             setup(build) {
-                build.onLoad({filter: /emglken\/build\/\w+.js$/}, async (args) => {
+                build.onLoad({filter: /emglken\/build\/[-\w]+.js$/}, async (args) => {
                     let code = await fs.readFile(args.path, 'utf8')
                     const env_lines = [
                         // Emscripten 3.1.74
