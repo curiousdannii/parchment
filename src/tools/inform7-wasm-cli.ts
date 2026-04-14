@@ -24,5 +24,5 @@ for (const vm of ['bocfel-noz6', 'glulxe']) {
     const wasm = await fs.readFile(path.join(rootpath, `node_modules/emglken/build/${vm}.wasm`))
     const wasm_gz = gzipSync(wasm, {level: 9})
     const base64 = await Uint8Array_to_base64(wasm_gz)
-    await fs.writeFile(path.join(rootpath, `dist/inform7/Parchment/${vm}.js`), `processBase64Zcode('${base64}')`)
+    await fs.writeFile(path.join(rootpath, `dist/inform7/Parchment/${vm}.js`), `ParchmentResource({base64: 1, gzip: 1, data: '${base64}'})`)
 }

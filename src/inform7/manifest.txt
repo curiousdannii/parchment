@@ -27,6 +27,11 @@ https://github.com/curiousdannii/parchment
 gz
 []
 
+! In separated mode only MP3s are supported
+[SUPPORTSRESOURCEMAP]
+only MP3 sounds are supported
+[]
+
 ! [INTERPRETERHEAD] provides code to go into the <head> ... </head> of the
 ! web page playing the work. (Placeholder text starts on the line after the
 ! name, and continues until a line reads just []. Line breaks are included
@@ -48,13 +53,20 @@ gz
     <script src="interpreter/jquery.min.js"></script>
     <script src="interpreter/ie.js" nomodule></script>
     <script src="interpreter/parchment.js"></script>
-    <script src="interpreter/resourcemap.js" type="text/javascript"></script>
     <script>
-        parchment_options = {
-            default_story: [ "interpreter/[ENCODEDSTORYFILE]" ],
+    (function(){
+        const url = '[ENCODEDSTORYFILE]'
+        const filename = url.substring(0, url.length - 3)
+        window.parchment_options = {
+            jsonp: 'ParchmentResource',
             lib_path: 'interpreter/',
-            story_name: '[ENCODEDSTORYFILE]',
-        };
+            story: {
+                filename,
+                resource_map: '[RESOURCEMAP]',
+                url,
+            },
+        }
+    })()
     </script>
 []
 
@@ -89,11 +101,19 @@ on your web browser.
 ! call with a string argument:
 
 [BASESIXTYFOURTOP]
-processBase64Zcode('
+ParchmentResource({base64: 1, data: '
 []
 
 [BASESIXTYFOURTAIL]
-')
+'})
+[]
+
+[JSRESOURCEMAPTOP]
+ParchmentResource({data:
+[]
+
+[JSRESOURCEMAPTAIL]
+})
 []
 
 ! Outside of the placeholder parts of the manifest, lines beginning '!', or
@@ -108,5 +128,4 @@ ie.js
 jquery.min.js
 parchment.css
 parchment.js
-resourcemap.js
 waiting.gif

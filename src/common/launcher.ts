@@ -14,7 +14,7 @@ import '../web/web.css'
 import Cookies from 'js-cookie'
 
 import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
-import emglken_file_sizes from 'emglken/build/file-sizes.json'
+import emglken_file_sizes from 'emglken/build/file-sizes.json' with {type: 'json'}
 
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
 import type {ParchmentOptions, StoryOptions} from './interface.js'
@@ -52,9 +52,6 @@ class ParchmentLauncher {
                 return {url: this.options.story}
             }
             return this.options.story
-        }
-        if (this.options.default_story) {
-            return {url: this.options.default_story?.[0]}
         }
         return null
     }
@@ -179,7 +176,7 @@ class ParchmentLauncher {
                     return fetch_resource(this.options, path, progress_callback)
                 }),
             ])
-            story.path = requires.shift()
+            story.path = requires.shift() as string
 
             // If the story is a Blorb then parse it
             if (format.blorbable && !options.Blorb) {

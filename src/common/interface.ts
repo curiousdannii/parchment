@@ -28,12 +28,16 @@ export interface FileSize {
 }
 
 export interface StoryOptions {
+    /** Base filename */
+    filename?: string
     /** Size of storyfile */
     filesize?: FileSize
     /** Format ID, matching formats.js */
     format?: string
     /** Dialog file path */
     path?: string
+    /** Path to JS resource map */
+    resource_map?: string
     /** Sound formats this game uses */
     sounds?: ['aiff' | 'mod' | 'ogg']
     /** Story title (can include author name too) */
@@ -49,8 +53,6 @@ export interface ParchmentOptions extends Omit<GlkOteOptions, 'accept'> {
     auto_launch?: TruthyOption,
     /** Whether or not to autoplay, if not a Play button will be shown (useful for games that play sounds on startup) */
     autoplay?: TruthyOption,
-    /** Story path in the array format traditionally used by Parchment for Inform 7 */
-    default_story?: [string],
     /** Storyfile path or metadata */
     story?: string | StoryOptions,
     /** Theme name, can be set to 'dark */

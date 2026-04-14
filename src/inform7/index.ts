@@ -3,24 +3,22 @@
 Parchment Launcher for Inform 7
 ===============================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2026 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import {gunzipSync} from 'fflate'
-
-import {Blorb, FileView, parse_base64} from '../upstream/asyncglk/src/index-browser.ts'
+import {Blorb, fetch_resource, FileView, utf8encoder} from '../upstream/asyncglk/src/index-browser.js'
 import {default as Bocfel} from 'emglken/build/bocfel-noz6.js'
 import {default as Glulxe} from 'emglken/build/glulxe.js'
-import type {EmglkenEngine, EmglkenEngineOptions} from '../common/interface.js'
+import type {EmglkenEngine, EmglkenEngineOptions, StoryOptions} from '../common/interface.js'
 import {get_default_options, get_query_options} from '../common/options.js'
 
 import './inform7.css'
 
 interface Inform7ParchmentOptions extends EmglkenEngineOptions {
-    story_name: string,
+    story: StoryOptions,
 }
 
 interface ParchmentWindow extends Window {
@@ -31,7 +29,7 @@ declare let window: ParchmentWindow
 async function launch() {
     const options: Inform7ParchmentOptions = Object.assign({}, get_default_options(), window.parchment_options, get_query_options(['do_vm_autosave']))
 
-    if (!options.default_story) {
+    if (!options.story) {
         return options.GlkOte.error('No storyfile specified')
     }
 
@@ -39,63 +37,33 @@ async function launch() {
     await options.Dialog.init(options)
 
     // Discriminate
-    const storyfilepath = options.default_story[0]
-    let format
-    if (/\.(zblorb|zlb|z3|z4|z5|z8)(\.js)?$/.test(storyfilepath)) {
-        format = 'zcode'
-    }
-    else if (/\.(gblorb|glb|ulx)(\.js)?$/.test(storyfilepath)) {
-        format = 'glulx'
-    }
-    else {
-        return options.GlkOte.error('Unknown storyfile format')
-    }
+    const format = (/\.(zblorb|zlb|z3|z4|z5|z8)$/.test(options.story.filename!)) ? 'zcode' : 'glulx'
 
-    // When running from a file: URL we must use <script> tags and nothing else
-    $.ajaxSetup({
-        cache: true,
-        crossDomain: true,
-    })
-
-    const engine = format === 'zcode' ? Bocfel : Glulxe
-    const wasm_base_filename = format === 'zcode' ? 'bocfel-noz6.js' : 'glulxe.js'
-    let wasm_base64: string
-    try {
-        wasm_base64 = await $.ajax({
-            dataType: 'jsonp',
-            jsonp: false,
-            jsonpCallback: 'processBase64Zcode',
-            url: options.lib_path + wasm_base_filename,
-        })
+    const resources = [
+        format === 'zcode' ? 'bocfel-noz6.js' : 'glulxe.js',
+        options.story.url!,
+    ]
+    const resource_map = options.story.resource_map
+    if (resource_map && !resource_map.startsWith('[')) {
+        resources.push('jsresourcemap.js')
     }
-    catch (err: any) {
-        return options.GlkOte.error(`Error loading engine: ${err.status}`)
-    }
-
-    let base64data
-    try {
-        base64data = await $.ajax({
-            dataType: 'jsonp',
-            jsonp: false,
-            jsonpCallback: 'processBase64Zcode',
-            url: storyfilepath,
-        })
-    }
-    catch (err: any) {
-        return options.GlkOte.error(`Error loading storyfile: ${err.status}`)
-    }
+    const requires: any[] = await Promise.all(resources.map(path => fetch_resource(options, path)))
+    const wasmBinary: Uint8Array<ArrayBuffer> = requires[0]
+    const story_data: Uint8Array<ArrayBuffer> = requires[1]
 
     try {
-        const data = await parse_base64(base64data)
-        const view = new FileView(data)
+        options.arguments = [await options.Dialog.upload(new File([story_data], options.story.filename!))]
+        const view = new FileView(story_data)
         if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
-            options.Blorb = new Blorb(data)
+            options.Blorb = new Blorb(story_data)
         }
-        const storyfile_name = options.story_name.substring(0, options.story_name.length - 3)
-        options.arguments = [await options.Dialog.upload(new File([data], storyfile_name))]
+        else if (requires[2]) {
+            options.Blorb = new Blorb(requires[2])
+            const resource_map_data = utf8encoder.encode(JSON.stringify(requires[2]))
+            options.arguments.push('-resourcemap', await options.Dialog.upload(new File([resource_map_data], options.story.filename! + '.resourcemap.json')))
+        }
 
-        const wasmBinary_gz = await parse_base64(wasm_base64)
-        const wasmBinary = gunzipSync(wasmBinary_gz)
+        const engine = format === 'zcode' ? Bocfel : Glulxe
         const vm: EmglkenEngine = await engine({wasmBinary}) as EmglkenEngine
         vm.start(options)
     }

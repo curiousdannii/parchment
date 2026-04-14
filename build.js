@@ -76,11 +76,7 @@ if (projects.includes('inform7')) {
         outdir: 'dist/inform7/Parchment',
     },
     jquery_copier('dist/inform7/Parchment'),
-    {
-        entryPoints: ['src/upstream/quixe/media/resourcemap.js'],
-        loader: {'.js': 'copy'},
-        outdir: 'dist/inform7/Parchment',
-    })
+    )
 }
 
 if (projects.includes('lectrote')) {

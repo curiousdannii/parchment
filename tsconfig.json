@@ -1,21 +1,27 @@
 {
+    "extends": "@tsconfig/svelte/tsconfig.json",
     "compilerOptions": {
         "esModuleInterop": true,
         "isolatedModules": true,
-        "module": "ES2022",
-        "moduleResolution": "Node",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "plugins": [
+            {"name": "typescript-plugin-css-modules"},
+        ],
         "resolveJsonModule": true,
-        "rootDir": ".",
+        "rootDir": "src",
         "strict": true,
-        "target": "ES2022",
+        "target": "esnext",
         "types": ["jquery", "svelte"],
         "verbatimModuleSyntax": true
     },
     "include": [
-        "src/common/*.ts",
-        "src/iplayif.com/app/src/*.ts",
-        "src/tools/*.ts",
-        "src/types.d.ts"
+        "src/upstream/asyncglk/src/global.d.ts",
+        "src/types.d.ts",
+        "src/common/**/*",
+        "src/inform7/*",
+        "src/iplayif.com/app/src/*",
+        "src/tools/*"
     ],
     "exclude": [
         "node_modules"
