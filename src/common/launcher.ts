@@ -13,7 +13,7 @@ import '../web/web.css'
 
 import Cookies from 'js-cookie'
 
-import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback} from '../upstream/asyncglk/src/index-browser.js'
+import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback, read_uploaded_file} from '../upstream/asyncglk/src/index-browser.js'
 import emglken_file_sizes from 'emglken/build/file-sizes.json' with {type: 'json'}
 
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
@@ -198,8 +198,9 @@ class ParchmentLauncher {
     async load_uploaded_file(file: File) {
         try {
             this.options.autoplay = 1
+            const data = await read_uploaded_file(file)
             this.story = {
-                path: await this.options.Dialog.upload(file),
+                path: await this.options.Dialog.upload(file.name, data),
                 title: file.name,
             }
             this.preload()

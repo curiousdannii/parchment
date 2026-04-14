@@ -52,7 +52,7 @@ async function launch() {
     const story_data: Uint8Array<ArrayBuffer> = requires[1]
 
     try {
-        options.arguments = [await options.Dialog.upload(new File([story_data], options.story.filename!))]
+        options.arguments = [await options.Dialog.upload(options.story.filename!, story_data)]
         const view = new FileView(story_data)
         if (view.getFourCC(0) === 'FORM' && view.getFourCC(8) === 'IFRS') {
             options.Blorb = new Blorb(story_data)
@@ -60,7 +60,7 @@ async function launch() {
         else if (requires[2]) {
             options.Blorb = new Blorb(requires[2])
             const resource_map_data = utf8encoder.encode(JSON.stringify(requires[2]))
-            options.arguments.push('-resourcemap', await options.Dialog.upload(new File([resource_map_data], options.story.filename! + '.resourcemap.json')))
+            options.arguments.push('-resourcemap', await options.Dialog.upload(options.story.filename! + '.resourcemap.json', resource_map_data, false))
         }
 
         const engine = format === 'zcode' ? Bocfel : Glulxe
