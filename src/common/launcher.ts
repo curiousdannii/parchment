@@ -3,7 +3,7 @@
 Parchment Launcher
 ==================
 
-Copyright (c) 2024 Dannii Willis
+Copyright (c) 2026 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -13,7 +13,7 @@ import '../web/web.css'
 
 import Cookies from 'js-cookie'
 
-import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, type ProgressCallback, read_uploaded_file} from '../upstream/asyncglk/src/index-browser.js'
+import {/*AsyncGlk,*/ Blorb, fetch_resource, FileView, is_iOS, type ProgressCallback, read_uploaded_file} from '../upstream/asyncglk/src/index-browser.js'
 import emglken_file_sizes from 'emglken/build/file-sizes.json' with {type: 'json'}
 
 import {find_format, identify_blorb_storyfile_format} from './formats.js'
@@ -28,8 +28,11 @@ interface ParchmentWindow extends Window {
 }
 declare let window: ParchmentWindow
 
+const is_in_iframe = window.self !== window.top
+
 class ParchmentLauncher {
     loading_pane?: LoadingPane
+    new_tab?: WindowProxy
     options: ParchmentOptions
     story?: StoryOptions
 
@@ -143,6 +146,20 @@ class ParchmentLauncher {
     /** Actually load and play the storyfile */
     load = async () => {
         try {
+            // Break out of an iframe
+            if (is_in_iframe && !this.options.play_in_iframe) {
+                // If we've already opened a new tab, focus it (except in iOS where it doesn't work)
+                if (this.new_tab && !this.new_tab.closed && !is_iOS) {
+                    this.new_tab.focus()
+                }
+                else {
+                    this.new_tab = window.open(document.URL)!
+                }
+                // It would be nice to exit Itch's maximised mode here, but I can't work out how to safely do so on both mobile and desktop
+                return
+            }
+            this.loading_pane!.playing = true
+
             const story = this.story!
             // We'll display download progress only if we know the file size of the storyfile
             let progress_callback: ProgressCallback | undefined

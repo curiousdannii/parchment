@@ -53,6 +53,8 @@ export interface ParchmentOptions extends Omit<GlkOteOptions, 'accept'> {
     auto_launch?: TruthyOption,
     /** Whether or not to autoplay, if not a Play button will be shown (useful for games that play sounds on startup) */
     autoplay?: TruthyOption,
+    /** Whether or not to break out of an iframe. Risky to enable */
+    play_in_iframe?: TruthyOption,
     /** Storyfile path or metadata */
     story?: string | StoryOptions,
     /** Theme name, can be set to 'dark */

@@ -1,3 +1,7 @@
+// Types for CSS
+// https://stackoverflow.com/q/69056475/2854284
+declare module '*.css';
+
 // Types for Emglken modules
 
 type EmglkenEngineConstructor = (opts: {wasmBinary: Uint8Array<ArrayBuffer>}) => Promise<EmglkenEngine>

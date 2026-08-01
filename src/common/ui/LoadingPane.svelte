@@ -28,17 +28,19 @@
     }
 
     function on_play() {
-        playing = true
         play()
     }
 </script>
 
 <style>
     :global(#loadingpane) {
+        display: grid;
+        height: 100%;
+        place-items: center;
         position: absolute;
-        width: 100%;
         text-align: center;
-        top: 20%;
+        top: 0;
+        width: 100%;
     }
 
     progress {
@@ -47,16 +49,18 @@
 </style>
 
 <div id="loadingpane" class="asyncglk_ui">
-    <h1>{title}</h1>
-    <p><img src="{cover_image_url}" alt="Cover art"></p>
-    {#if playing}
-        {#if set_storyfile_size}
-            <p><progress max="{totalsize}" value="{progress}"></progress></p>
-            <p>{prettyBytes(totalsize_gz, {maximumFractionDigits: 1, minimumFractionDigits: 1})}</p>
+    <div>
+        <h1>{title}</h1>
+        <p><img src="{cover_image_url}" alt="Cover art"></p>
+        {#if playing}
+            {#if set_storyfile_size}
+                <p><progress max="{totalsize}" value="{progress}"></progress></p>
+                <p>{prettyBytes(totalsize_gz, {maximumFractionDigits: 1, minimumFractionDigits: 1})}</p>
+            {:else}
+                <p><progress></progress></p>
+            {/if}
         {:else}
-            <p><progress></progress></p>
+            <p><button on:click={on_play}>Play!</button></p>
         {/if}
-    {:else}
-        <p><button on:click={on_play}>Play!</button></p>
-    {/if}
+    </div>
 </div>
