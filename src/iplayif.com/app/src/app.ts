@@ -100,6 +100,6 @@ export default class IplayifApp {
         }
 
         // Unexpected path
-        ctx.throw(400, 'Unexpected path')
+        ctx.throw(400, `Unexpected path ${request_path}`)
     }
 }
