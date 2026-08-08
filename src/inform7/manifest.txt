@@ -58,6 +58,7 @@ only MP3 sounds are supported
         const url = '[ENCODEDSTORYFILE]'
         const filename = url.substring(0, url.length - 3)
         window.parchment_options = {
+            dialog_localStorage_id: /^[\w\s_-]+/.exec(filename)?.[0].toLowerCase().trim(),
             jsonp: 'ParchmentResource',
             lib_path: 'interpreter/',
             story: {

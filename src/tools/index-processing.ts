@@ -3,19 +3,22 @@
 Common index.html processing
 ============================
 
-Copyright (c) 2025 Dannii Willis
+Copyright (c) 2026 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
 */
 
-import {gzipSync} from 'zlib'
+import {promisify} from 'util'
+import {gzip} from 'zlib'
 
 import {escape, truncate} from 'lodash-es'
 
 import type {TruthyOption} from '../upstream/asyncglk/src/index-common.js'
 import {Uint8Array_to_base64} from '../common/file.js'
 import type {FileSize, ParchmentOptions} from '../common/interface.js'
+
+const asyncGzip = promisify(gzip)
 
 // Is ASCII really okay here?
 const utf8decoder = new TextDecoder('ascii', {fatal: true})
@@ -38,6 +41,7 @@ export interface SingleFileOptions {
     domain?: string
     font?: TruthyOption
     gzip?: TruthyOption
+    localStorage_isolate?: TruthyOption
     single_file?: TruthyOption
     story?: Story
 }
@@ -89,7 +93,13 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         }
         if (story.data) {
             if (options.gzip) {
-                story.data = gzipSync(story.data, {level: 9}) as Uint8Array<ArrayBuffer>
+                story.data = await asyncGzip(story.data, {level: 9}) as Uint8Array<ArrayBuffer>
+            }
+            if (options.localStorage_isolate) {
+                const id = /^[\w\s_-]+/.exec(story.filename!)
+                if (id) {
+                    parchment_options.dialog_localStorage_id = id[0].toLowerCase().trim()
+                }
             }
             parchment_options.story.url = 'embedded:' + story.filename!
             inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${story.filename!}">${await Uint8Array_to_base64(story.data)}</script>`)
@@ -112,7 +122,7 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
     for (let [filename, data] of files) {
         if (filename.endsWith('.wasm')) {
             if (options.gzip) {
-                data = gzipSync(data, {level: 9}) as Uint8Array<ArrayBuffer>
+                data = await asyncGzip(data, {level: 9}) as Uint8Array<ArrayBuffer>
             }
             inclusions.push(`<script type="text/plain${options.gzip ? ';gzip' : ''}" id="${filename}">${await Uint8Array_to_base64(data)}</script>`)
             continue

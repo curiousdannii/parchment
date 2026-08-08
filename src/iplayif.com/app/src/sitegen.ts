@@ -3,7 +3,7 @@
 Parchment site generator
 ========================
 
-Copyright (c) 2025 Dannii Willis
+Copyright (c) 2026 Dannii Willis
 MIT licenced
 https://github.com/curiousdannii/parchment
 
@@ -49,15 +49,19 @@ export default class SiteGenerator {
     </head>
     <body>
         <h1>Parchment Site Generator</h1>
-        <p>Upload a Z-Code, Glulx, TADS, Hugo, or ADRIFT 4 file to generator a self-contained HTML file, suitable for distribution or offline play.</p>
+        <p>Upload a Z-Code, Glulx, TADS, Hugo, or ADRIFT 4 file to generate a self-contained HTML file, suitable for distribution or offline play.</p>
         <form method=post enctype="multipart/form-data">
-            <input type=file name=story_file>
-            <button>submit</button>
+            <p><input type="file" name="story_file">
+            <p><input type="checkbox" id="localStorage_isolate" name="localStorage_isolate" checked><label for="localStorage_isolate">Enabled localStorage isolation (highly recommended if you will be uploading this to Itch.io!)</label>
+            <p><button>Generate</button>
         </form>`
             return
         }
+
         const story_file = flatten_query(ctx.request.files!.story_file)!
         const filename = story_file.originalFilename!
+
+        const localStorage_isolate = !!ctx.request.body?.localStorage_isolate
 
         const metadata = await get_metadata(filename, story_file.filepath)
 
@@ -99,6 +103,7 @@ export default class SiteGenerator {
         const options: SingleFileOptions = {
             domain: `http${this.options.https ? 's' : ''}://${this.options.domain}`,
             font: true,
+            localStorage_isolate,
             single_file: true,
             story: {
                 author: metadata.author,
