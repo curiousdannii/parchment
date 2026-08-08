@@ -54,6 +54,7 @@ export default class FrontPage {
 
         const options: SingleFileOptions = {
             domain: `http${this.options.https ? 's' : ''}://${this.options.domain}`,
+            cdn_domain: this.options.cdn_domain,
             story: {
                 author: data.author,
                 cover: !!data.cover,
