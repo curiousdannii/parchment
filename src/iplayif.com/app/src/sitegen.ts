@@ -52,7 +52,7 @@ export default class SiteGenerator {
         <p>Upload a Z-Code, Glulx, TADS, Hugo, or ADRIFT 4 file to generate a self-contained HTML file, suitable for distribution or offline play.</p>
         <form method=post enctype="multipart/form-data">
             <p><input type="file" name="story_file">
-            <p><input type="checkbox" id="localStorage_isolate" name="localStorage_isolate" checked><label for="localStorage_isolate">Enabled localStorage isolation (highly recommended if you will be uploading this to Itch.io!)</label>
+            <p><input type="checkbox" id="localStorage_isolate" name="localStorage_isolate" checked><label for="localStorage_isolate">Enable localStorage isolation (highly recommended if you will be uploading this to Itch.io!)</label>
             <p><button>Generate</button>
         </form>`
             return
