@@ -63,6 +63,7 @@ export interface ParchmentOptions extends Omit<GlkOteOptions, 'accept'> {
     theme_cookie: string,
     /** Whether to test the AsyncGlk GlkApi library */
     use_asyncglk?: TruthyOption,
+    engine_files?: {[key: string]: string}
 
     // Modules to pass to other modules
 
