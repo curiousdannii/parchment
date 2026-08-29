@@ -7,7 +7,7 @@
   "repository": "curiousdannii/parchment",
   "type": "module",
   "dependencies": {
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.25.0",
     "he": "^1.2.0",
     "koa": "^2.15.0",
     "koa-body": "^6.0.1",
