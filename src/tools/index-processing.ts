@@ -17,6 +17,7 @@ import {escape, truncate} from 'lodash-es'
 import type {TruthyOption} from '../upstream/asyncglk/src/index-common.js'
 import {Uint8Array_to_base64} from '../common/file.js'
 import type {FileSize, ParchmentOptions} from '../common/interface.js'
+import {find_format} from '../common/formats.js'
 
 const asyncGzip = promisify(gzip)
 
@@ -39,6 +40,7 @@ export interface Story {
 export interface SingleFileOptions {
     date?: TruthyOption
     domain?: string
+    cdn_domain?: string
     font?: TruthyOption
     gzip?: TruthyOption
     localStorage_isolate?: TruthyOption
@@ -109,6 +111,14 @@ export async function process_index_html(options: SingleFileOptions, files: Map<
         }
         if (story.format) {
             parchment_options.story.format = story.format
+            const {engines} = find_format(story.format)
+            if (engines) {
+                parchment_options.engine_files = Object.fromEntries(await Promise.all(engines[0].load.map(async (path) => {
+                    const response = await fetch(`https://${options.cdn_domain}/dist/web/${path}`, {method: 'head'})
+                    const last_modified = response.headers.get('last-modified') ?? ''
+                    return [path, Math.floor(new Date(last_modified).getTime()/1000)]
+                })))
+            }
         }
     }
 
