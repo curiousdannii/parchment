@@ -124,11 +124,27 @@ export async function get_metadata(file_name: string, file_path: string) {
         identify_data.shift()
     }
 
-    const [babel_format] = identify_data[2].split(',')
-    const result = new FileMetadata(file_name, parchment_formats[babel_format], /IFID: ([-\w]+)/i.exec(identify_data[1])![1])
+    const bibliographic_data = identify_data.shift()!
 
-    if (identify_data[0] !== 'No bibliographic data') {
-        const author_data = identify_data[0].split(' by ')
+    let ifid = ''
+    while (true) {
+        const match = /IFID: ([-\w]+)/i.exec(identify_data[0])
+        if (match) {
+            ifid = match[1]
+            identify_data.shift()
+        }
+        else {
+            break
+        }
+    }
+
+    const [format_data] = identify_data
+
+    const [babel_format] = format_data.split(',')
+    const result = new FileMetadata(file_name, parchment_formats[babel_format], ifid)
+
+    if (bibliographic_data !== 'No bibliographic data') {
+        const author_data = bibliographic_data.split(' by ')
         result.author = author_data[1].trim()
         result.title = author_data[0].replace(/^[\s"]+|[\s"]+$/g, '')
     }
@@ -144,7 +160,7 @@ export async function get_metadata(file_name: string, file_path: string) {
 
     // Extract a cover
     let cover: Uint8Array | undefined
-    if (!identify_data[2].includes('no cover')) {
+    if (!format_data.includes('no cover')) {
         const extract_cover_results = await execFile('babel', ['-cover', file_path])
         if (!extract_cover_results.stderr.length) {
             const cover_path = /Extracted ([-\w.]+)/.exec(extract_cover_results.stdout)![1]
